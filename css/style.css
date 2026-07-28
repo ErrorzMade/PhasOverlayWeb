@@ -862,12 +862,16 @@ footer {
     gap: 54px;
   }
 
-  .feature-row {
+  /* Stack every row: shot on top, copy under it, whatever the parity.
+     The even-row rules above are matched selector-for-selector, otherwise
+     they win here (a media query adds no specificity of its own) and the
+     flipped rows stay two-column with a squashed image. */
+  .feature-row,
+  .feature-row:nth-child(even) {
     grid-template-columns: 1fr;
     gap: 24px;
   }
 
-  /* Shot always on top once stacked, whatever the row parity. */
   .feature-row:nth-child(even) .row-shot {
     order: 0;
   }

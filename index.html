@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PhasOverlay: A feature-rich overlay for Phasmophobia</title>
+<meta name="description" content="PhasOverlay is a manual, click-through overlay for Phasmophobia: hunt/cooldown/smudge timers, footstep-based ghost speed tracking, and a full evidence identification tracker. Never reads or writes the game process." />
+
+<meta property="og:title" content="PhasOverlay: A feature-rich overlay for Phasmophobia" />
+<meta property="og:description" content="Manual, click-through overlay for hunt timers, ghost speed tracking, and evidence identification. Not a cheat, just an overlay." />
+<meta property="og:image" content="assets/screenshots/evidencetracker.png" />
+<meta property="og:type" content="website" />
+
+<link rel="icon" href="assets/logo.png" type="image/png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="#top" class="brand">
+      <img src="assets/logo.png" alt="PhasOverlay logo" />
+      PhasOverlay
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#legal">Credits &amp; Legal</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="https://github.com/ErrorzMade/PhasOverlay" target="_blank" rel="noopener" class="btn btn-secondary">GitHub</a>
+      <span class="btn btn-primary btn-disabled" aria-disabled="true">Coming Soon</span>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="wrap">
+      <div class="hero-top">
+        <h1>A feature-rich overlay for <span class="accent">Phasmophobia</span>.</h1>
+        <p class="lede">
+          PhasOverlay allows you to track hunt durations, cooldowns &amp; smudge timers all in one place. It also features a robust evidence tracker. It allows you to read into ghost behaviour, mark evidence as it comes in, listen to ghost speeds &amp; rule out ghosts.
+        </p>
+        <div class="hero-actions">
+          <span class="btn btn-primary btn-disabled" aria-disabled="true">Coming Soon</span>
+          <a href="#features" class="btn btn-secondary">See what it does</a>
+        </div>
+        <p class="hero-meta">Free &amp; open source · AGPLv3</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ FEATURES ============ -->
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="sec-index"><span class="num">01</span><span class="rule"></span></div>
+        <h2>Features</h2>
+        <div class="underline"></div>
+      </div>
+
+      <!--
+        Each headline feature is one row: shot on one side, copy on the other.
+        Rows alternate automatically (odd rows put the shot left, even rows right).
+
+        To add one, copy an article block and swap the image, icon, and copy.
+        Nothing else needs editing. Shots are captured at 1440p (2560x1440).
+
+        Features that do not warrant a screenshot go in the "and also" grid below.
+      -->
+      <div class="feature-rows">
+
+        <article class="feature-row reveal">
+          <div class="row-shot">
+            <img src="assets/screenshots/huntcooldownsmudge.png" alt="The overlay showing smudge, cooldown, and hunt timers side by side, with the cooldown counting down at 0:19." />
+          </div>
+          <div class="row-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.8M9 2h6"/>
+            </svg>
+            <h3>Hunt, Cooldown &amp; Smudge Timers</h3>
+            <p>Track ghost hunts, cooldowns &amp; smudge timers as they happen.</p>
+          </div>
+        </article>
+
+        <article class="feature-row reveal">
+          <div class="row-shot">
+            <img src="assets/screenshots/evidencetracker.png" alt="The full overlay: evidence toggles, a possible-ghost count of 30, per-ghost detail cards, and the settings panel." />
+          </div>
+          <div class="row-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="4" y="3" width="16" height="18" rx="2"/><polyline points="8 9 9.5 10.5 12.5 7.5"/><polyline points="8 16 9.5 17.5 12.5 14.5"/><path d="M15 9.5h2M15 16.5h2"/>
+            </svg>
+            <h3>Evidence Tracker</h3>
+            <p>Track evidence as it's discovered, read about ghost behaviours &amp; tap to ghosts footsteps to narrow down the list.</p>
+          </div>
+        </article>
+
+        <article class="feature-row reveal">
+          <div class="row-shot">
+            <img src="assets/screenshots/ghostspeed.png" alt="The overlay under a blood moon, showing an Obambo timer and a speed readout rescaled to 115%." />
+          </div>
+          <div class="row-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+            </svg>
+            <h3>Track Ghost Speeds</h3>
+            <p>Tap in rhythm with the ghost's footsteps to calculate its speed & narrow down the ghost list instantly.</p>
+          </div>
+        </article>
+
+        <article class="feature-row reveal">
+          <div class="row-shot">
+            <img src="assets/screenshots/modifiers.png" alt="Side by side: drawing the Death tarot card lights a cursed indicator in the overlay, and a blood moon night lights a red moon indicator." />
+          </div>
+          <div class="row-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 13.6A8 8 0 1 1 10.4 4a6.3 6.3 0 0 0 9.6 9.6z"/><path d="M17.5 3v3.4M15.8 4.7h3.4"/>
+            </svg>
+            <h3>Cursed & Blood Moon Modifiers</h3>
+            <p>Trigger blood moon to automatically adust ghost speed calculation, or trigger the cursed hunt modifier when you trigger a cursed hunt to adjust hunt durations.</p>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="also-head reveal">And also</div>
+
+      <div class="also-grid reveal">
+        <div class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h8M17 7h3M4 17h3M12 17h8"/><circle cx="14.5" cy="7" r="2.3"/><circle cx="9.5" cy="17" r="2.3"/>
+          </svg>
+          <h3>Fully customisable UI</h3>
+          <p>Change the placement of the UI, adjust the scale &amp; opacity to your liking, adjust what modules you want enabled &amp; adjust how loud the sounds are.</p>
+        </div>
+
+        <div class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/>
+          </svg>
+          <h3>Weekly challenge presets</h3>
+          <p>Weekly challenge presets that are updated weekly, so you can play the weekly without having to dig through the settings for it.</p>
+        </div>
+
+        <div class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>
+          </svg>
+          <h3>Fully rebindable hotkeys</h3>
+          <p>Change any hotkey to your liking, defaults to F1 - F7 for timer functions.</p>
+        </div>
+
+        <div class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4v16h16"/><path d="M7 16c3.5 0 4-8 8-8 2.2 0 3 2.5 5 2.5"/><circle cx="12" cy="11.4" r="1.6" fill="currentColor" stroke="none"/>
+          </svg>
+          <h3>Listen to Ghost Speeds</h3>
+          <p>Listen to what the ghosts footsteps sound like to help identify them, or listen to a ghosts LOS speeduup curve.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INSTALL ============ -->
+  <section id="install">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="sec-index"><span class="num">02</span><span class="rule"></span></div>
+        <h2>Installation</h2>
+        <div class="underline"></div>
+        <p>How to install PhasOverlay</p>
+      </div>
+
+      <div class="install-grid reveal">
+        <div class="step">
+          <div class="num">STEP 01</div>
+          <h3>Go to Releases</h3>
+          <p>Head to the <a href="https://github.com/ErrorzMade/PhasOverlay/releases/latest" target="_blank" rel="noopener">GitHub Releases</a> page and download the latest <code>.zip</code>.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 02</div>
+          <h3>Unzip</h3>
+          <p>Extract it anywhere on your drive. No fixed install location required.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 03</div>
+          <h3>Run it</h3>
+          <p>Launch <code>PhasOverlay.exe</code>.</p>
+        </div>
+        <div class="step">
+          <div class="num">STEP 04</div>
+          <h3>Play</h3>
+          <p>Configure the overlay to your liking and go make GHD proud!</p>
+        </div>
+      </div>
+
+      <details class="faq reveal">
+        <summary>Why did Windows SmartScreen warn me when I ran it?</summary>
+        <p>
+          Windows may show a SmartScreen warning the first time you run PhasOverlay. This is due
+          to the <code>.exe</code> not being signed. Click <strong>"More Info"</strong> &gt;
+          <strong>"Run Anyway"</strong>. This is normal for unsigned applications.
+        </p>
+        <p>
+          <a href="https://github.com/ErrorzMade/PhasOverlay" target="_blank" rel="noopener">PhasOverlay</a>
+          is open-source. You're able to verify that PhasOverlay is completely safe yourself, as
+          the full source code is on GitHub:
+          <a href="https://github.com/ErrorzMade/PhasOverlay" target="_blank" rel="noopener">PhasOverlay</a>
+          and
+          <a href="https://github.com/ErrorzMade/PhasOverlay-data" target="_blank" rel="noopener">PhasOverlay-Data</a>.
+        </p>
+      </details>
+
+      <p class="system-req">Requires Windows 10 or 11, 64-bit.</p>
+    </div>
+  </section>
+
+  <!-- ============ CREDITS / LEGAL ============ -->
+  <section id="legal">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="sec-index"><span class="num">03</span><span class="rule"></span></div>
+        <h2>Credits &amp; Legal</h2>
+        <div class="underline"></div>
+      </div>
+
+      <div class="legal-grid">
+        <div class="legal-card reveal">
+          <h3>Attribution</h3>
+          <ul>
+            <li>Ghost information is derived from the <a href="https://tybayn.github.io/phasmo-cheat-sheet/" target="_blank" rel="noopener">Phasmophobia Cheat Sheet</a>, licensed AGPLv3. PhasOverlay is licensed AGPLv3 in part to stay consistent with this upstream work.</li>
+            <li>Phasmophobia is the property of <a href="https://www.kineticgames.co.uk/" target="_blank" rel="noopener">Kinetic Games</a>. PhasOverlay is an unofficial, fan-made tool, not affiliated with, endorsed by, or associated with Kinetic Games.</li>
+          </ul>
+        </div>
+        <div class="legal-card reveal">
+          <h3>License</h3>
+          <p>PhasOverlay is licensed under the <strong>GNU Affero General Public License v3.0</strong>. The source is fully open: read it, audit it, or build it yourself.</p>
+          <p>Full text and attribution notices live in the repository:</p>
+          <ul>
+            <li><a href="https://github.com/ErrorzMade/PhasOverlay/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a></li>
+            <li><a href="https://github.com/ErrorzMade/PhasOverlay/blob/main/NOTICE.md" target="_blank" rel="noopener">NOTICE.md</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="badge-row reveal">
+        <span class="badge">AGPL-3.0 License</span>
+        <span class="badge">Windows 10/11 x64</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <a href="#top" class="footer-brand">
+          <img src="assets/logo.png" alt="PhasOverlay logo" />
+          PhasOverlay
+        </a>
+      </div>
+      <ul class="footer-links">
+        <li><a href="#features">Features</a></li>
+          <li><a href="#install">Install</a></li>
+        <li><a href="https://github.com/ErrorzMade/PhasOverlay" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="#legal">Credits &amp; Legal</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-trust">
+      <div class="trust-line">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>
+          <polyline points="9 12 11 14 15 9"/>
+        </svg>
+        <span>
+          <strong>PhasOverlay never reads from, writes to, or otherwise interacts with the
+          Phasmophobia game process.</strong> Every timer and toggle is triggered manually via
+          hotkeys.
+        </span>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 PhasOverlay. Not affiliated with Kinetic Games.</span>
+      <span>Licensed under AGPL-3.0</span>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
+  <img id="lightboxImg" alt="" />
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

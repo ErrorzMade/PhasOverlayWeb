@@ -1,0 +1,13 @@
+# Normalise line endings so Mac and Windows checkouts stay in sync
+# and diffs don't fill up with whole-file CRLF/LF churn.
+* text=auto eol=lf
+
+# Binary assets: never touch these
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.mp4 binary
+*.zip binary

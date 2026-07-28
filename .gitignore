@@ -1,0 +1,27 @@
+# Editor / tooling
+.claude/
+.vscode/
+.idea/
+
+# Local working notes: this repo is public and ships the site only
+CLAUDE.md
+NOTES.md
+TODO.md
+*.local.md
+
+# OS junk
+Thumbs.db
+ehthumbs.db
+desktop.ini
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Dependencies / build output
+node_modules/
+dist/
+build/
+
+# Logs
+*.log

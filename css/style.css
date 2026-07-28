@@ -147,15 +147,6 @@ h1, h2, h3 {
   transform: translateY(-1px);
 }
 
-.btn-disabled,
-.btn-disabled:hover {
-  background: var(--surface);
-  border-color: var(--border-strong);
-  color: var(--text-muted);
-  cursor: default;
-  transform: none;
-}
-
 .btn-secondary {
   background: var(--surface);
   border-color: var(--border-strong);

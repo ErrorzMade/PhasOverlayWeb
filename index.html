@@ -228,6 +228,7 @@ body {
 #vol-val { font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; min-width:34px; }
 #vol-test { background:none; border:0; padding:0; cursor:pointer; font:inherit; font-size:11px; color:var(--muted); }
 #vol-test:hover { color:var(--accent); text-decoration:underline; }
+#aud-state { margin-top:6px; font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; color:var(--disabled); }
 
 /* Clickable speed values: play footsteps at that speed (SpeedOptionCardTemplate). */
 .spdplay {
@@ -984,6 +985,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
           <span id="vol-val">100%</span>
           <button id="vol-test">Test</button>
         </div>
+        <div id="aud-state">tap anywhere to load audio</div>
 
         <button id="reset-timers">RESET TIMERS</button>
       </div>
@@ -1935,6 +1937,28 @@ const audioElems = {};     // fallback path: preloaded <audio> per clip
 
 /* Web Audio needs fetch(), which Firefox blocks on file:// URLs. Any clip that fails to
    decode falls back to an <audio> element, so opening the page off disk still has sound. */
+/* Safari reports the context as running and shows a tab audio indicator, but stays silent
+   until a buffer has actually been started inside the user gesture that created it. */
+function unlockContext() {
+  if (!audioCtx) return;
+  try {
+    const s = audioCtx.createBufferSource();
+    s.buffer = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+    s.connect(audioCtx.destination);
+    s.start(0);
+  } catch (_) { }
+  if (audioCtx.state !== 'running' && audioCtx.resume) audioCtx.resume();
+}
+
+/* Safari before 14.1 only implements the callback form of decodeAudioData and returns
+   undefined instead of a promise. */
+function decodeClip(bytes) {
+  return new Promise((resolve, reject) => {
+    const maybe = audioCtx.decodeAudioData(bytes, resolve, reject);
+    if (maybe && maybe.then) maybe.then(resolve, reject);
+  });
+}
+
 function initAudio() {
   if (audioStarted) return;
   audioStarted = true;
@@ -1942,15 +1966,31 @@ function initAudio() {
   try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
   catch (_) { audioCtx = null; }
 
+  unlockContext();
+
   for (const key of AUDIO_KEYS) {
     const url = AUDIO_DIR + key + '.mp3';
     if (!audioCtx) { makeAudioElement(key, url); continue; }
     fetch(url)
       .then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
-      .then(b => audioCtx.decodeAudioData(b))
-      .then(buf => { audioBuffers[key] = buf; })
-      .catch(() => makeAudioElement(key, url));
+      .then(decodeClip)
+      .then(buf => { audioBuffers[key] = buf; audioStatus(); })
+      .catch(() => { makeAudioElement(key, url); audioStatus(); });
   }
+  audioStatus();
+}
+
+/* Visible in the Timers tab so the audio path can be checked without a debugger. */
+function audioStatus() {
+  const el = document.getElementById('aud-state');
+  if (!el) return;
+  const decoded = Object.keys(audioBuffers).length;
+  const fallback = Object.keys(audioElems).length;
+  if (!audioCtx && !fallback) { el.textContent = 'no audio'; return; }
+  const path = decoded ? 'web audio ' + decoded + '/' + AUDIO_KEYS.length
+                       : fallback ? 'element ' + fallback + '/' + AUDIO_KEYS.length
+                       : 'loading';
+  el.textContent = path + (audioCtx ? ' · ' + audioCtx.state : '');
 }
 
 function makeAudioElement(key, url) {
@@ -1970,7 +2010,7 @@ function playAudio(key) {
   const volume = (key === 'alert' ? 0.75 : 1.0) * masterVolume;
 
   if (audioCtx && audioBuffers[key]) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx.state !== 'running') { unlockContext(); audioStatus(); }
     const src = audioCtx.createBufferSource();
     src.buffer = audioBuffers[key];
     const gain = audioCtx.createGain();
@@ -2379,7 +2419,7 @@ el('vol').oninput = e => {
   masterVolume = e.target.value / 100;
   el('vol-val').textContent = e.target.value + '%';
 };
-el('vol-test').onclick = () => { initAudio(); playAudio('alert'); };   // TestAudio
+el('vol-test').onclick = () => { initAudio(); unlockContext(); playAudio('alert'); audioStatus(); };   // TestAudio
 
 updateHuntLength();
 updateSpeedLabel();

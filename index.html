@@ -228,7 +228,6 @@ body {
 #vol-val { font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; min-width:34px; }
 #vol-test { background:none; border:0; padding:0; cursor:pointer; font:inherit; font-size:11px; color:var(--muted); }
 #vol-test:hover { color:var(--accent); text-decoration:underline; }
-#aud-state { margin-top:6px; font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; color:var(--disabled); }
 
 /* Clickable speed values: play footsteps at that speed (SpeedOptionCardTemplate). */
 .spdplay {
@@ -985,7 +984,6 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
           <span id="vol-val">100%</span>
           <button id="vol-test">Test</button>
         </div>
-        <div id="aud-state">tap anywhere to load audio</div>
 
         <button id="reset-timers">RESET TIMERS</button>
       </div>
@@ -1238,12 +1236,12 @@ const GRAPH_MAX_TIME = 15.0;   // fixed X axis
 const GRAPH_MAX_SPEED = 4.0;   // fixed Y axis
 
 let ghosts = loadCachedGhosts();
-let state = {};            // evidence -> 0 unset, 1 confirmed, 2 ruled out
+let state = { };            // evidence -> 0 unset, 1 confirmed, 2 ruled out
 let autoOut = new Set();   // engine-locked evidence
 let limit = 3;
 let hunt = { veryearly:false, early:false, normal:false, late:false };
 let spd  = { slow:false, normal:false, fast:false };
-let cardState = {};        // ghost name -> 0 normal, 1 marked, 2 ruled out
+let cardState = { };        // ghost name -> 0 normal, 1 marked, 2 ruled out
 let modalGhost = null;
 let ghostsTooNew = false, weeklyTooNew = false;
 let dataUnavailable = ghosts.length === 0;   // no cache and no successful fetch yet
@@ -1344,7 +1342,7 @@ function applyWeeklyToMatch(w) {
 
 function loadMatchSettings() {
   try {
-    const saved = JSON.parse(localStorage.getItem(MATCH_STORAGE_KEY) || '{}');
+    const saved = JSON.parse(localStorage.getItem(MATCH_STORAGE_KEY) || '{ }');
     match.difficulty = clampInt(saved.difficulty, 0, DIFF_CUSTOM, 1);
     match.map = clampInt(saved.map, 0, 2, 0);
     match.customTier = clampInt(saved.customTier, 0, 2, 1);
@@ -1467,7 +1465,7 @@ function run() {
 
   // Evidence box availability, including the impossible-evidence auto rule-out.
   const total = confirmed.length;
-  const avail = {};
+  const avail = { };
   for (const ev of EV) {
     if (state[ev] !== 0) { avail[ev] = true; continue; }
     let can = false;
@@ -1915,7 +1913,7 @@ syncGivenPills();
 document.getElementById('reset').onclick = () => {
   EV.forEach(e => state[e] = 0);
   autoOut.clear();
-  cardState = {};
+  cardState = { };
   Object.keys(hunt).forEach(k => hunt[k] = false);
   Object.keys(spd).forEach(k => spd[k] = false);
   document.querySelectorAll('#hunt .pill, #speed .pill').forEach(x => x.classList.remove('on'));
@@ -1932,8 +1930,8 @@ const AUDIO_KEYS = ['1','2','3','4','5','alert','curseddisabled','cursedenabled'
 let masterVolume = 1.0;
 let audioCtx = null;
 let audioStarted = false;
-const audioBuffers = {};   // Web Audio path: decoded buffer per clip
-const audioElems = {};     // fallback path: preloaded <audio> per clip
+const audioBuffers = { };   // Web Audio path: decoded buffer per clip
+const audioElems = { };     // fallback path: preloaded <audio> per clip
 
 /* Web Audio needs fetch(), which Firefox blocks on file:// URLs. Any clip that fails to
    decode falls back to an <audio> element, so opening the page off disk still has sound. */
@@ -1974,24 +1972,11 @@ function initAudio() {
     fetch(url)
       .then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
       .then(decodeClip)
-      .then(buf => { audioBuffers[key] = buf; audioStatus(); })
-      .catch(() => { makeAudioElement(key, url); audioStatus(); });
+      .then(buf => { audioBuffers[key] = buf; })
+      .catch(() => makeAudioElement(key, url));
   }
-  audioStatus();
 }
 
-/* Visible in the Timers tab so the audio path can be checked without a debugger. */
-function audioStatus() {
-  const el = document.getElementById('aud-state');
-  if (!el) return;
-  const decoded = Object.keys(audioBuffers).length;
-  const fallback = Object.keys(audioElems).length;
-  if (!audioCtx && !fallback) { el.textContent = 'no audio'; return; }
-  const path = decoded ? 'web audio ' + decoded + '/' + AUDIO_KEYS.length
-                       : fallback ? 'element ' + fallback + '/' + AUDIO_KEYS.length
-                       : 'loading';
-  el.textContent = path + (audioCtx ? ' · ' + audioCtx.state : '');
-}
 
 function makeAudioElement(key, url) {
   try {
@@ -2022,7 +2007,6 @@ function ensureAudioReady() {
       if (old.close) old.close();
     } catch (_) { }
   }
-  audioStatus();
 }
 
 document.addEventListener('pointerdown', () => { initAudio(); ensureAudioReady(); });
@@ -2444,7 +2428,7 @@ el('vol').oninput = e => {
   masterVolume = e.target.value / 100;
   el('vol-val').textContent = e.target.value + '%';
 };
-el('vol-test').onclick = () => { initAudio(); ensureAudioReady(); playAudio('alert'); audioStatus(); };   // TestAudio
+el('vol-test').onclick = () => { initAudio(); ensureAudioReady(); playAudio('alert'); };   // TestAudio
 
 updateHuntLength();
 updateSpeedLabel();

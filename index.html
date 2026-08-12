@@ -1,305 +1,2697 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PhasOverlay: A feature-rich overlay for Phasmophobia</title>
-<meta name="description" content="PhasOverlay is a manual, click-through overlay for Phasmophobia: hunt/cooldown/smudge timers, footstep-based ghost speed tracking, and a full evidence identification tracker. Never reads or writes the game process." />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PhasOverlay Web - Phasmophobia Evidence Tracker</title>
+<meta name="description" content="Browser evidence tracker for Phasmophobia. Narrow down the ghost from evidence, hunt sanity and speed, with hunt, cooldown and smudge timers and footstep speed tapping.">
+<meta name="theme-color" content="#111112">
 
-<meta property="og:title" content="PhasOverlay: A feature-rich overlay for Phasmophobia" />
-<meta property="og:description" content="Manual, click-through overlay for hunt timers, ghost speed tracking, and evidence identification. Not a cheat, just an overlay." />
-<meta property="og:image" content="assets/screenshots/evidencetracker.png" />
-<meta property="og:type" content="website" />
+<link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png">
 
-<link rel="icon" href="assets/logo.png" type="image/png" />
-<link rel="stylesheet" href="css/style.css" />
+<meta property="og:type" content="website">
+<meta property="og:title" content="PhasOverlay Web - Phasmophobia Evidence Tracker">
+<meta property="og:description" content="Narrow down the ghost from evidence, hunt sanity and speed. Hunt, cooldown and smudge timers included.">
+<meta property="og:image" content="https://phasoverlay.xyz/assets/og-image.jpg">
+<meta property="og:url" content="https://phasoverlay.xyz/">
+<link rel="canonical" href="https://phasoverlay.xyz/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* Palette lifted from App.xaml so the web build and the desktop EvidenceWindow stay literally t. */
+:root {
+  --accent:#B455FF; --danger:#FF5555;
+  --strong:#FFFFFF; --primary:#DDDDDD; --secondary:#CCCCCC;
+  --muted:#AAAAAA; --faint:#888888; --disabled:#55555A;
+  --window:#111112; --window-border:#252528;
+  --card:#1C1C1F; --hover:#2D2D30; --border:#2A2A2E; --border-strong:#3F3F46;
+  --modal:#131317;
+  /* From the site's style.css, used by the about view. */
+  --ease:cubic-bezier(.25,1,.5,1);
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; }
+body {
+  background:var(--window); color:var(--primary);
+  font:14px/1.4 "Segoe UI", Inter, system-ui, sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+
+/* The desktop equivalent is a floating window (rounded, inset, drop-shadowed). */
+#app {
+  position:absolute; inset:0;
+  background:var(--window);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+
+/* ---------------- top bar (Grid.Row 0) ---------------- */
+#topbar { display:flex; flex:none; }
+#tb-left {
+  width:300px; flex:none; padding:30px 20px 10px;
+  border-right:1px solid var(--window-border);
+}
+#tb-right { flex:1; min-width:0; padding:30px 30px 10px; }
+.title { color:var(--strong); font-size:24px; font-weight:700; }
+.underline { height:3px; border-radius:1.5px; margin-top:8px; background:linear-gradient(90deg,var(--accent),rgba(180,85,255,0)); }
+.head-row { display:flex; align-items:center; }
+#count {
+  margin-left:12px; margin-top:4px;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:3px 10px; font-size:12px; font-weight:700; color:var(--muted);
+}
+#count.one { color:var(--accent); }
+#count.none { color:var(--danger); }
+
+#match-toggle {
+  margin-left:auto; height:30px; padding:0 12px;
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--card); border:1px solid var(--border); border-radius:15px;
+  color:var(--secondary); font:inherit; font-size:11px; font-weight:700; cursor:pointer;
+  transition:background .12s, border-color .12s, color .12s;
+}
+#match-toggle:hover { background:var(--hover); border-color:var(--accent); color:var(--strong); }
+#match-toggle.on { background:var(--accent); border-color:var(--accent); color:var(--strong); }
+#match-toggle svg { width:14px; height:14px; fill:currentColor; flex:none; }
+
+/* Opens the PhasOverlay information sheet from beneath the tracker reset control. */
+#dl {
+  width:100%; height:38px; margin-top:9px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:0 14px; border:1px solid transparent; border-radius:6px;
+  background:var(--accent); color:#151515;
+  font:inherit; font-size:14px; font-weight:700; text-decoration:none; white-space:nowrap;
+  cursor:pointer;
+  transition:background .12s, box-shadow .12s;
+}
+#dl:hover { background:#C47BFF; box-shadow:0 0 14px rgba(180,85,255,.4); }
+#dl svg { width:16px; height:16px; fill:currentColor; flex:none; }
+
+/* ---------------- body (Grid.Row 1) ---------------- */
+#body { flex:1; display:flex; min-height:0; }
+
+#side {
+  width:300px; flex:none; padding:10px 20px 20px;
+  border-right:1px solid var(--window-border);
+  display:flex; flex-direction:column; overflow-y:auto;
+}
+#side-fill { flex:1; }
+
+/* ModernSwitch: 36x20 track, 14px thumb, three thumb positions. */
+/* ---- keyboard focus ---- One accent ring for every control. */
+:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  border-radius:3px;
+}
+/* These controls are now <button>; strip the UA chrome so they look unchanged. */
+.ev-row, .pill, .tmr, .gname {
+  font:inherit; color:inherit; text-align:left;
+  background:none; border:0; padding:0; margin:0;
+  -webkit-appearance:none; appearance:none;
+}
+.ev-row, .tmr { width:100%; display:block; }
+.gname { cursor:pointer; }
+
+/* Scroll padding keeps focus rings from being clipped at container edges. */
+#side, #scroll { scroll-padding:8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #modal, #about, #about-panel { animation:none !important; }
+  .tmr.urgent .tmr-val { animation:none !important; color:var(--danger); }
+  .row-shot img { transition:none !important; }
+}
+
+.ev-row {
+  display:flex; align-items:center; cursor:pointer; user-select:none;
+  margin-bottom:14px; min-height:20px;
+}
+.ev-row .track {
+  position:relative; width:36px; height:20px; flex:none;
+  border-radius:10px; background:var(--border); transition:background .12s;
+}
+.ev-row .track::after {
+  content:""; position:absolute; top:3px; left:3px;
+  width:14px; height:14px; border-radius:50%;
+  background:var(--muted); transition:left .12s, background .12s;
+}
+.ev-row:hover .track { background:var(--border-strong); }
+.ev-row .ev-label {
+  margin-left:9px; font-size:14px; font-weight:600; color:var(--strong);
+}
+/* State 1 - confirmed. */
+.ev-row[data-s="1"] .track,
+.ev-row[data-s="1"]:hover .track { background:var(--accent); }
+.ev-row[data-s="1"] .track::after { left:19px; background:#151515; }
+/* State 2 - ruled out. Thumb sits mid-track, exactly as in WPF. */
+.ev-row[data-s="2"] .track,
+.ev-row[data-s="2"]:hover .track { background:var(--danger); }
+.ev-row[data-s="2"] .track::after { left:11px; background:#fff; }
+.ev-row.off { opacity:.3; cursor:default; }
+.ev-row.off:hover .track { background:var(--border); }
+
+.sec { color:var(--strong); font-size:18px; font-weight:700; margin:15px 0 8px; }
+.spanel > .sec:first-child { margin-top:0; }
+
+/* Sidebar tabs. */
+.tabs { display:flex; gap:22px; }
+.tab {
+  background:none; border:0; padding:0 0 8px; cursor:pointer; position:relative;
+  font:inherit; font-size:24px; font-weight:700; letter-spacing:-.01em; color:var(--disabled);
+  transition:color .12s;
+}
+.tab:hover { color:var(--muted); }
+.tab.on { color:var(--strong); }
+.tab.on::after {
+  content:""; position:absolute; left:0; right:0; bottom:0; height:3px; border-radius:1.5px;
+  background:linear-gradient(90deg,var(--accent),rgba(180,85,255,0));
+}
+
+/* ---------------- timers ---------------- */
+.pills.c2 { grid-template-columns:repeat(2,1fr); }
+.pills.c5 { grid-template-columns:repeat(5,1fr); }
+
+.tmr {
+  background:var(--card); border:1px solid var(--border); border-radius:6px;
+  padding:9px 11px; margin-bottom:7px; cursor:pointer; transition:.12s;
+}
+.tmr:hover { border-color:var(--border-strong); }
+.tmr.on { border-color:var(--accent); }
+.tmr-head { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.tmr-name { font-size:13px; font-weight:700; color:var(--primary); letter-spacing:.6px; }
+.tmr.on .tmr-name { color:var(--accent); }
+.tmr-val { font-size:22px; font-weight:700; color:var(--strong); font-variant-numeric:tabular-nums; }
+.tmr-val i { font-size:11px; font-style:normal; color:var(--faint); margin-left:3px; }
+.tmr-hint { display:flex; flex-wrap:wrap; gap:10px; margin-top:3px; font-size:10px; color:var(--faint); }
+.tmr-hint b { color:var(--muted); font-weight:600; }
+/* TriggerPulse: restart this one-second red-to-dark-red fade on each displayed second. */
+.tmr-val.pulsing { animation:timerPulse 1s linear forwards; }
+@keyframes timerPulse { from { color:#FF3333; } to { color:#440000; } }
+
+.speed-box { cursor:default; }
+.speed-box.live { border-color:var(--accent); }
+.speed-box.moon .tmr-name { color:var(--danger); }
+#spd-click {
+  width:100%; margin-top:9px; height:52px; border-radius:6px; cursor:pointer;
+  background:var(--hover); border:1px solid var(--border-strong); color:var(--strong);
+  font:inherit; font-size:13px; font-weight:700; letter-spacing:.8px; transition:.08s;
+}
+#spd-click:hover { border-color:var(--accent); color:var(--accent); }
+#spd-click:active { background:var(--accent); border-color:var(--accent); color:#151515; transform:scale(.985); }
+.spd-foot { display:flex; align-items:center; justify-content:space-between; margin-top:7px; font-size:10.5px; color:var(--faint); }
+.spd-foot button { background:none; border:0; padding:0; cursor:pointer; font:inherit; font-size:10.5px; color:var(--muted); }
+.spd-foot button:hover { color:var(--accent); text-decoration:underline; }
+
+#reset-timers {
+  height:38px; margin-top:20px; width:100%;
+  background:var(--hover); border:1px solid var(--border-strong); border-radius:6px;
+  color:var(--strong); font:inherit; font-size:14px; font-weight:700;
+  cursor:pointer; transition:background .1s, border-color .1s;
+}
+#reset-timers:hover { background:#3E3E42; border-color:var(--disabled); }
+#reset-timers:active { background:#151515; }
+
+/* SetHighlightedSpeed: cards whose speed matches the measured value. */
+.gcard.hl { border-color:#FFFFFF; background:var(--border-strong); }
+
+/* Master volume, mirroring App.xaml's Slider template. */
+.vol-row { display:flex; align-items:center; gap:10px; }
+#vol { flex:1; -webkit-appearance:none; appearance:none; height:5px; border-radius:3px; background:var(--border); cursor:pointer; }
+#vol::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--strong); cursor:pointer; }
+#vol:hover::-webkit-slider-thumb { background:var(--accent); }
+#vol::-moz-range-thumb { width:16px; height:16px; border:0; border-radius:50%; background:var(--strong); cursor:pointer; }
+#vol:hover::-moz-range-thumb { background:var(--accent); }
+#vol-val { font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; min-width:34px; }
+#vol-test { background:none; border:0; padding:0; cursor:pointer; font:inherit; font-size:11px; color:var(--muted); }
+#vol-test:hover { color:var(--accent); text-decoration:underline; }
+
+/* Clickable speed values: play footsteps at that speed (SpeedOptionCardTemplate). */
+.spdplay {
+  background:none; border:0; padding:0; cursor:pointer; font:inherit;
+  font-size:inherit; font-weight:700; color:var(--accent);
+}
+.spdplay:hover { color:var(--strong); text-decoration:underline; }
+.spdplay.playing { color:var(--strong); text-decoration:underline; }
+.spdsep { color:var(--accent); font-weight:700; }
+
+#graph-play {
+  float:right; width:22px; height:22px; border-radius:11px; border:0; cursor:pointer;
+  background:var(--border); color:var(--accent); font-size:9px; line-height:1; padding:0;
+}
+#graph-play:hover { background:var(--border-strong); }
+
+/* SegmentedPill: Margin="2" between cells, CornerRadius 6. */
+.pills { display:grid; gap:4px; }
+.pills.c4 { grid-template-columns:repeat(4,1fr); }
+.pills.c3 { grid-template-columns:repeat(3,1fr); }
+.pill {
+  background:var(--card); border-radius:6px; color:var(--muted);
+  font-size:11px; font-weight:700; cursor:pointer; user-select:none;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  height:44px; text-align:center; transition:background .1s, color .1s;
+}
+.pill.short { height:32px; }
+.pill span { font-size:10px; opacity:.7; font-weight:600; margin-top:1px; }
+.pill:hover { background:var(--hover); }
+.pill.on, .pill.on:hover { background:var(--accent); color:#151515; }
+.pill.locked, .pill.locked:hover { opacity:.5; cursor:not-allowed; background:var(--card); color:var(--muted); }
+.pill.locked.on, .pill.locked.on:hover { background:var(--accent); color:#151515; }
+
+/* ModernButton */
+#reset {
+  height:38px; margin-top:25px; width:100%;
+  background:var(--hover); border:1px solid var(--border-strong); border-radius:6px;
+  color:var(--strong); font:inherit; font-size:14px; font-weight:700;
+  cursor:pointer; transition:background .1s, border-color .1s;
+}
+#reset:hover { background:#3E3E42; border-color:var(--disabled); }
+#reset:active { background:#151515; }
+
+.credit { margin-top:20px; color:var(--disabled); font-size:12px; line-height:1.5; }
+.credit a { color:var(--accent); }
+
+/* ---------------- ghosts column ---------------- */
+#right { flex:1; min-width:0; display:flex; flex-direction:column; }
+
+#stale {
+  flex:none; display:none; align-items:center; gap:10px;
+  background:rgba(255,85,85,.13); border-bottom:1px solid rgba(255,85,85,.33);
+  padding:10px 25px; font-size:12px; color:var(--primary);
+}
+#stale.show { display:flex; }
+#stale .warn { color:var(--danger); font-size:14px; font-weight:700; }
+#stale button {
+  margin-left:4px; flex:none; height:24px; padding:0 12px; display:inline-flex;
+  align-items:center; background:var(--hover); border:1px solid var(--border-strong);
+  border-radius:6px; color:var(--strong); font:inherit; font-size:10px; font-weight:700;
+  cursor:pointer;
+}
+#stale button:hover { background:#3E3E42; border-color:var(--disabled); }
+
+#matchbar {
+  flex:none; display:grid; grid-template-columns:150px 120px 110px 120px;
+  align-items:end; gap:12px; padding:12px 25px;
+  border-bottom:1px solid var(--window-border); background:transparent;
+}
+#matchbar[hidden] { display:none; }
+.match-field { min-width:0; }
+.match-field label {
+  display:block; margin:0 0 3px 2px;
+  color:var(--faint); font-size:10px; font-weight:700; letter-spacing:.02em;
+}
+.match-field select {
+  width:100%; height:32px; padding:0 28px 0 8px;
+  background:var(--card); border:1px solid var(--border-strong); border-radius:5px;
+  color:var(--primary); font:inherit; font-size:12px; cursor:pointer;
+}
+.match-field select:hover, .match-field select:focus { border-color:var(--accent); outline:none; }
+.match-field select:disabled { opacity:.5; cursor:not-allowed; border-color:var(--border); }
+.match-field option { background:var(--card); color:var(--primary); }
+
+#scroll { flex:1; overflow-y:auto; padding:10px 25px 25px; }
+/* Fixed 3 columns, matching the desktop's UniformGrid Columns="3". */
+#grid { display:grid; grid-template-columns:repeat(3,1fr); align-content:start; }
+
+/* Card: Border #1C1C1F / #2A2A2E, radius 6, padding 12, margin 5. */
+.gcard {
+  background:var(--card); border:1px solid var(--border); border-radius:6px;
+  padding:12px; margin:5px; cursor:pointer; transition:background .1s, border-color .1s;
+}
+.gcard.marked { background:var(--hover); border-color:var(--accent); }
+.gcard.marked .gname { color:var(--accent); }
+.gcard.out { opacity:.3; }
+.gcard.out .gname { text-decoration:line-through; }
+.ghead { display:flex; align-items:center; }
+.gname { color:var(--strong); font-size:16px; font-weight:700; margin-right:6px; }
+.expand {
+  margin-left:auto; background:none; border:0; padding:0 6px; cursor:pointer;
+  color:var(--faint); font:inherit; font-size:11px; font-weight:700;
+}
+.expand:hover { color:var(--accent); }
+
+.tags { display:flex; flex-wrap:wrap; margin-top:6px; }
+.tag {
+  margin:0 3px 3px 0; padding:1px 4px; border-radius:3px;
+  background:var(--border); color:var(--secondary);
+  font-size:10px; font-weight:700; border-bottom:0 solid var(--accent);
+}
+.tag.s1 { background:rgba(180,85,255,.2); color:var(--accent); }
+.tag.s2 { background:rgba(255,85,85,.2); color:var(--danger); }
+.tag.forced { border-bottom-width:2px; }
+
+.statline { display:flex; align-items:center; flex-wrap:wrap; margin-top:6px; font-size:11px; }
+/* Each span is a flex item, so the trailing space in "Speed: " is trimmed away - the gap after. */
+.statline .lbl { color:var(--muted); font-weight:600; margin-right:4px; }
+.statline .spd { color:var(--accent); font-weight:700; margin-right:12px; }
+.statline .san { color:var(--danger); font-weight:700; margin-right:12px; }
+.statline .los { color:var(--secondary); font-weight:700; }
+
+.tell {
+  margin-top:8px; color:var(--faint); font-size:11px; line-height:16px;
+  white-space:pre-line;
+}
+
+.empty {
+  grid-column:1/-1; margin:5px; padding:70px 20px; text-align:center;
+  color:var(--faint); border:1px dashed var(--border-strong); border-radius:6px;
+}
+.empty b { display:block; color:var(--danger); font-size:16px; margin-bottom:7px; }
+
+/* ---------------- ghost detail modal ---------------- */
+#overlay {
+  position:absolute; inset:0; background:rgba(0,0,0,.847);
+  display:none; align-items:center; justify-content:center; z-index:40;
+}
+#overlay.show { display:flex; }
+#modal {
+  width:1000px; max-width:calc(100% - 40px);
+  height:650px; max-height:calc(100% - 40px);
+  background:var(--modal); border:1px solid var(--border); border-radius:10px;
+  padding:30px; display:flex; flex-direction:column;
+  animation:popIn .35s cubic-bezier(.165,.84,.44,1);
+}
+#overlay.closing #modal { animation:popOut .2s cubic-bezier(.55,.06,.68,.19) forwards; }
+#overlay.closing { animation:fadeOut .2s forwards; }
+@keyframes popIn  { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:none; } }
+@keyframes popOut { from { opacity:1; transform:none; } to { opacity:0; transform:translateY(40px); } }
+@keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+
+.mhead { position:relative; margin-bottom:15px; }
+#mname { color:var(--strong); font-size:36px; font-weight:900; }
+.mrule { height:2px; margin-top:10px; background:linear-gradient(90deg,var(--accent),rgba(180,85,255,0)); }
+#mclose {
+  position:absolute; top:0; right:0; width:30px; height:30px;
+  background:none; border:0; border-radius:4px; cursor:pointer;
+  color:var(--muted); font-size:14px; font-weight:700; line-height:1;
+}
+#mclose:hover { background:#E81123; color:#fff; }
+
+.mstats { display:flex; margin-bottom:20px; flex-wrap:wrap; gap:15px; }
+.mstat {
+  background:var(--card); border:1px solid var(--border); border-radius:6px;
+  padding:10px 15px; font-size:16px; font-weight:700;
+}
+.mstat .lbl { color:var(--muted); font-weight:600; }
+.mstat .spd { color:var(--accent); }
+.mstat .san { color:var(--danger); }
+.mstat.ev {
+  font-size:14px; padding:10px 15px; color:var(--strong);
+  background:linear-gradient(#14141E,#14141E) padding-box,
+             linear-gradient(135deg,var(--accent),rgba(180,85,255,.2) 50%,rgba(0,0,0,0)) border-box;
+  border:1px solid transparent;
+}
+.mstat.ev .lbl { color:var(--accent); font-weight:700; }
+.mstat.ev u { text-decoration-color:var(--accent); text-underline-offset:2px; }
+
+.mbody { flex:1; display:flex; min-height:0; }
+#mtell {
+  flex:1; overflow-y:auto; padding-right:25px;
+  color:#E0E0E0; font-size:16px; line-height:28px; white-space:pre-wrap;
+}
+#mside {
+  width:340px; flex:none; display:flex; flex-direction:column;
+  background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px;
+}
+.side-title { color:var(--accent); font-size:13px; font-weight:700; margin-bottom:15px; }
+#mbehaviors { flex:1; overflow-y:auto; min-height:0; }
+.beh { margin-bottom:8px; }
+.beh .txt { font-size:13px; line-height:18px; color:#CCCCCC; }
+.beh .txt .dot { color:var(--accent); font-size:14px; font-weight:700; }
+.beh .txt .pfx { color:var(--accent); font-weight:600; }
+.beh button {
+  display:block; margin:6px 0 0 auto; background:none; border:0; padding:0;
+  cursor:pointer; font:inherit; font-size:12px; font-weight:600; color:#fff;
+}
+.beh button:hover { text-decoration:underline; }
+.beh button.mark { color:var(--accent); }
+.beh button.ruleout { color:var(--danger); }
+#mdivider { height:1px; background:var(--accent); opacity:.5; margin:15px 0; }
+
+#graphbox { flex:none; height:140px; display:flex; flex-direction:column; }
+#graphbox .side-title { margin-bottom:5px; }
+#plotwrap { flex:1; position:relative; }
+#plot { position:absolute; inset:5px 10px 20px 30px; }
+#plot .axes { position:absolute; inset:0; border-left:1px solid var(--border-strong); border-bottom:1px solid var(--border-strong); }
+#plot .gridline { position:absolute; left:0; right:0; border-bottom:1px solid var(--border); }
+#plot svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.axlabel { position:absolute; color:var(--disabled); font-size:10px; }
+#hoverbox {
+  position:absolute; display:none; pointer-events:none; z-index:2;
+  background:rgba(19,19,23,.95); border:1px solid var(--border-strong);
+  border-radius:4px; padding:4px 8px; white-space:nowrap;
+}
+#hoverbox .t { color:var(--muted); font-size:10px; }
+#hoverbox .s { color:var(--accent); font-size:11px; font-weight:700; margin-top:2px; }
+
+/* ================= ABOUT VIEW ================= The important parts of phasoverlay.xyz (hero. */
+/* Presented as a sheet floating over the tracker: the evidence UI stays visible but blurred and. */
+#about {
+  position:absolute; inset:0; z-index:60;
+  display:none; align-items:center; justify-content:center; padding:26px;
+  background:rgba(8,8,9,.72);
+  font-family:Inter,"Segoe UI",system-ui,sans-serif; line-height:1.6;
+  animation:aboutIn .22s var(--ease);
+}
+#about.show { display:flex; }
+@keyframes aboutIn { from { opacity:0; } to { opacity:1; } }
+
+/* No backdrop-filter: Firefox drops to ~30fps scrolling under one. Dim + vignette instead. */
+#about-backdrop {
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse 85% 75% at 50% 42%,
+    rgba(8,8,9,0) 0%, rgba(8,8,9,.45) 70%, rgba(8,8,9,.7) 100%);
+}
+
+#about-panel {
+  position:relative; z-index:1;
+  width:100%; max-width:1240px; height:100%;
+  display:flex; flex-direction:column; overflow:hidden;
+  background:var(--window);
+  border:1px solid var(--border-strong); border-radius:12px;
+  box-shadow:0 28px 90px rgba(0,0,0,.75);
+  animation:panelIn .28s var(--ease);
+}
+@keyframes panelIn { from { transform:translateY(18px) scale(.99); } to { transform:none; } }
+#about .wrap { max-width:1180px; margin:0 auto; padding:0 28px; width:100%; }
+#about h1, #about h2, #about h3 { color:var(--strong); font-weight:700; margin:0; }
+#about img { max-width:100%; display:block; }
+
+#about-nav {
+  flex:none; background:rgba(17,17,18,.94); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border); z-index:2;
+}
+#about-nav .nav-inner { display:flex; align-items:center; justify-content:space-between; height:66px; }
+#about .brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--strong); font-size:16px; }
+#about .brand img { width:30px; height:30px; border-radius:7px; }
+#about .brand-accent { color:var(--accent); }
+#about .nav-right { display:flex; align-items:center; gap:12px; }
+
+#about-scroll { flex:1; overflow-y:auto; }
+#about section { padding:92px 0; border-top:1px solid var(--border); }
+
+#about .btn {
+  display:inline-flex; align-items:center; gap:8px; padding:12px 22px; border-radius:8px;
+  font:inherit; font-size:14px; font-weight:600; text-decoration:none;
+  border:1px solid transparent; cursor:pointer;
+  transition:background .18s var(--ease), border-color .18s var(--ease),
+             color .18s var(--ease), transform .18s var(--ease);
+}
+#about .btn svg { width:16px; height:16px; fill:currentColor; flex:none; }
+#about .btn-primary { background:var(--accent); color:#14041F; }
+#about .btn-primary:hover { background:#C476FF; transform:translateY(-1px); }
+#about .btn-secondary { background:var(--card); border-color:var(--border-strong); color:var(--primary); }
+#about .btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+#about-nav .btn { padding:9px 18px; font-size:13.5px; }
+#about-close {
+  width:36px; height:36px; display:grid; place-items:center;
+  padding:0; border:0; border-radius:8px;
+  background:transparent; color:var(--muted);
+  font:inherit; font-size:18px; line-height:1; cursor:pointer;
+  transition:background .18s var(--ease), color .18s var(--ease);
+}
+#about-close:hover { background:var(--card); color:var(--strong); }
+
+.ab-hero { padding:96px 0 88px; position:relative; overflow:hidden; }
+.ab-hero::before {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(rgba(180,85,255,.055) 1px, transparent 1px);
+  background-size:22px 22px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 30% 0%, #000 0%, transparent 75%);
+  mask-image:radial-gradient(ellipse 70% 60% at 30% 0%, #000 0%, transparent 75%);
+}
+.ab-hero .wrap {
+  position:relative; z-index:1;
+  display:flex; flex-direction:column; align-items:center;
+}
+.ab-hero h1 {
+  width:100%; max-width:700px;
+  font-size:50px; line-height:1.08; letter-spacing:-.022em; text-align:center;
+}
+.ab-hero h1 .ac { color:var(--accent); }
+.ab-hero .lede {
+  width:100%; max-width:620px; margin:22px 0 0;
+  font-size:17px; color:var(--muted); line-height:1.62; text-align:center;
+}
+.hero-meta {
+  margin:16px 0 0; font-family:var(--mono); font-size:12px;
+  color:var(--faint); letter-spacing:.02em; text-align:center;
+}
+
+.section-head { margin-bottom:44px; }
+.section-head h2 { font-size:27px; letter-spacing:-.01em; }
+.sec-index { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.sec-index .num { font-family:var(--mono); font-size:11.5px; font-weight:600; color:var(--accent); letter-spacing:.08em; }
+.sec-index .rule { flex:1; height:1px; background:linear-gradient(to right, rgba(180,85,255,.28) 0%, transparent 60%); }
+.ab-underline { height:3px; width:64px; border-radius:1.5px; margin-top:10px;
+  background:linear-gradient(to right, var(--accent) 0%, transparent 100%); }
+
+.feature-rows { display:flex; flex-direction:column; gap:72px; }
+.feature-row { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:44px; align-items:center; }
+.feature-row:nth-child(even) { grid-template-columns:minmax(0,1fr) minmax(0,1.35fr); }
+.feature-row:nth-child(even) .row-shot { order:2; }
+.row-shot { border:1px solid var(--border); border-radius:16px; overflow:hidden;
+  background:#0C0C0D; box-shadow:0 0 24px rgba(0,0,0,.55); }
+.row-shot img { width:100%; height:auto; cursor:zoom-in; transition:transform .4s var(--ease); }
+.row-shot img:hover { transform:scale(1.015); }
+/* Off-screen rows aren't rendered at all until they scroll near the viewport. */
+.feature-row { content-visibility:auto; contain-intrinsic-size:auto 320px; }
+.row-copy svg { width:24px; height:24px; color:var(--accent); margin-bottom:18px; }
+.row-copy h3 { font-size:21px; margin-bottom:12px; letter-spacing:-.01em; }
+.row-copy p { color:var(--muted); font-size:15px; margin:0; line-height:1.65; }
+
+.also-head { margin:86px 0 22px; font-family:var(--mono); font-size:11px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
+.also-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+.also-grid .feat { position:relative; overflow:hidden; padding:26px 24px;
+  border:1px solid var(--border); border-radius:8px; background:var(--card);
+  transition:background .22s var(--ease); }
+.also-grid .feat::after { content:""; position:absolute; left:0; top:0; bottom:0; width:2px;
+  background:var(--accent); transform:scaleY(0); transform-origin:top; transition:transform .28s var(--ease); }
+.also-grid .feat:hover { background:#202024; }
+.also-grid .feat:hover::after { transform:scaleY(1); }
+.also-grid .feat svg { width:22px; height:22px; color:var(--accent); margin-bottom:18px; }
+.also-grid .feat h3 { font-size:15px; margin-bottom:9px; }
+.also-grid .feat p { color:var(--muted); font-size:13.8px; margin:0; line-height:1.58; }
+
+/* Bookends the hero: same 22px dot grid, plus an accent bloom rising under the button. */
+.get-box {
+  position:relative; overflow:hidden; isolation:isolate;
+  border:1px solid var(--border); border-radius:16px;
+  padding:84px 32px; text-align:center;
+  background:linear-gradient(180deg, #141417 0%, #100F12 100%);
+}
+.get-box::before {
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:radial-gradient(rgba(180,85,255,.07) 1px, transparent 1px);
+  background-size:22px 22px;
+  -webkit-mask-image:radial-gradient(ellipse 65% 75% at 50% 45%, #000 0%, transparent 72%);
+  mask-image:radial-gradient(ellipse 65% 75% at 50% 45%, #000 0%, transparent 72%);
+}
+/* Hairline of accent along the top edge, catching the light like the section rules do. */
+.get-box::after {
+  content:""; position:absolute; left:0; right:0; top:0; height:1px; z-index:-1;
+  background:linear-gradient(90deg, transparent, rgba(180,85,255,.55), transparent);
+}
+.get-title { font-size:52px; font-weight:800; line-height:1.1; letter-spacing:-.022em; }
+.get-title .p { color:var(--strong); }
+.get-title .o { color:var(--accent); }
+/* The bloom is anchored to the button, not the panel edge, so the button is the light source. */
+.get-actions { position:relative; margin-top:32px; display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+.get-actions::before {
+  content:""; position:absolute; left:50%; top:50%; z-index:-1; pointer-events:none;
+  width:620px; height:400px; transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse at center,
+    rgba(180,85,255,.30) 0%, rgba(180,85,255,.10) 40%, transparent 70%);
+}
+.get-actions .btn-primary { box-shadow:0 0 34px rgba(180,85,255,.45); }
+.get-actions .btn-primary:hover { box-shadow:0 0 46px rgba(180,85,255,.6); }
+.system-req { margin:20px 0 0; font-family:var(--mono); font-size:11.5px; color:var(--disabled); letter-spacing:.03em; }
+
+.trust-line {
+  margin-top:24px; display:flex; gap:13px; align-items:flex-start;
+  background:linear-gradient(to right, rgba(180,85,255,.12), transparent 70%);
+  border:1px solid var(--border); border-left:2px solid var(--accent);
+  border-radius:0 8px 8px 0; padding:16px 20px; color:var(--primary); font-size:14.5px;
+}
+.trust-line .icon { flex:none; width:18px; height:18px; color:var(--accent); margin-top:3px; }
+.trust-line strong { color:var(--strong); }
+
+.ab-foot { margin-top:32px; padding-top:24px; border-top:1px solid var(--border);
+  display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  font-family:var(--mono); font-size:11.5px; color:var(--faint); }
+
+.reveal { opacity:0; transform:translateY(14px); transition:opacity .52s var(--ease), transform .52s var(--ease); }
+.reveal.is-visible { opacity:1; transform:none; }
+@media (prefers-reduced-motion:reduce) { .reveal { opacity:1; transform:none; transition:none; } }
+
+#lightbox {
+  position:absolute; inset:0; z-index:90; background:rgba(8,8,9,.94); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center; padding:40px; cursor:zoom-out;
+  opacity:0; visibility:hidden; transition:opacity .24s var(--ease), visibility .24s var(--ease);
+}
+#lightbox.open { opacity:1; visibility:visible; }
+#lightbox img { max-width:100%; max-height:100%; border-radius:8px; border:1px solid var(--border-strong); }
+
+@media (max-width:940px) {
+  .ab-hero { padding:60px 0; }
+  .ab-hero h1 { font-size:36px; }
+  .feature-rows { gap:54px; }
+  .feature-row, .feature-row:nth-child(even) { grid-template-columns:1fr; gap:24px; }
+  .feature-row:nth-child(even) .row-shot { order:0; }
+  .row-copy h3 { font-size:19px; }
+}
+@media (max-width:600px) {
+  #about { padding:0; }
+  #about-panel { border:0; border-radius:0; }
+  #about section { padding:64px 0; }
+  .ab-hero h1 { font-size:30px; }
+  .get-box { padding:48px 22px; }
+  .get-actions::before { width:340px; }
+  .get-title { font-size:34px; }
+  .ab-foot { flex-direction:column; }
+}
+
+/* Dark scrollbars: Width 5, thumb #3F3F46 radius 2. */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border-strong); border-radius:2px; }
+* { scrollbar-width:thin; scrollbar-color:var(--border-strong) transparent; }
+
+/* ---- narrow layouts (phone and small windows alike) ---- The ghost modal becomes a single scr. */
+@media (max-width:1000px) {
+  #modal { height:auto; max-height:calc(100vh - 40px); overflow-y:auto; }
+  .mbody { display:block; }
+  #mtell { overflow:visible; padding-right:0; }
+  #mbehaviors { overflow:visible; }
+  #mside { width:auto; margin-top:18px; }
+  .mstats { flex-wrap:wrap; }
+  .mstat { flex:1 1 calc(50% - 8px); min-width:0; }
+  .mstat.ev { flex-basis:100%; }   /* evidence list is long; give it its own row */
+  #matchbar { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+/* ===================== MOBILE ===================== Phone layout is a different shape, not a s. */
+#m-appbar, #m-meta, #m-nav, #m-cta, .m-title, .m-rule, #m-chips, .mfact { display:none; }
+
+/* Reflow: width-based, so a zoomed or half-width desktop window still gets a usable single-colu. */
+@media (max-width:768px) {
+  html, body { height:auto; overflow:visible; }
+  #app { position:static; inset:auto; min-height:100vh; }
+  #topbar, #body { flex-direction:column; }
+  #tb-left, #side { width:100%; border-right:0; }
+  #tb-left { border-bottom:1px solid var(--window-border); }
+  #side { border-bottom:1px solid var(--window-border); overflow:visible; padding:16px 14px; }
+  #scroll { overflow:visible; padding:14px; }
+  #grid { grid-template-columns:1fr; }
+  .gcard { margin:0 0 8px; padding:14px; }
+  .tell { display:none; }
+  .mfact { display:block; margin-top:8px; color:var(--secondary); font-size:13px; line-height:1.5; }
+  #m-timergrid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  #m-timergrid .tmr { margin:0; height:100%; padding:12px; }
+  #modal { width:100%; max-width:none; border-radius:0; border:0; }
+}
+
+/* Overlays must cover the viewport, not the document. */
+@media (max-width:768px) {
+  #overlay, #about { position:fixed; }
+  #modal { height:100%; max-height:none; }
+}
+html.layer-open, html.layer-open body { overflow:hidden !important; touch-action:none; }
+
+/* Phone chrome: gated on touch input, so desktop zoom does not trigger it. */
+@media (max-width:768px) and (pointer:coarse) {
+  html, body { height:auto; overflow:visible; }
+  #app { position:static; inset:auto; min-height:100vh; padding-bottom:118px; }
+  #topbar { display:none; }
+  #body { flex-direction:column; }
+
+  /* ---- app bar ---- */
+  #m-appbar {
+    display:flex; align-items:center; gap:10px;
+    position:sticky; top:0; z-index:30;
+    padding:10px 14px; background:var(--window);
+    border-bottom:1px solid var(--border);
+  }
+  .m-brand { display:flex; align-items:center; gap:9px; flex:1; font-size:15px; font-weight:700; color:var(--strong); }
+  .m-brand img { width:26px; height:26px; border-radius:6px; }
+  #m-menu {
+    width:40px; height:40px; flex:none; border-radius:8px; cursor:pointer;
+    background:var(--card); border:1px solid var(--border-strong); color:var(--primary); font-size:15px;
+  }
+
+  /* ---- match summary: Game Settings collapsed to one tappable line ---- */
+  #m-meta {
+    display:flex; align-items:center; gap:10px; width:100%;
+    padding:9px 14px; background:none; border:0; border-bottom:1px solid var(--border);
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; color:var(--muted);
+    cursor:pointer; text-align:left;
+  }
+  #m-meta-text { flex:1; }
+  .m-meta-edit { color:var(--accent); font-weight:700; }
+
+  /* ---- screens ---- */
+  #side { width:100%; border-right:0; overflow:visible; padding:16px 14px 8px; }
+  #right { min-height:60vh; }
+  #scroll { overflow:visible; padding:14px; }
+  html[data-screen="ghosts"] #side { display:none; }
+  /* #right stays in the layout on every screen: the Game Settings sheet lives inside it, and a di. */
+  html:not([data-screen="ghosts"]) #scroll { display:none; }
+  html:not([data-screen="ghosts"]) #right { min-height:0; }
+
+  /* Screen title, matching the desktop header treatment. */
+  .m-title { display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+  .m-title h2 { font-size:26px; font-weight:700; color:var(--strong); letter-spacing:-.4px; }
+  .m-title span { margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--muted); }
+  .m-rule { height:3px; width:56px; border-radius:1.5px; margin:0 0 18px;
+            background:linear-gradient(90deg,var(--accent),rgba(180,85,255,0)); }
+
+  /* ---- evidence rows become full-width cards ---- */
+  #evlist { display:flex; flex-direction:column; gap:8px; }
+  .ev-row {
+    margin:0; min-height:56px; padding:0 14px; gap:12px;
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+  }
+  .ev-row .track { display:none; }
+  .ev-row::before {
+    content:"\2013"; width:18px; flex:none; text-align:center;
+    font-size:15px; font-weight:700; color:var(--faint);
+  }
+  .ev-row .ev-label { margin:0; flex:1; font-size:15px; }
+  /* Only the two decided states are labelled. "UNSET" was noise on every untouched row. */
+  .ev-row::after {
+    content:""; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+  }
+  .ev-row[data-s="1"] { border-color:var(--accent); background:rgba(180,85,255,.09); }
+  .ev-row[data-s="1"]::before { content:"\2713"; color:var(--accent); }
+  .ev-row[data-s="1"]::after { content:"CONFIRMED"; color:var(--accent); }
+  .ev-row[data-s="2"] { border-color:var(--danger); background:rgba(255,85,85,.09); }
+  .ev-row[data-s="2"]::before { content:"\2715"; color:var(--danger); }
+  .ev-row[data-s="2"]::after { content:"RULED OUT"; color:var(--danger); }
+  .ev-row[data-s="2"] .ev-label { color:var(--muted); }
+
+  /* Evidence Given moves into Game Settings - it's set once a match, not tapped. */
+  #panel-evidence > .sec:nth-of-type(3), #given { display:none; }
+  .sec { font-size:11px; font-family:var(--mono); letter-spacing:.1em; color:var(--faint);
+         font-weight:700; margin:22px 0 8px; }
+  .pill { height:48px; }
+  .pill.short { height:40px; }
+  #dl { display:none; }   /* the hamburger opens About instead */
+  #reset, #reset-timers { height:48px; margin-top:22px; }  /* touch-sized */
+
+  /* ---- timers: 2x2 grid, then the oversized tap target ---- */
+  #m-timergrid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+  #m-timergrid .tmr { margin:0; height:100%; padding:12px; }
+  .tmr-val { font-size:26px; }
+  .tmr-hint { font-size:9px; }
+  .speed-box { padding:16px; text-align:center; }
+  .speed-box .tmr-head { flex-direction:column; align-items:center; gap:2px; }
+  .speed-box .tmr-val { font-size:44px; }
+  #spd-click { height:64px; font-size:14px; }
+
+  /* ---- ghost cards ---- */
+  #grid { grid-template-columns:1fr; }
+  .gcard { margin:0 0 8px; padding:14px; }
+  .gname { font-size:19px; }
+  .tell { display:none; }
+  .mfact { display:block; margin-top:8px; color:var(--secondary); font-size:13px; line-height:1.5; }
+  .tags { margin-top:10px; }
+  .tag { font-size:10px; padding:3px 7px; }
+  .statline { font-size:11px; font-family:var(--mono); }
+  .expand { width:34px; height:34px; border:1px solid var(--border-strong); border-radius:8px;
+            display:flex; align-items:center; justify-content:center; }
+
+  /* Active evidence as chips: surfaces the current constraints on the Ghosts screen. */
+  #m-chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:14px; }
+  #m-chips .chip {
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; padding:5px 9px;
+    border-radius:999px; border:1px solid var(--accent); color:var(--accent);
+    background:rgba(180,85,255,.12);
+  }
+  #m-chips .chip.out { border-color:var(--danger); color:var(--danger); background:rgba(255,85,85,.12); }
+  #m-chips .edit { margin-left:auto; background:none; border:0; cursor:pointer;
+                   font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; color:var(--muted); }
+
+  /* ---- sticky CTA + bottom nav ---- */
+  #m-cta {
+    display:flex; align-items:center; gap:8px; justify-content:center;
+    position:fixed; left:12px; right:12px; bottom:70px; z-index:31;
+    height:50px; border:0; border-radius:10px; cursor:pointer;
+    background:var(--accent); color:#151515; font:inherit; font-size:14px; font-weight:700;
+    box-shadow:0 6px 22px rgba(180,85,255,.35);
+  }
+  html[data-screen="ghosts"] #m-cta, html[data-screen="timers"] #m-cta { display:none; }
+  #m-cta b { font-weight:800; }
+
+  #m-nav {
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:32;
+    background:var(--deep,#151515); border-top:1px solid var(--border);
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+  }
+  #m-nav button {
+    flex:1; background:none; border:0; cursor:pointer; padding:8px 4px; border-radius:8px;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    font:inherit; font-size:11px; font-weight:600; color:var(--faint);
+  }
+  #m-nav button i { font-family:var(--mono); font-style:normal; font-size:9px; letter-spacing:.1em; opacity:.7; }
+  #m-nav button.on { color:var(--accent); background:rgba(180,85,255,.12); }
+  #m-nav #m-nav-count {
+    position:absolute; transform:translate(26px,-6px);
+    background:var(--accent); color:#151515; border-radius:999px;
+    min-width:17px; padding:0 4px; font-size:9px; font-weight:800; line-height:17px;
+  }
+
+  /* Ghost detail fills the screen rather than floating in a scrollable box. */
+  #overlay { align-items:stretch; justify-content:stretch; }
+  #modal { width:100%; max-width:none; height:100%; max-height:none;
+           border-radius:0; border:0; padding:18px 14px 90px; }
+  #mname { font-size:30px; }
+  .mstats { gap:8px; }
+  .mstat { padding:10px; font-size:14px; text-align:center; }
+
+  /* Game Settings as a bottom sheet, above the nav. */
+  #matchbar:not([hidden]) {
+    position:fixed; left:0; right:0; z-index:33;
+    bottom:calc(60px + env(safe-area-inset-bottom));
+    grid-template-columns:1fr 1fr; gap:12px; padding:16px 14px;
+    background:#151517; border-top:1px solid var(--accent);
+    box-shadow:0 -14px 34px rgba(0,0,0,.65);
+    max-height:60vh; overflow-y:auto;
+  }
+  .match-field select { height:44px; font-size:14px; }
+  .match-field label { font-size:9.5px; font-family:var(--mono); letter-spacing:.08em; }
+}
+
+@media (max-width:1000px) and (min-width:769px) {
+  body { overflow:auto; }
+  #app { position:static; inset:auto; min-height:100vh; }
+  #topbar, #body { flex-direction:column; }
+  #tb-left, #side { width:100%; border-right:0; }
+  #tb-left { border-bottom:1px solid var(--window-border); }
+  #side { border-bottom:1px solid var(--window-border); overflow:visible; }
+  #grid { grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); }
+  #scroll { overflow:visible; }
+  #modal { height:auto; max-height:calc(100vh - 60px); overflow-y:auto; }
+  .mbody { flex-direction:column; }
+  #mside { width:100%; margin-top:20px; }
+  #matchbar { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+</style>
 </head>
 <body>
 
-<nav class="site-nav">
-  <div class="wrap">
-    <a href="#top" class="brand">
-      <img src="assets/logo.png" alt="PhasOverlay logo" />
-      PhasOverlay
-    </a>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="#features">Features</a></li>
-      <li><a href="#install">Install</a></li>
-      <li><a href="#legal">Credits &amp; Legal</a></li>
-    </ul>
-    <div class="nav-cta">
-      <a href="https://github.com/ErrorzMade/PhasOverlay" target="_blank" rel="noopener" class="btn btn-secondary">GitHub</a>
-      <a href="https://github.com/ErrorzMade/PhasOverlay/releases" target="_blank" rel="noopener" class="btn btn-primary">Download</a>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
-    </div>
-  </div>
-</nav>
+<div id="app">
 
-<main id="top">
-
-  <!-- ============ HERO ============ -->
-  <header class="hero">
-    <div class="wrap">
-      <div class="hero-top">
-        <h1>A feature-rich overlay for <span class="accent">Phasmophobia</span>.</h1>
-        <p class="lede">
-          PhasOverlay allows you to track hunt durations, cooldowns &amp; smudge timers all in one place. It also features a robust evidence tracker. It allows you to read into ghost behaviour, mark evidence as it comes in, listen to ghost speeds &amp; rule out ghosts.
-        </p>
-        <div class="hero-actions">
-          <a href="https://github.com/ErrorzMade/PhasOverlay/releases" target="_blank" rel="noopener" class="btn btn-primary">Download for Windows</a>
-          <a href="#features" class="btn btn-secondary">See what it does</a>
-        </div>
-        <p class="hero-meta">Free &amp; open source · AGPLv3</p>
-      </div>
-    </div>
+  <!-- Mobile chrome. Hidden above the breakpoint; the desktop keeps its own header. -->
+  <header id="m-appbar">
+    <span class="m-brand"><img src="assets/logo.png" alt=""> PhasOverlay</span>
+    <button id="m-menu" type="button" aria-label="About PhasOverlay">&#9776;</button>
   </header>
+  <button id="m-meta" type="button" aria-label="Match settings">
+    <span id="m-meta-text">PROFESSIONAL · MEDIUM MAP · 100% SPEED</span>
+    <span class="m-meta-edit">EDIT</span>
+  </button>
 
-  <!-- ============ FEATURES ============ -->
-  <section id="features">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div class="sec-index"><span class="num">01</span><span class="rule"></span></div>
-        <h2>Features</h2>
-        <div class="underline"></div>
-      </div>
-
-      <!--
-        Each headline feature is one row: shot on one side, copy on the other.
-        Rows alternate automatically (odd rows put the shot left, even rows right).
-
-        To add one, copy an article block and swap the image, icon, and copy.
-        Nothing else needs editing. Shots are captured at 1440p (2560x1440).
-
-        Features that do not warrant a screenshot go in the "and also" grid below.
-      -->
-      <div class="feature-rows">
-
-        <article class="feature-row reveal">
-          <div class="row-shot">
-            <img src="assets/screenshots/huntcooldownsmudge.png" alt="The overlay showing smudge, cooldown, and hunt timers side by side, with the cooldown counting down at 0:19." />
-          </div>
-          <div class="row-copy">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.8M9 2h6"/>
-            </svg>
-            <h3>Hunt, Cooldown &amp; Smudge Timers</h3>
-            <p>Track ghost hunts, cooldowns &amp; smudge timers as they happen.</p>
-          </div>
-        </article>
-
-        <article class="feature-row reveal">
-          <div class="row-shot">
-            <img src="assets/screenshots/evidencetracker.png" alt="The full overlay: evidence toggles, a possible-ghost count of 30, per-ghost detail cards, and the settings panel." />
-          </div>
-          <div class="row-copy">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="4" y="3" width="16" height="18" rx="2"/><polyline points="8 9 9.5 10.5 12.5 7.5"/><polyline points="8 16 9.5 17.5 12.5 14.5"/><path d="M15 9.5h2M15 16.5h2"/>
-            </svg>
-            <h3>Evidence Tracker</h3>
-            <p>Track evidence as it's discovered, read about ghost behaviours &amp; tap to ghosts footsteps to narrow down the list.</p>
-          </div>
-        </article>
-
-        <article class="feature-row reveal">
-          <div class="row-shot">
-            <img src="assets/screenshots/ghostspeed.png" alt="The overlay under a blood moon, showing an Obambo timer and a speed readout rescaled to 115%." />
-          </div>
-          <div class="row-copy">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none"/>
-            </svg>
-            <h3>Track Ghost Speeds</h3>
-            <p>Tap in rhythm with the ghost's footsteps to calculate its speed & narrow down the ghost list instantly.</p>
-          </div>
-        </article>
-
-        <article class="feature-row reveal">
-          <div class="row-shot">
-            <img src="assets/screenshots/modifiers.png" alt="Side by side: drawing the Death tarot card lights a cursed indicator in the overlay, and a blood moon night lights a red moon indicator." />
-          </div>
-          <div class="row-copy">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M20 13.6A8 8 0 1 1 10.4 4a6.3 6.3 0 0 0 9.6 9.6z"/><path d="M17.5 3v3.4M15.8 4.7h3.4"/>
-            </svg>
-            <h3>Cursed & Blood Moon Modifiers</h3>
-            <p>Trigger blood moon to automatically adust ghost speed calculation, or trigger the cursed hunt modifier when you trigger a cursed hunt to adjust hunt durations.</p>
-          </div>
-        </article>
-
-      </div>
-
-      <div class="also-head reveal">And also</div>
-
-      <div class="also-grid reveal">
-        <div class="feat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 7h8M17 7h3M4 17h3M12 17h8"/><circle cx="14.5" cy="7" r="2.3"/><circle cx="9.5" cy="17" r="2.3"/>
-          </svg>
-          <h3>Fully customisable UI</h3>
-          <p>Change the placement of the UI, adjust the scale &amp; opacity to your liking, adjust what modules you want enabled &amp; adjust how loud the sounds are.</p>
-        </div>
-
-        <div class="feat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/>
-          </svg>
-          <h3>Weekly challenge presets</h3>
-          <p>Weekly challenge presets that are updated weekly, so you can play the weekly without having to dig through the settings for it.</p>
-        </div>
-
-        <div class="feat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>
-          </svg>
-          <h3>Fully rebindable hotkeys</h3>
-          <p>Change any hotkey to your liking, defaults to F1 - F7 for timer functions.</p>
-        </div>
-
-        <div class="feat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 4v16h16"/><path d="M7 16c3.5 0 4-8 8-8 2.2 0 3 2.5 5 2.5"/><circle cx="12" cy="11.4" r="1.6" fill="currentColor" stroke="none"/>
-          </svg>
-          <h3>Listen to Ghost Speeds</h3>
-          <p>Listen to what the ghosts footsteps sound like to help identify them, or listen to a ghosts LOS speeduup curve.</p>
-        </div>
+  <div id="topbar">
+    <div id="tb-left">
+      <div class="tabs">
+        <button class="tab on" data-tab="evidence">Evidence</button>
+        <button class="tab" data-tab="timers">Timers</button>
       </div>
     </div>
-  </section>
-
-  <!-- ============ INSTALL ============ -->
-  <section id="install">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div class="sec-index"><span class="num">02</span><span class="rule"></span></div>
-        <h2>Installation</h2>
-        <div class="underline"></div>
-        <p>How to install PhasOverlay</p>
+    <div id="tb-right">
+      <div class="head-row">
+        <span class="title">Ghosts</span>
+        <span id="count">30 possible</span>
+        <button id="match-toggle" aria-expanded="false" aria-controls="matchbar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.49.49 0 0 0-.48-.41h-3.84a.49.49 0 0 0-.47.41l-.36 2.54a7.03 7.03 0 0 0-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94 0 .32.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+          Game Settings
+        </button>
       </div>
-
-      <div class="install-grid reveal">
-        <div class="step">
-          <div class="num">STEP 01</div>
-          <h3>Go to Releases</h3>
-          <p>Head to the <a href="https://github.com/ErrorzMade/PhasOverlay/releases/latest" target="_blank" rel="noopener">GitHub Releases</a> page and download the latest <code>.zip</code>.</p>
-        </div>
-        <div class="step">
-          <div class="num">STEP 02</div>
-          <h3>Unzip</h3>
-          <p>Extract it anywhere on your drive. No fixed install location required.</p>
-        </div>
-        <div class="step">
-          <div class="num">STEP 03</div>
-          <h3>Run it</h3>
-          <p>Launch <code>PhasOverlay.exe</code>.</p>
-        </div>
-        <div class="step">
-          <div class="num">STEP 04</div>
-          <h3>Play</h3>
-          <p>Configure the overlay to your liking and go make GHD proud!</p>
-        </div>
-      </div>
-
-      <details class="faq reveal">
-        <summary>Why did Windows SmartScreen warn me when I ran it?</summary>
-        <p>
-          Windows may show a SmartScreen warning the first time you run PhasOverlay. This is due
-          to the <code>.exe</code> not being signed. Click <strong>"More Info"</strong> &gt;
-          <strong>"Run Anyway"</strong>. This is normal for unsigned applications.
-        </p>
-        <p>
-          <a href="https://github.com/ErrorzMade/PhasOverlay" target="_blank" rel="noopener">PhasOverlay</a>
-          is open-source. You're able to verify that PhasOverlay is completely safe yourself, as
-          the full source code is on GitHub:
-          <a href="https://github.com/ErrorzMade/PhasOverlay" target="_blank" rel="noopener">PhasOverlay</a>
-          and
-          <a href="https://github.com/ErrorzMade/PhasOverlay-data" target="_blank" rel="noopener">PhasOverlay-Data</a>.
-        </p>
-      </details>
-
-      <p class="system-req">Requires Windows 10 or 11, 64-bit.</p>
-    </div>
-  </section>
-
-  <!-- ============ CREDITS / LEGAL ============ -->
-  <section id="legal">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div class="sec-index"><span class="num">03</span><span class="rule"></span></div>
-        <h2>Credits &amp; Legal</h2>
-        <div class="underline"></div>
-      </div>
-
-      <div class="legal-grid">
-        <div class="legal-card reveal">
-          <h3>Attribution</h3>
-          <ul>
-            <li>Ghost information is derived from the <a href="https://tybayn.github.io/phasmo-cheat-sheet/" target="_blank" rel="noopener">Phasmophobia Cheat Sheet</a>, licensed AGPLv3. PhasOverlay is licensed AGPLv3 in part to stay consistent with this upstream work.</li>
-            <li>Phasmophobia is the property of <a href="https://www.kineticgames.co.uk/" target="_blank" rel="noopener">Kinetic Games</a>. PhasOverlay is an unofficial, fan-made tool, not affiliated with, endorsed by, or associated with Kinetic Games.</li>
-          </ul>
-        </div>
-        <div class="legal-card reveal">
-          <h3>License</h3>
-          <p>PhasOverlay is licensed under the <strong>GNU Affero General Public License v3.0</strong>. The source is fully open: read it, audit it, or build it yourself.</p>
-          <p>Full text and attribution notices live in the repository:</p>
-          <ul>
-            <li><a href="https://github.com/ErrorzMade/PhasOverlay/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a></li>
-            <li><a href="https://github.com/ErrorzMade/PhasOverlay/blob/main/NOTICE.md" target="_blank" rel="noopener">NOTICE.md</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="badge-row reveal">
-        <span class="badge">AGPL-3.0 License</span>
-        <span class="badge">Windows 10/11 x64</span>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <div class="wrap">
-    <div class="footer-top">
-      <div>
-        <a href="#top" class="footer-brand">
-          <img src="assets/logo.png" alt="PhasOverlay logo" />
-          PhasOverlay
-        </a>
-      </div>
-      <ul class="footer-links">
-        <li><a href="#features">Features</a></li>
-          <li><a href="#install">Install</a></li>
-        <li><a href="https://github.com/ErrorzMade/PhasOverlay" target="_blank" rel="noopener">GitHub</a></li>
-        <li><a href="#legal">Credits &amp; Legal</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-trust">
-      <div class="trust-line">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>
-          <polyline points="9 12 11 14 15 9"/>
-        </svg>
-        <span>
-          <strong>PhasOverlay never reads from, writes to, or otherwise interacts with the
-          Phasmophobia game process.</strong> Every timer and toggle is triggered manually via
-          hotkeys.
-        </span>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <span>© 2026 PhasOverlay. Not affiliated with Kinetic Games.</span>
-      <span>Licensed under AGPL-3.0</span>
+      <div class="underline" style="width:54px"></div>
     </div>
   </div>
-</footer>
 
-<div class="lightbox" id="lightbox">
-  <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
-  <img id="lightboxImg" alt="" />
+  <div id="body">
+    <aside id="side">
+      <div class="spanel" id="panel-evidence">
+        <div class="m-title"><h2>Evidence</h2><span id="m-ev-count">30 possible</span></div>
+        <div class="m-rule"></div>
+        <div id="evlist"></div>
+
+        <div class="sec">Hunt</div>
+        <div class="pills c4" id="hunt"></div>
+
+        <div class="sec">Speed</div>
+        <div class="pills c3" id="speed"></div>
+
+        <div class="sec">Evidence Given</div>
+        <div class="pills c4" id="given"></div>
+
+        <button id="reset">RESET TRACKER</button>
+        <button id="dl" title="Get PhasOverlay">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4h-2v7H7.5l4.5 5 4.5-5H13V4zM5 18h14v2H5z"/></svg>
+          PhasOverlay
+        </button>
+      </div>
+
+      <!-- Order matches the overlay's module strip: smudge, cooldown, hunt, obambo, speed. -->
+      <div class="spanel" id="panel-timers" hidden>
+        <div class="m-title"><h2>Timers</h2></div>
+        <div class="m-rule"></div>
+        <div id="m-timergrid">
+<button type="button" class="tmr" data-t="smudge" aria-pressed="false" aria-label="Smudge timer">
+          <div class="tmr-head"><span class="tmr-name">SMUDGE</span><span class="tmr-val">0:00</span></div>
+          <div class="tmr-hint"><span>Demon <b>2:00</b></span><span>Standard <b>1:30</b></span><span>Spirit <b>0:00</b></span></div>
+        </button>
+
+        <button type="button" class="tmr" data-t="cooldown" aria-pressed="false" aria-label="Cooldown timer">
+          <div class="tmr-head"><span class="tmr-name">COOLDOWN</span><span class="tmr-val">0:00</span></div>
+          <div class="tmr-hint"><span>Demon <b>0:05</b></span><span>Standard <b>0:00</b></span></div>
+        </button>
+
+        <button type="button" class="tmr" data-t="hunt" aria-pressed="false" aria-label="Hunt timer">
+          <div class="tmr-head"><span class="tmr-name">HUNT</span><span class="tmr-val">0:00</span></div>
+          <div class="tmr-hint"><span id="hunt-len">Length <b>0:30</b></span></div>
+        </button>
+
+        <button type="button" class="tmr" data-t="obambo" aria-pressed="false" aria-label="Obambo timer">
+          <div class="tmr-head"><span class="tmr-name">OBAMBO</span><span class="tmr-val">0:00</span></div>
+          <div class="tmr-hint"><span id="obambo-state">Calm <b>1.45m/s</b> · shifts at 1:00</span></div>
+        </button>
+        </div>
+
+        <div class="sec">Speed</div>
+        <div class="tmr speed-box">
+          <div class="tmr-head"><span class="tmr-name" id="spd-label">SPEED (100%)</span>
+            <span class="tmr-val"><span id="spd-val">-</span><i>m/s</i></span></div>
+          <button id="spd-click">CLICK WITH FOOTSTEPS</button>
+          <div class="spd-foot"><span id="spd-taps">0 clicks</span><button id="spd-reset">Reset speed</button></div>
+        </div>
+
+        <div class="sec">Modifiers</div>
+        <div class="pills c2" id="mods">
+          <button type="button" class="pill" id="mod-moon" aria-pressed="false"><div>Blood Moon</div><span>+15% speed</span></button>
+          <button type="button" class="pill" id="mod-cursed" aria-pressed="false"><div>Cursed Hunt</div><span>+20s hunt</span></button>
+        </div>
+
+        <div class="sec">Volume</div>
+        <div class="vol-row">
+          <input id="vol" type="range" min="0" max="100" value="100" aria-label="Master volume">
+          <span id="vol-val">100%</span>
+          <button id="vol-test">Test</button>
+        </div>
+
+        <button id="reset-timers">RESET TIMERS</button>
+      </div>
+
+      <div id="side-fill"></div>
+      <p class="credit">
+        Credit to <a href="https://tybayn.github.io/phasmo-cheat-sheet/" target="_blank"
+        rel="noopener">tybayn.github.io/phasmo-cheat-sheet/</a> for some of the ghost data.
+      </p>
+    </aside>
+
+    <section id="right">
+      <div id="stale">
+        <span class="warn">&#9888;</span>
+        <span id="stale-text"></span>
+        <button type="button">RELOAD</button>
+      </div>
+      <div id="matchbar" hidden>
+        <div class="match-field">
+          <label for="ctx-difficulty">DIFFICULTY</label>
+          <select id="ctx-difficulty">
+            <option value="0">Amateur</option>
+            <option value="1">Intermediate</option>
+            <option value="2">Professional</option>
+            <option value="3">Nightmare</option>
+            <option value="4">Insanity</option>
+            <option id="weekly-option" value="5" hidden>Weekly</option>
+            <option value="6">Custom</option>
+          </select>
+        </div>
+        <div class="match-field">
+          <label for="ctx-map">MAP SIZE</label>
+          <select id="ctx-map">
+            <option value="0">Small</option>
+            <option value="1">Medium</option>
+            <option value="2">Large</option>
+          </select>
+        </div>
+        <div class="match-field">
+          <label for="ctx-hunt">HUNT</label>
+          <select id="ctx-hunt">
+            <option value="0">Low</option>
+            <option value="1">Med</option>
+            <option value="2">High</option>
+          </select>
+        </div>
+        <div class="match-field">
+          <label for="ctx-speed">GHOST SPEED</label>
+          <select id="ctx-speed">
+            <option value="0">50%</option>
+            <option value="1">75%</option>
+            <option value="2">100%</option>
+            <option value="3">125%</option>
+            <option value="4">150%</option>
+          </select>
+        </div>
+      </div>
+      <div id="scroll">
+        <div class="m-title"><h2>Ghosts</h2><span id="m-gh-count">30 possible</span></div>
+        <div class="m-rule"></div>
+        <div id="m-chips"></div>
+        <div id="grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <button id="m-cta" type="button">View <b>30</b> possible ghosts <span>&rarr;</span></button>
+
+  <nav id="m-nav" aria-label="Sections">
+    <button type="button" data-screen="evidence" class="on"><i>01</i>Evidence</button>
+    <button type="button" data-screen="ghosts"><i>02</i>Ghosts<span id="m-nav-count">30</span></button>
+    <button type="button" data-screen="timers"><i>03</i>Timers</button>
+  </nav>
+
+  <!-- ============ ABOUT: the phasoverlay.xyz landing page, in-app ============ -->
+  <div id="about" aria-hidden="true">
+   <div id="about-backdrop"></div>
+   <div id="about-panel">
+    <div id="about-nav">
+      <div class="wrap nav-inner">
+        <span class="brand">
+          <img src="assets/logo.png" alt="">
+          <span>Phas<span class="brand-accent">Overlay</span></span>
+        </span>
+        <div class="nav-right">
+          <a class="btn btn-primary" href="https://github.com/ErrorzMade/PhasOverlay/releases/latest"
+             target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4h-2v7H7.5l4.5 5 4.5-5H13V4zM5 18h14v2H5z"/></svg>
+            Download
+          </a>
+          <button id="about-close" aria-label="Close" title="Close">&#10005;</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="about-scroll">
+      <header class="ab-hero">
+        <div class="wrap">
+          <h1>A feature-rich overlay for <span class="ac">Phasmophobia</span>.</h1>
+          <p class="lede">
+            PhasOverlay allows you to track hunt durations, cooldowns &amp; smudge timers all in one
+            place. It also features a robust evidence tracker. It allows you to read into ghost
+            behaviour, mark evidence as it comes in, listen to ghost speeds &amp; rule out ghosts.
+          </p>
+          <p class="hero-meta">Free &amp; open source · AGPLv3</p>
+        </div>
+      </header>
+
+      <section>
+        <div class="wrap">
+          <div class="section-head reveal">
+            <div class="sec-index"><span class="num">01</span><span class="rule"></span></div>
+            <h2>Features</h2>
+            <div class="ab-underline"></div>
+          </div>
+
+          <div class="feature-rows" id="feature-rows"></div>
+
+          <div class="also-head reveal">And also</div>
+          <div class="also-grid reveal" id="also-grid"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <div class="get-box reveal">
+            <h2 class="get-title"><span class="p">Get Phas</span><span class="o">Overlay</span></h2>
+            <div class="get-actions">
+              <a class="btn btn-primary" href="https://github.com/ErrorzMade/PhasOverlay/releases/latest"
+                 target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4h-2v7H7.5l4.5 5 4.5-5H13V4zM5 18h14v2H5z"/></svg>
+                Download for Windows
+              </a>
+            </div>
+            <p class="system-req">Requires Windows 10 or 11, 64-bit.</p>
+          </div>
+
+          <div class="trust-line reveal">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><polyline points="9 12 11 14 15 9"/>
+            </svg>
+            <span>
+              <strong>PhasOverlay never reads from, writes to, or otherwise interacts with the
+              Phasmophobia game process.</strong> Every timer and toggle is triggered manually via hotkeys.
+            </span>
+          </div>
+
+          <div class="ab-foot">
+            <span>© 2026 PhasOverlay. Not affiliated with Kinetic Games.</span>
+            <span>Licensed under AGPL-3.0</span>
+          </div>
+        </div>
+      </section>
+    </div>
+   </div>
+
+    <div id="lightbox"><img id="lightbox-img" alt=""></div>
+  </div>
+
+  <div id="overlay">
+    <div id="modal">
+      <div class="mhead">
+        <div id="mname">Ghost Name</div>
+        <div class="mrule"></div>
+        <button id="mclose" title="Close ghost information">&#10005;</button>
+      </div>
+
+      <div class="mstats">
+        <div class="mstat"><span class="lbl">Speed: </span><span class="spd" id="mspeed">-</span></div>
+        <div class="mstat"><span class="lbl">Sanity: </span><span class="san" id="msanity">-</span></div>
+        <div class="mstat ev"><span class="lbl">Evidence: </span><span id="mevidence"></span></div>
+      </div>
+
+      <div class="mbody">
+        <div id="mtell"></div>
+        <div id="mside">
+          <div class="side-title" id="mbehtitle">BEHAVIOURS</div>
+          <div id="mbehaviors"></div>
+          <div id="mdivider"></div>
+          <div id="graphbox">
+            <div class="side-title">LOS SPEEDUP
+              <button id="graph-play" title="Hear the speed ramp. Footsteps accelerate along the curve">&#9654;</button>
+            </div>
+            <div id="plotwrap">
+              <span class="axlabel" style="left:0;top:3px">4 m/s</span>
+              <span class="axlabel" style="left:0;bottom:14px">0 m/s</span>
+              <span class="axlabel" style="left:30px;bottom:0">0s</span>
+              <span class="axlabel" style="right:0;bottom:0">15s</span>
+              <div id="plot">
+                <div class="axes"></div>
+                <div class="gridline" style="top:25%"></div>
+                <div class="gridline" style="top:50%"></div>
+                <div class="gridline" style="top:75%"></div>
+                <svg id="graph" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="fillgrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0"   stop-color="#B455FF" stop-opacity=".35"/>
+                      <stop offset=".7"  stop-color="#B455FF" stop-opacity=".08"/>
+                      <stop offset="1"   stop-color="#B455FF" stop-opacity="0"/>
+                    </linearGradient>
+                    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#B455FF" flood-opacity=".5"/>
+                    </filter>
+                  </defs>
+                  <polygon id="gfill" fill="url(#fillgrad)"></polygon>
+                  <polyline id="gcurve" fill="none" stroke="#B455FF" stroke-width="3"
+                            stroke-linejoin="round" stroke-linecap="round" filter="url(#glow)"></polyline>
+                  <line id="gline" stroke="#fff" stroke-width="1" stroke-dasharray="2,2" style="display:none"></line>
+                  <circle id="gend" r="4.5" fill="#B455FF" stroke="#fff" stroke-width="1.5"></circle>
+                  <circle id="gdot" r="4" fill="#fff" style="display:none"></circle>
+                </svg>
+                <div id="hoverbox"><div class="t"></div><div class="s"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<script src="js/main.js"></script>
+<script>
+/* PhasOverlay-data is the single source of truth for ghost and weekly data. */
+
+const GHOSTS_URL = 'https://raw.githubusercontent.com/ErrorzMade/PhasOverlay-data/main/ghosts.json';
+const MAX_SCHEMA = 1;   // GhostDataService.MaxSupportedSchema
+const WEEKLY_URL = 'https://raw.githubusercontent.com/ErrorzMade/PhasOverlay-data/main/weekly.json';
+const MAX_WEEKLY_SCHEMA = 1;   // WeeklyDataService.MaxSupportedSchema
+const MATCH_STORAGE_KEY = 'phasoverlay-match-settings-v1';
+const WEEKLY_STORAGE_KEY = 'phasoverlay-weekly-v1';
+const GHOSTS_STORAGE_KEY = 'phasoverlay-ghosts-v1';
+const DIFF_WEEKLY = 5, DIFF_CUSTOM = 6;
+const SPEED_MULTS = [0.5, 0.75, 1.0, 1.25, 1.5];
+
+const EV = ['EMF Level 5','D.O.T.S Projector','Ultraviolet','Freezing Temperatures',
+            'Ghost Orb','Ghost Writing','Spirit Box'];
+const SHORT = {
+  'EMF Level 5':'EMF', 'D.O.T.S Projector':'DOTS', 'Ultraviolet':'UV',
+  'Freezing Temperatures':'FREEZING', 'Ghost Orb':'ORBS',
+  'Ghost Writing':'WRITING', 'Spirit Box':'SPIRIT BOX'
+};
+const MIMIC_EV = ['Spirit Box','Ultraviolet','Freezing Temperatures','Ghost Orb'];
+
+// GhostData.LosTooltip default, overridden per-ghost by the optional losTooltip field.
+const LOS_TOOLTIP = 'LOS speedup is when a ghost gradually speeds up as it has continuous line of sight of you.';
+
+const GRAPH_MAX_TIME = 15.0;   // fixed X axis
+const GRAPH_MAX_SPEED = 4.0;   // fixed Y axis
+
+let ghosts = loadCachedGhosts();
+let state = {};            // evidence -> 0 unset, 1 confirmed, 2 ruled out
+let autoOut = new Set();   // engine-locked evidence
+let limit = 3;
+let hunt = { veryearly:false, early:false, normal:false, late:false };
+let spd  = { slow:false, normal:false, fast:false };
+let cardState = {};        // ghost name -> 0 normal, 1 marked, 2 ruled out
+let modalGhost = null;
+let ghostsTooNew = false, weeklyTooNew = false;
+let dataUnavailable = ghosts.length === 0;   // no cache and no successful fetch yet
+let weeklyData = loadCachedWeekly();
+let match = { difficulty:1, map:0, customTier:1, speedIndex:2 };
+
+EV.forEach(e => state[e] = 0);
+loadMatchSettings();
+
+function clampInt(value, min, max, fallback) {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= min && n <= max ? n : fallback;
+}
+
+function weekStartUtc(date) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+  return d;
+}
+
+// WeeklyDataService.Parse, including its strict required fields and UTC Monday boundary.
+function parseWeekly(raw) {
+  try {
+    const dto = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!dto || typeof dto !== 'object') return null;
+    if ((dto.schemaVersion || 1) > MAX_WEEKLY_SCHEMA) {
+      weeklyTooNew = true;
+      return null;
+    }
+
+    if (typeof dto.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dto.date)) return null;
+    const parts = dto.date.split('-').map(Number);
+    const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+    if (date.getUTCFullYear() !== parts[0] || date.getUTCMonth() !== parts[1] - 1
+        || date.getUTCDate() !== parts[2]) return null;
+
+    const evidence = Number(dto.evidenceGiven);
+    if (!Number.isInteger(evidence) || evidence < 0 || evidence > 3) return null;
+
+    const friendly = dto.friendlyGhost === true;
+    let speedIndex = 2, map = 0, huntTier = 0;
+    if (!friendly) {
+      speedIndex = SPEED_MULTS.findIndex(v => Math.abs(v - Number(dto.ghostSpeed)) < 0.001);
+      map = ['small','medium','large'].indexOf(String(dto.mapSize || '').trim().toLowerCase());
+      const huntValue = String(dto.huntDuration || '').trim().toLowerCase();
+      huntTier = huntValue === 'low' ? 0 : ((huntValue === 'medium' || huntValue === 'med') ? 1
+        : (huntValue === 'high' ? 2 : -1));
+      if (speedIndex < 0 || map < 0 || huntTier < 0) return null;
+    }
+
+    const outdated = weekStartUtc(date) < weekStartUtc(new Date());
+    const dd = String(date.getUTCDate()).padStart(2, '0');
+    const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const yy = String(date.getUTCFullYear()).slice(-2);
+    const title = typeof dto.title === 'string' && dto.title.trim()
+      ? dto.title.trim() : "This week's challenge";
+
+    return {
+      date:dto.date, label:'Weekly (' + dd + '/' + mm + '/' + yy + (outdated ? ', outdated' : '') + ')',
+      title:title + (friendly ? '\nFriendly ghost, no hunts this week.' : ''),
+      friendly:friendly, evidence:evidence, speedIndex:speedIndex, map:map,
+      huntTier:huntTier, outdated:outdated
+    };
+  } catch (_) { return null; }
+}
+
+function loadCachedWeekly() {
+  try {
+    const raw = localStorage.getItem(WEEKLY_STORAGE_KEY);
+    return raw ? parseWeekly(raw) : null;
+  } catch (_) { return null; }
+}
+
+/* Ghost data cache. */
+function parseGhosts(json) {
+  try {
+    const file = typeof json === 'string' ? JSON.parse(json) : json;
+    if (!file || !Array.isArray(file.ghosts) || !file.ghosts.length) return null;
+    if ((file.schemaVersion || 1) > MAX_SCHEMA) { ghostsTooNew = true; return null; }
+    return file;
+  } catch (_) { return null; }
+}
+
+function loadCachedGhosts() {
+  try {
+    const file = parseGhosts(localStorage.getItem(GHOSTS_STORAGE_KEY) || '');
+    return file ? mapAll(file.ghosts) : [];
+  } catch (_) { return []; }
+}
+
+function applyWeeklyToMatch(w) {
+  if (!w) return;
+  match.difficulty = DIFF_WEEKLY;
+  match.map = w.map;
+  match.speedIndex = w.speedIndex;
+  limit = w.evidence;
+}
+
+function loadMatchSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(MATCH_STORAGE_KEY) || '{}');
+    match.difficulty = clampInt(saved.difficulty, 0, DIFF_CUSTOM, 1);
+    match.map = clampInt(saved.map, 0, 2, 0);
+    match.customTier = clampInt(saved.customTier, 0, 2, 1);
+    match.speedIndex = clampInt(saved.speedIndex, 0, 4, 2);
+    limit = clampInt(saved.evidenceLimit, 0, 3, 3);
+  } catch (_) { /* storage is optional */ }
+
+  if (match.difficulty === DIFF_WEEKLY) {
+    if (weeklyData) applyWeeklyToMatch(weeklyData);
+    else match.difficulty = 4;
+  } else if (match.difficulty !== DIFF_CUSTOM) {
+    match.speedIndex = 2;
+  }
+}
+
+function saveMatchSettings() {
+  try {
+    localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify({
+      difficulty:match.difficulty, map:match.map, customTier:match.customTier,
+      speedIndex:match.speedIndex, evidenceLimit:limit
+    }));
+  } catch (_) { /* storage is optional */ }
+}
+
+// ParseSpeeds: "Varies" | "1.7" | "1.2 / 2.25" | "0.4 - 3.0" -> the numeric values in it.
+function parseSpeeds(raw) {
+  if (raw === 'Varies') return { varies: true, values: [] };
+  const sep = raw.indexOf(' - ') >= 0 ? ' - ' : (raw.indexOf(' / ') >= 0 ? ' / ' : null);
+  const parts = sep ? raw.split(sep) : [raw];
+  return { varies: false, values: parts.map(parseFloat).filter(n => !isNaN(n)) };
+}
+
+function mapAll(list) {
+  return (list || []).map(g => ({
+    name: g.name || '',
+    shortFact: g.shortFact || '',
+    speed: g.speed || '',
+    speeds: parseSpeeds(g.speed || ''),
+    sanity: g.sanity || '',
+    losSpeedup: g.losSpeedup || 'Yes',
+    losTooltip: g.losTooltip || LOS_TOOLTIP,
+    evidence: g.evidence || [],
+    forced: g.forcedEvidence || '',
+    canBe: g.canBe || [],
+    canHunt: g.canHunt || [],
+    tell: g.tell || '',
+    behaviors: g.behaviors || [],
+    graph: {
+      base: (g.speedGraph && g.speedGraph.base) || 1.7,
+      max:  (g.speedGraph && g.speedGraph.max)  || 2.805,
+      timeToMax: (g.speedGraph && g.speedGraph.timeToMax) || 13.0
+    }
+  }));
+}
+
+/* ---------------- engine, ported from EvidenceWindow.xaml.cs ---------------- */
+
+function passes(g, confirmed, ruledOut, f) {
+  for (const ev of confirmed) if (g.evidence.indexOf(ev) < 0) return false;
+
+  for (const ev of ruledOut) {
+    if (limit === 3) { if (g.evidence.indexOf(ev) >= 0) return false; }
+    else { if (g.forced === ev) return false; }
+  }
+
+  let n = confirmed.length;
+  if (g.name === 'The Mimic' && confirmed.indexOf('Ghost Orb') >= 0) n--;
+  if (n > limit) return false;
+
+  if (limit > 0 && limit < 3 && g.forced && g.name !== 'The Mimic') {
+    if (n >= limit && confirmed.indexOf(g.forced) < 0) return false;
+  }
+
+  if (f.speed) {
+    let ok = false;
+    if (f.slow   && g.canBe.indexOf('slow')   >= 0) ok = true;
+    if (f.normal && g.canBe.indexOf('normal') >= 0) ok = true;
+    if (f.fast   && g.canBe.indexOf('fast')   >= 0) ok = true;
+    if (!ok) return false;
+  }
+
+  if (f.hunt) {
+    let ok = false;
+    for (const k of ['veryearly','early','normal','late'])
+      if (f[k] && g.canHunt.indexOf(k) >= 0) ok = true;
+    if (!ok) return false;
+  }
+  return true;
+}
+
+function anyPossibleWith(ev, confirmed, ruledOut, f) {
+  const test = confirmed.concat([ev]);
+  for (const g of ghosts) if (passes(g, test, ruledOut, f)) return true;
+  return false;
+}
+
+function run() {
+  // Recomputed from scratch each pass so releasing a constraint unlocks boxes again.
+  autoOut.forEach(e => { state[e] = 0; });
+  autoOut.clear();
+
+  const confirmed = EV.filter(e => state[e] === 1);
+  const ruledOut  = EV.filter(e => state[e] === 2);
+
+  const f = {
+    speed: spd.slow || spd.normal || spd.fast,
+    slow: spd.slow, normal: spd.normal, fast: spd.fast,
+    hunt: hunt.veryearly || hunt.early || hunt.normal || hunt.late,
+    veryearly: hunt.veryearly, early: hunt.early, normal: hunt.normal, late: hunt.late
+  };
+
+  let visible = [], mimicValid = false;
+  for (const g of ghosts) {
+    if (!passes(g, confirmed, ruledOut, f)) continue;
+    if (g.name === 'The Mimic') mimicValid = true;
+    visible.push(g);
+  }
+
+  const lineLimit = visible.length <= 3 ? 10 : (visible.length <= 6 ? 4 : 2);
+
+  // Evidence box availability, including the impossible-evidence auto rule-out.
+  const total = confirmed.length;
+  const avail = {};
+  for (const ev of EV) {
+    if (state[ev] !== 0) { avail[ev] = true; continue; }
+    let can = false;
+    if (total < limit) can = true;
+    else if (total === limit) {
+      const isMimicEv = MIMIC_EV.indexOf(ev) >= 0;
+      const willOrb = confirmed.indexOf('Ghost Orb') >= 0 || ev === 'Ghost Orb';
+      if (mimicValid && isMimicEv && willOrb) can = true;
+    }
+    // Only at 3. Below that a ghost hides evidence, so locking would wrongly eliminate ghosts.
+    // Also requires a loaded ghost list: with none, every check trivially fails and the whole
+    // evidence panel would rule itself out before the data has even arrived.
+    if (can && limit === 3 && ghosts.length && !anyPossibleWith(ev, confirmed, ruledOut, f)) {
+      state[ev] = 2;
+      autoOut.add(ev);
+      can = false;
+    }
+    avail[ev] = can;
+  }
+
+  draw(visible, avail, lineLimit, confirmed, ruledOut);
+}
+
+/* ---------------- rendering ---------------- */
+
+// TruncatedTell: the first N bullet lines, joined by a blank line.
+function truncatedTell(g, lineLimit) {
+  if (!g.tell.trim()) return '';
+  const lines = g.tell.split('\n');
+  const out = [];
+  for (const line of lines) {
+    if (line.trim().indexOf('•') === 0) {
+      out.push(line.trim());
+      if (out.length === lineLimit) break;
+    }
+  }
+  return out.length ? out.join('\n\n') : (lines[0] || g.tell);
+}
+
+function draw(visible, avail, lineLimit, confirmed, ruledOut) {
+  EV.forEach(ev => {
+    const row = document.querySelector('[data-ev="' + CSS.escape(ev) + '"]');
+    const locked = state[ev] === 0 && !avail[ev];
+    row.dataset.s = state[ev];
+    row.classList.toggle('off', locked);
+    row.setAttribute('aria-label', ev + ': ' + EV_STATE_WORD[state[ev]]
+      + (locked ? ' (unavailable)' : ''));
+    // aria-disabled rather than disabled: the button stays focusable so a screen reader
+    // user can still read why it's locked.
+    row.setAttribute('aria-disabled', locked ? 'true' : 'false');
+  });
+
+  // Manually ruled-out ghosts still render (struck through) but leave the count.
+  const possible = visible.filter(g => (cardState[g.name] || 0) !== 2).length;
+  const c = document.getElementById('count');
+  c.textContent = possible === 0 ? 'no matches' : possible === 1 ? '1 possible' : possible + ' possible';
+  c.className = possible === 0 ? 'none' : possible === 1 ? 'one' : '';
+
+  if (typeof syncMobileChrome === 'function') syncMobileChrome(possible, confirmed, ruledOut);
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  if (!visible.length) {
+    // An empty ghost list is a data problem, not a filtering result - say so, or the
+    // tracker looks like it decided nothing is possible.
+    grid.innerHTML = ghosts.length === 0
+      ? '<div class="empty"><b>' + (dataUnavailable ? 'No ghost data' : 'Loading ghost data') + '</b>' +
+        (dataUnavailable
+          ? 'Ghost data comes from PhasOverlay-data and could not be reached.'
+          : 'Fetching the latest ghosts.json…') + '</div>'
+      : '<div class="empty"><b>No ghost matches</b>' +
+        'Nothing fits that combination. Clear a filter to widen the search.</div>';
+    return;
+  }
+
+  const showForced = limit <= 2;
+
+  for (const g of visible) {
+    const cs = cardState[g.name] || 0;
+    const card = document.createElement('div');
+    card.className = 'gcard' + (cs === 1 ? ' marked' : '') + (cs === 2 ? ' out' : '')
+                   + (matchesMeasuredSpeed(g) ? ' hl' : '');
+
+    const tags = g.evidence
+      .filter(e => !(g.name === 'The Mimic' && e === 'Ghost Orb'))
+      .map(e => {
+        let cls = 'tag';
+        if (state[e] === 1) cls += ' s1';
+        else if (state[e] === 2) cls += ' s2';
+        if (showForced && g.forced === e) cls += ' forced';
+        return '<span class="' + cls + '" title="' + esc(e) + '">' + SHORT[e] + '</span>';
+      }).join('');
+
+    // The name is the keyboard handle for the card's mark / rule-out cycle. It carries no
+    // handler of its own: Enter/Space fire a click that bubbles to the card, so mouse and
+    // keyboard take the identical path and can't double-fire. A <button> wrapping the whole
+    // card isn't possible - it already contains the [+] and speed buttons.
+    const CARD_STATE_WORD = ['not marked', 'marked', 'ruled out'];
+    card.innerHTML =
+      '<div class="ghead"><button type="button" class="gname" aria-label="' +
+      esc(g.name) + ': ' + CARD_STATE_WORD[cs] + '. Activate to cycle.">' + esc(g.name) + '</button>' +
+      '<button class="expand" title="Expand ' + esc(g.name) + ' information">[+]</button></div>' +
+      '<div class="tags">' + tags + '</div>' +
+      '<div class="statline"><span class="lbl">Speed: </span><span class="spd">' + speedHTML(g) + '</span>' +
+      '<span class="lbl">Sanity: </span><span class="san">' + esc(g.sanity) + '</span>' +
+      '<span class="lbl">LOS: </span><span class="los" title="' + esc(g.losTooltip) + '">' +
+      esc(g.losSpeedup) + '</span></div>' +
+      '<div class="tell">' + esc(truncatedTell(g, lineLimit)) + '</div>' +
+      // Phone cards show the one-line shortFact instead of the multi-bullet tell; CSS picks.
+      '<div class="mfact">' + esc(g.shortFact) + '</div>';
+
+    card.querySelector('.expand').onclick = e => { e.stopPropagation(); openModal(g); };
+    card.onclick = () => {
+      const next = ((cardState[g.name] || 0) + 1) % 3;
+      // Only one ghost can be marked at a time.
+      if (next === 1) for (const k in cardState) if (cardState[k] === 1) cardState[k] = 0;
+      cardState[g.name] = next;
+      run();
+    };
+    grid.appendChild(card);
+  }
+}
+
+// Renders a ghost's speed with each numeric value as a footstep-playback button, keeping
+// the " / " and " - " separators as plain text (SpeedOptionCardTemplate).
+function speedHTML(g) {
+  if (g.speeds.varies || !g.speeds.values.length) return esc(g.speed);
+  const sep = g.speed.indexOf(' - ') >= 0 ? ' - ' : (g.speed.indexOf(' / ') >= 0 ? ' / ' : null);
+  const parts = sep ? g.speed.split(sep) : [g.speed];
+  return parts
+    .map(p => '<button class="spdplay" data-s="' + parseFloat(p) +
+              '" title="Play footsteps at this speed">' + esc(p) + '</button>')
+    .join(sep ? '<span class="spdsep">' + esc(sep) + '</span>' : '');
+}
+
+// One delegated handler covers cards and the modal. Capture phase, not bubble: the card's
+// own click handler sits between the button and document, so a bubble-phase stopPropagation
+// would fire too late and the click would also cycle the ghost's card state.
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.spdplay');
+  if (!btn) return;
+  e.stopPropagation();
+  playSpeedPreview(parseFloat(btn.dataset.s), btn);
+}, true);
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---------------- ghost detail modal ---------------- */
+
+const overlay = document.getElementById('overlay');
+
+function openModal(g) {
+  modalGhost = g;
+  document.getElementById('mname').textContent = g.name;
+  document.getElementById('mspeed').innerHTML = speedHTML(g);
+  document.getElementById('msanity').textContent = g.sanity;
+
+  const showForced = limit <= 2;
+  document.getElementById('mevidence').innerHTML = g.evidence.map(ev => {
+    let d = ev;
+    if (d === 'Freezing Temperatures') d = 'Freezing';
+    else if (d === 'D.O.T.S Projector') d = 'D.O.T.S';
+    return (showForced && ev === g.forced) ? '<u>' + esc(d) + '</u>' : esc(d);
+  }).join(', ');
+
+  document.getElementById('mtell').textContent = g.tell;
+  document.getElementById('mtell').scrollTop = 0;
+
+  // A behaviour's wording can depend on another ghost still being possible.
+  const stillPossible = new Set(
+    [...document.querySelectorAll('.gname')].map(n => n.textContent)
+  );
+  const host = document.getElementById('mbehaviors');
+  host.innerHTML = '';
+  for (const b of g.behaviors) {
+    const text = (b.conditionGhost && b.textIfConditionValid && stillPossible.has(b.conditionGhost))
+      ? b.textIfConditionValid : b.text;
+    const ruleout = b.type === 'ruleout';
+    const el = document.createElement('div');
+    el.className = 'beh';
+    el.innerHTML =
+      '<div class="txt"><span class="dot">• </span>' +
+      '<span class="pfx">' + esc(b.prefix || '') + '</span>' + esc(text || '') + '</div>' +
+      '<button class="' + (ruleout ? 'ruleout' : 'mark') + '">' +
+      (ruleout ? '✕ Rule Out' : '✓ Mark Ghost') + '</button>';
+    el.querySelector('button').onclick = () => {
+      if (ruleout) {
+        cardState[g.name] = 2;
+      } else {
+        for (const k in cardState) if (cardState[k] === 1) cardState[k] = 0;
+        cardState[g.name] = 1;
+      }
+      closeModal();
+      run();
+    };
+    host.appendChild(el);
+  }
+  const any = g.behaviors.length > 0;
+  document.getElementById('mbehtitle').style.display = any ? '' : 'none';
+  host.style.display = any ? '' : 'none';
+  document.getElementById('mdivider').style.display = any ? '' : 'none';
+
+  overlay.classList.remove('closing');
+  overlay.classList.add('show');
+  enterLayer(document.getElementById('modal'), document.getElementById('mclose'));
+  document.documentElement.classList.add('layer-open');
+  requestAnimationFrame(drawGraph);
+}
+
+function closeModal() {
+  if (!overlay.classList.contains('show')) return;
+  stopGraphPlayback();
+  stopFootsteps();
+  overlay.classList.add('closing');
+  setTimeout(() => {
+    overlay.classList.remove('show', 'closing');
+    exitLayer();
+    if (!about.classList.contains('show')) document.documentElement.classList.remove('layer-open');
+    modalGhost = null;
+  }, 200);
+}
+
+document.getElementById('mclose').onclick = closeModal;
+overlay.onclick = e => { if (e.target === overlay) closeModal(); };
+// Escape unwinds one layer at a time: lightbox, then the about view, then the ghost modal.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const lb = document.getElementById('lightbox');
+  if (lb.classList.contains('open')) { lb.classList.remove('open'); return; }
+  const ab = document.getElementById('about');
+  if (ab.classList.contains('show')) { document.getElementById('about-close').click(); return; }
+  closeModal();
+});
+
+/* LOS speedup graph: linear ramp from base to max over timeToMax, then flat. */
+function speedAt(t, g) {
+  if (t >= g.graph.timeToMax) return g.graph.max;
+  return g.graph.base + (g.graph.max - g.graph.base) * (t / g.graph.timeToMax);
+}
+
+/* Graph ramp: walks the endpoint dot along the curve while footsteps accelerate to match (Start. */
+let rampPlaying = false, rampRaf = null, rampTimer = null, rampStart = 0;
+
+function startGraphPlayback() {
+  if (!modalGhost) return;
+  stopFootsteps();               // don't overlap with the constant-speed preview
+  rampPlaying = true;
+  rampStart = performance.now();
+  document.getElementById('graph-play').innerHTML = '&#10073;&#10073;';
+
+  const frame = () => {
+    if (!rampPlaying) return;
+    const elapsed = (performance.now() - rampStart) / 1000;
+    if (elapsed >= GRAPH_MAX_TIME) { stopGraphPlayback(); return; }
+    const plot = document.getElementById('plot');
+    const w = plot.clientWidth, h = plot.clientHeight;
+    const dot = document.getElementById('gend');
+    dot.setAttribute('cx', (elapsed / GRAPH_MAX_TIME) * w);
+    dot.setAttribute('cy', h - (speedAt(elapsed, modalGhost) / GRAPH_MAX_SPEED) * h);
+    rampRaf = requestAnimationFrame(frame);
+  };
+  rampRaf = requestAnimationFrame(frame);
+
+  let nextAtMs = 0;
+  const step = () => {
+    if (!rampPlaying) return;
+    const elapsedMs = performance.now() - rampStart;
+    if (elapsedMs / 1000 >= GRAPH_MAX_TIME) return;
+    playAudio('footstep');
+    nextAtMs += footstepIntervalMs(speedAt(elapsedMs / 1000, modalGhost));
+    rampTimer = setTimeout(step, Math.max(0, nextAtMs - (performance.now() - rampStart)));
+  };
+  step();
+}
+
+function stopGraphPlayback() {
+  if (!rampPlaying) return;
+  rampPlaying = false;
+  cancelAnimationFrame(rampRaf);
+  clearTimeout(rampTimer);
+  document.getElementById('graph-play').innerHTML = '&#9654;';
+  drawGraph();                   // RestoreEndPoint
+}
+
+document.getElementById('graph-play').onclick = () =>
+  rampPlaying ? stopGraphPlayback() : startGraphPlayback();
+
+function drawGraph() {
+  if (!modalGhost) return;
+  const plot = document.getElementById('plot');
+  const w = plot.clientWidth, h = plot.clientHeight;
+  if (!w || !h) return;
+
+  const svg = document.getElementById('graph');
+  svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+
+  const pts = [];
+  for (let t = 0; t <= GRAPH_MAX_TIME + 1e-9; t += 0.1) {
+    const x = (t / GRAPH_MAX_TIME) * w;
+    const y = h - (speedAt(t, modalGhost) / GRAPH_MAX_SPEED) * h;
+    pts.push(x.toFixed(2) + ',' + y.toFixed(2));
+  }
+  document.getElementById('gcurve').setAttribute('points', pts.join(' '));
+  document.getElementById('gfill').setAttribute('points', pts.join(' ') + ' ' + w + ',' + h + ' 0,' + h);
+
+  const last = pts[pts.length - 1].split(',');
+  const end = document.getElementById('gend');
+  end.setAttribute('cx', last[0]);
+  end.setAttribute('cy', last[1]);
+}
+window.addEventListener('resize', drawGraph);
+
+(function graphHover() {
+  const plot = document.getElementById('plot');
+  const line = document.getElementById('gline');
+  const dot = document.getElementById('gdot');
+  const box = document.getElementById('hoverbox');
+
+  plot.addEventListener('mousemove', e => {
+    if (!modalGhost) return;
+    const r = plot.getBoundingClientRect();
+    const w = r.width, h = r.height;
+    const x = Math.max(0, Math.min(w, e.clientX - r.left));
+    const y = e.clientY - r.top;
+
+    const t = (x / w) * GRAPH_MAX_TIME;
+    const s = speedAt(t, modalGhost);
+    const curveY = h - (s / GRAPH_MAX_SPEED) * h;
+
+    line.style.display = ''; line.setAttribute('x1', x); line.setAttribute('x2', x);
+    line.setAttribute('y1', 0); line.setAttribute('y2', h);
+    dot.style.display = ''; dot.setAttribute('cx', x); dot.setAttribute('cy', curveY);
+
+    box.style.display = 'block';
+    box.querySelector('.t').textContent = 'Time: ' + t.toFixed(1) + 's';
+    box.querySelector('.s').textContent = 'Speed: ' + s.toFixed(2) + ' m/s';
+
+    let left = x + 15;
+    if (left + box.offsetWidth > w) left = x - box.offsetWidth - 15;
+    box.style.left = (30 + left) + 'px';           // #plot is inset 30px from #plotwrap
+    box.style.top = (5 + Math.max(0, y - 15)) + 'px';
+  });
+
+  plot.addEventListener('mouseleave', () => {
+    line.style.display = 'none';
+    dot.style.display = 'none';
+    box.style.display = 'none';
+  });
+})();
+
+/* ---------------- controls ---------------- */
+
+/* Every control below is a real <button>. */
+
+const evlist = document.getElementById('evlist');
+const EV_STATE_WORD = ['not set', 'confirmed', 'ruled out'];
+
+EV.forEach(ev => {
+  const row = document.createElement('button');
+  row.type = 'button';
+  row.className = 'ev-row';
+  row.dataset.ev = ev;
+  row.dataset.s = 0;
+  // The tri-state cycle has no clean ARIA role (a switch is binary, a checkbox's "mixed"
+  // means partially-checked, not unset), so the state is carried in the accessible name.
+  row.setAttribute('aria-label', ev + ': ' + EV_STATE_WORD[0]);
+  row.innerHTML = '<span class="track"></span><span class="ev-label">' + ev + '</span>';
+  row.onclick = () => {
+    if (row.classList.contains('off')) return;
+    state[ev] = (state[ev] + 1) % 3;
+    document.getElementById('scroll').scrollTop = 0;
+    run();
+  };
+  evlist.appendChild(row);
+});
+
+const HUNT = [['veryearly','Very Early','&gt;70%'],['early','Early','&gt;50%'],
+              ['normal','Normal','50%'],['late','Late','&lt;50%']];
+const SPD  = [['slow','Slow','&lt;1.7m/s'],['normal','Normal','1.7m/s'],['fast','Fast','&gt;1.7m/s']];
+
+// single: only one option can be active at a time; clicking the active one clears the fil.
+function buildToggles(hostId, defs, store, single) {
+  const host = document.getElementById(hostId);
+  defs.forEach(d => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pill';
+    // aria-pressed, not radio: even the single-select group can be cleared by clicking the
+    // active option, which radio semantics disallow.
+    b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<div>' + d[1] + '</div><span>' + d[2] + '</span>';
+    b.onclick = () => {
+      const next = !store[d[0]];
+      if (single) {
+        Object.keys(store).forEach(k => store[k] = false);
+        [...host.children].forEach(x => {
+          x.classList.remove('on');
+          x.setAttribute('aria-pressed', 'false');
+        });
+      }
+      store[d[0]] = next;
+      b.classList.toggle('on', next);
+      b.setAttribute('aria-pressed', next ? 'true' : 'false');
+      run();
+    };
+    host.appendChild(b);
+  });
+}
+buildToggles('hunt', HUNT, hunt, true);
+buildToggles('speed', SPD, spd, false);
+
+const given = document.getElementById('given');
+[0,1,2,3].forEach(n => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'pill short' + (n === limit ? ' on' : '');
+  b.setAttribute('aria-label', n + ' evidence given');
+  b.setAttribute('aria-pressed', n === limit ? 'true' : 'false');
+  b.textContent = n;
+  b.onclick = () => {
+    if (match.difficulty === DIFF_WEEKLY) return;
+    limit = n;
+    syncGivenPills();
+    saveMatchSettings();
+    document.getElementById('scroll').scrollTop = 0;
+    run();
+  };
+  given.appendChild(b);
+});
+
+function syncGivenPills() {
+  const locked = match.difficulty === DIFF_WEEKLY;
+  [...given.children].forEach((pill, i) => {
+    pill.classList.toggle('on', i === limit);
+    pill.classList.toggle('locked', locked);
+    pill.setAttribute('aria-pressed', i === limit ? 'true' : 'false');
+    pill.setAttribute('aria-disabled', locked ? 'true' : 'false');
+  });
+}
+syncGivenPills();
+
+document.getElementById('reset').onclick = () => {
+  EV.forEach(e => state[e] = 0);
+  autoOut.clear();
+  cardState = {};
+  Object.keys(hunt).forEach(k => hunt[k] = false);
+  Object.keys(spd).forEach(k => spd[k] = false);
+  document.querySelectorAll('#hunt .pill, #speed .pill').forEach(x => x.classList.remove('on'));
+  run();
+};
+
+/* ---------------- audio ---------------- Port of MainWindow.PlayAudio. */
+
+const AUDIO_DIR = 'assets/audio/';
+const AUDIO_KEYS = ['1','2','3','4','5','alert','curseddisabled','cursedenabled',
+  'demoncooldown','demonsmudge','footstep','huntending','moondisabled','moonenabled',
+  'spiritsmudge','standardcooldown','standardsmudge','tick'];
+
+let masterVolume = 1.0;
+let audioCtx = null;
+let audioStarted = false;
+const audioBuffers = {};   // Web Audio path: decoded buffer per clip
+const audioElems = {};     // fallback path: preloaded <audio> per clip
+
+/* Web Audio needs fetch(), which Firefox blocks on file:// URLs. Any clip that fails to
+   decode falls back to an <audio> element, so opening the page off disk still has sound. */
+function initAudio() {
+  if (audioStarted) return;
+  audioStarted = true;
+
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+  catch (_) { audioCtx = null; }
+
+  for (const key of AUDIO_KEYS) {
+    const url = AUDIO_DIR + key + '.mp3';
+    if (!audioCtx) { makeAudioElement(key, url); continue; }
+    fetch(url)
+      .then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
+      .then(b => audioCtx.decodeAudioData(b))
+      .then(buf => { audioBuffers[key] = buf; })
+      .catch(() => makeAudioElement(key, url));
+  }
+}
+
+function makeAudioElement(key, url) {
+  try {
+    const el = new Audio(url);
+    el.preload = 'auto';
+    audioElems[key] = el;
+  } catch (_) { /* a missing clip must never break a timer */ }
+}
+
+// Browsers refuse to start audio before a gesture, so loading begins on first interaction
+// rather than at load. The desktop has no equivalent restriction.
+document.addEventListener('pointerdown', initAudio, { once: true });
+document.addEventListener('keydown', initAudio, { once: true });
+
+function playAudio(key) {
+  const volume = (key === 'alert' ? 0.75 : 1.0) * masterVolume;
+
+  if (audioCtx && audioBuffers[key]) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const src = audioCtx.createBufferSource();
+    src.buffer = audioBuffers[key];
+    const gain = audioCtx.createGain();
+    gain.gain.value = volume;
+    src.connect(gain).connect(audioCtx.destination);
+    src.start();
+    return;
+  }
+
+  const el = audioElems[key];
+  if (!el) return;
+  // Clone per play so rapid repeats (footsteps) overlap instead of restarting one element.
+  const node = el.cloneNode();
+  node.volume = Math.max(0, Math.min(1, volume));
+  const p = node.play();
+  if (p && p.catch) p.catch(() => { /* gesture not registered yet */ });
+}
+
+/* Footstep cadence: interval = 1000 / speed - 75 ms, floored at 60 ms. */
+function footstepIntervalMs(speed) {
+  if (speed < 0.1) speed = 0.1;
+  const ms = (1000 / speed) - 75;
+  return ms < 60 ? 60 : ms;
+}
+
+let currentPlayingSpeed = 0;
+let footstepTimer = null, footstepStopTimer = null, lastSpeedClick = 0;
+
+function stopFootsteps() {
+  currentPlayingSpeed = 0;
+  clearTimeout(footstepTimer); footstepTimer = null;
+  clearTimeout(footstepStopTimer); footstepStopTimer = null;
+  document.querySelectorAll('.spdplay.playing').forEach(b => b.classList.remove('playing'));
+}
+
+// Absolute schedule, matching RampFootstepsAsync: each step's target time accumulates so
+// timer overshoot can't compound into a slow cadence.
+function startMetronome(speed) {
+  const interval = footstepIntervalMs(speed);
+  const t0 = performance.now();
+  let n = 0;
+  playAudio('footstep');
+  const step = () => {
+    n++;
+    const target = t0 + n * interval;
+    footstepTimer = setTimeout(() => { playAudio('footstep'); step(); },
+                               Math.max(0, target - performance.now()));
+  };
+  step();
+}
+
+// Constant-speed preview of a ghost's speed. Multiplies by the game speed setting, the
+// inverse of the click-to-speed maths which divides it back out.
+function playSpeedPreview(baseSpeed, btn) {
+  if (performance.now() - lastSpeedClick < 250) return;   // _lastClickTime debounce
+  lastSpeedClick = performance.now();
+  const trueSpeed = baseSpeed * effectiveMultiplier();
+  if (currentPlayingSpeed === trueSpeed) { stopFootsteps(); return; }
+  stopFootsteps();
+  currentPlayingSpeed = trueSpeed;
+  if (btn) btn.classList.add('playing');
+  startMetronome(trueSpeed);
+  footstepStopTimer = setTimeout(stopFootsteps, 5000);   // _playbackDurationTimer
+}
+
+/* ---------------- timers ---------------- Ported from MainWindow.xaml.cs. */
+
+// HuntTimes[durationTier][mapSize], unchanged game values.
+const HUNT_TIMES = [[15,30,40],[20,40,50],[30,50,60]];
+const SMUDGE_SECONDS = 180, COOLDOWN_SECONDS = 25;
+const OBAMBO_FIRST_SHIFT = 60, OBAMBO_PERIOD = 120;
+const TAP_RESET_MS = 2500, TAP_WINDOW = 6;
+
+const T = {
+  smudge:   { on:false, end:0 },
+  cooldown: { on:false, end:0 },
+  hunt:     { on:false, end:0 },
+  obambo:   { on:false, start:0, next:0, fast:false }
+};
+let bloodMoon = false, cursedHunt = false;
+let speedMult = SPEED_MULTS[match.speedIndex];
+let taps = [], measuredSpeed = null;
+
+function resolveHuntTier() {
+  if (match.difficulty === 0) return 0;
+  if (match.difficulty === 1) return 1;
+  if (match.difficulty >= 2 && match.difficulty <= 4) return 2;
+  if (match.difficulty === DIFF_WEEKLY) return weeklyData ? weeklyData.huntTier : 2;
+  if (match.difficulty === DIFF_CUSTOM) return match.customTier;
+  return 1;
+}
+
+const baseHunt = () => HUNT_TIMES[resolveHuntTier()][match.map];
+const el = id => document.getElementById(id);
+const tmr = k => document.querySelector('.tmr[data-t="' + k + '"]');
+
+function fmt(sec, countdown = true) {
+  const s = countdown ? Math.ceil(Math.max(0, sec)) : Math.floor(Math.max(0, sec));
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+function setTimer(k, text) { tmr(k).querySelector('.tmr-val').textContent = text; }
+function setActive(k, on) {
+  tmr(k).classList.toggle('on', on);
+  tmr(k).setAttribute('aria-pressed', on ? 'true' : 'false');
+  if (!on) pulse(k, false);
+}
+
+function toggleTimer(k) {
+  const t = T[k];
+  if (t.on) {
+    t.on = false;
+    setActive(k, false);
+    setTimer(k, '0:00');
+    playAudio('alert');
+    if (k === 'obambo') { t.fast = false; updateObamboState(); }
+    return;
+  }
+  const now = Date.now();
+  if (k === 'smudge') {
+    t.end = now + SMUDGE_SECONDS * 1000;
+    t.warnDemon = t.demon = t.warnStd = t.std = t.warnSpirit = t.spirit = false;
+    t.tick = 0;
+  } else if (k === 'cooldown') {
+    t.end = now + COOLDOWN_SECONDS * 1000;
+    t.demonWarned = t.demonAlert = t.stdWarned = false;
+    t.tick = COOLDOWN_SECONDS + 1;
+  } else if (k === 'hunt') {
+    const duration = baseHunt() + (cursedHunt ? 20 : 0);
+    t.end = now + duration * 1000;
+    t.warned = false;
+    t.tick = duration + 1;
+  } else if (k === 'obambo') {
+    t.start = now; t.next = now + OBAMBO_FIRST_SHIFT * 1000; t.fast = false;
+  }
+  t.on = true;
+  setActive(k, true);
+  playAudio('alert');
+  if (k === 'obambo') updateObamboState();
+}
+
+function pulse(k, on) {
+  const value = tmr(k).querySelector('.tmr-val');
+  value.classList.remove('pulsing');
+  if (!on) return;
+
+  // Force a fresh animation at the same moment the whole-second tick changes.
+  void value.offsetWidth;
+  value.classList.add('pulsing');
+}
+
+document.querySelectorAll('.tmr[data-t]').forEach(node => {
+  node.onclick = () => toggleTimer(node.dataset.t);
+});
+
+function updateObamboState() {
+  const t = T.obambo;
+  const speed = t.fast ? '1.96m/s' : '1.45m/s';
+  const label = t.fast ? 'Aggressive' : 'Calm';
+  let suffix = ' · shifts at ' + fmt(OBAMBO_FIRST_SHIFT);
+  if (t.on) {
+    const left = Math.max(0, (t.next - Date.now()) / 1000);
+    suffix = ' · shifts in ' + fmt(left);
+  }
+  el('obambo-state').innerHTML = label + ' <b>' + speed + '</b>' + suffix;
+  tmr('obambo').querySelector('.tmr-name').style.color = t.on && t.fast ? 'var(--danger)' : '';
+}
+
+// Cue thresholds are lifted straight from UpdateTimers. The countdown clips ("5".."1") are
+// spoken numbers, so each fires once per whole second via the tick guard.
+function tick() {
+  const now = Date.now();
+
+  if (T.smudge.on) {
+    const t = T.smudge;
+    const remaining = (t.end - now) / 1000;
+    const sec = Math.ceil(remaining);
+
+    if (remaining <= 126.5 && !t.warnDemon) { t.warnDemon = true; playAudio('demonsmudge'); }
+    if (sec <= 125 && sec > 120 && sec !== t.tick) { playAudio(String(sec - 120)); t.tick = sec; pulse('smudge', true); }
+    if (remaining <= 120 && !t.demon) { t.demon = true; playAudio('alert'); pulse('smudge', false); }
+
+    if (remaining <= 96.5 && !t.warnStd) { t.warnStd = true; playAudio('standardsmudge'); }
+    if (sec <= 95 && sec > 90 && sec !== t.tick) { playAudio(String(sec - 90)); t.tick = sec; pulse('smudge', true); }
+    if (remaining <= 90 && !t.std) { t.std = true; playAudio('alert'); pulse('smudge', false); }
+
+    if (remaining <= 6.5 && !t.warnSpirit) { t.warnSpirit = true; playAudio('spiritsmudge'); }
+    if (sec <= 5 && sec > 0 && sec !== t.tick) { playAudio(String(sec)); t.tick = sec; pulse('smudge', true); }
+    if (remaining <= 0 && !t.spirit) {
+      t.spirit = true; t.on = false;
+      playAudio('alert');
+      setActive('smudge', false);
+      pulse('smudge', false);
+    }
+    setTimer('smudge', t.on ? fmt(remaining) : '0:00');
+  }
+
+  if (T.cooldown.on) {
+    const t = T.cooldown;
+    const remaining = (t.end - now) / 1000;
+    const sec = Math.ceil(remaining);
+
+    if (remaining <= 11.5 && !t.demonWarned) { t.demonWarned = true; playAudio('demoncooldown'); }
+    if (sec <= 10 && sec > 5 && sec !== t.tick) { playAudio(String(sec - 5)); t.tick = sec; pulse('cooldown', true); }
+    if (remaining <= 5 && !t.demonAlert) { t.demonAlert = true; playAudio('alert'); pulse('cooldown', false); }
+
+    if (remaining <= 6.5 && !t.stdWarned) { t.stdWarned = true; playAudio('standardcooldown'); }
+    if (sec <= 5 && sec > 0 && sec !== t.tick) { playAudio(String(sec)); t.tick = sec; pulse('cooldown', true); }
+
+    if (remaining <= 0) {
+      t.on = false;
+      playAudio('alert');
+      setActive('cooldown', false);
+      setTimer('cooldown', '0:00');
+      pulse('cooldown', false);
+    } else setTimer('cooldown', fmt(remaining));
+  }
+
+  if (T.hunt.on) {
+    const t = T.hunt;
+    const remaining = (t.end - now) / 1000;
+    const sec = Math.ceil(remaining);
+
+    if (remaining <= 6.5 && !t.warned) { t.warned = true; playAudio('huntending'); }
+    if (sec <= 5 && sec > 0 && sec !== t.tick) { playAudio(String(sec)); t.tick = sec; pulse('hunt', true); }
+
+    if (remaining <= 0) {
+      t.on = false;
+      playAudio('alert');
+      setActive('hunt', false);
+      setTimer('hunt', '0:00');
+      pulse('hunt', false);
+    } else setTimer('hunt', fmt(remaining));
+  }
+
+  if (T.obambo.on) {
+    if (now >= T.obambo.next) {
+      T.obambo.fast = !T.obambo.fast;
+      T.obambo.next += OBAMBO_PERIOD * 1000;
+      playAudio('alert');
+    }
+    setTimer('obambo', fmt((now - T.obambo.start) / 1000, false));
+    updateObamboState();
+  }
+}
+setInterval(tick, 50);
+
+/* Click-to-speed. */
+function effectiveMultiplier() { return speedMult + (bloodMoon ? 0.15 : 0); }
+
+function recordTap() {
+  const now = performance.now();
+  if (taps.length && (now - taps[taps.length - 1]) > TAP_RESET_MS) taps = [];
+  taps.push(now);
+
+  if (taps.length > 1) {
+    const avg = ((now - taps[0]) / 1000) / (taps.length - 1);
+    const raw = 1 / (avg + 0.075);
+    measuredSpeed = raw / effectiveMultiplier();
+    el('spd-val').textContent = measuredSpeed.toFixed(2);
+  } else {
+    measuredSpeed = null;
+    el('spd-val').textContent = '...';
+  }
+  if (taps.length > TAP_WINDOW) taps.shift();
+
+  el('spd-taps').textContent = taps.length + (taps.length === 1 ? ' click' : ' clicks');
+  document.querySelector('.speed-box').classList.add('live');
+  run();
+}
+
+function resetTaps() {
+  taps = [];
+  measuredSpeed = null;
+  el('spd-val').textContent = '-';
+  el('spd-taps').textContent = '0 clicks';
+  document.querySelector('.speed-box').classList.remove('live');
+  run();
+}
+
+// SetHighlightedSpeed: 0.15 tolerance, and "Varies" (the Mimic) always matches.
+function matchesMeasuredSpeed(g) {
+  if (measuredSpeed === null) return false;
+  if (g.speeds.varies) return true;
+  return g.speeds.values.some(v => Math.abs(v - measuredSpeed) <= 0.15);
+}
+
+el('spd-click').onclick = recordTap;
+el('spd-reset').onclick = resetTaps;
+
+function updateSpeedLabel() {
+  el('spd-label').textContent = 'SPEED (' + Math.round(effectiveMultiplier() * 100) + '%)';
+  document.querySelector('.speed-box').classList.toggle('moon', bloodMoon);
+}
+
+el('mod-moon').onclick = () => {
+  bloodMoon = !bloodMoon;
+  playAudio(bloodMoon ? 'moonenabled' : 'moondisabled');
+  el('mod-moon').classList.toggle('on', bloodMoon);
+  el('mod-moon').setAttribute('aria-pressed', bloodMoon ? 'true' : 'false');
+  updateSpeedLabel();
+};
+el('mod-cursed').onclick = () => {
+  cursedHunt = !cursedHunt;
+  playAudio(cursedHunt ? 'cursedenabled' : 'curseddisabled');
+  el('mod-cursed').classList.toggle('on', cursedHunt);
+  el('mod-cursed').setAttribute('aria-pressed', cursedHunt ? 'true' : 'false');
+  updateHuntLength();
+};
+
+function updateHuntLength() {
+  el('hunt-len').innerHTML = 'Length <b>' + fmt(baseHunt() + (cursedHunt ? 20 : 0)) + '</b>';
+}
+
+/* ---------------- game settings ---------------- Direct port of EvidenceWindow's match bar. */
+function updateWeeklyOption() {
+  const option = el('weekly-option');
+  option.hidden = !weeklyData;
+  option.textContent = weeklyData ? weeklyData.label : 'Weekly';
+  option.title = weeklyData ? weeklyData.title : '';
+}
+
+function syncMatchControls() {
+  updateWeeklyOption();
+  const custom = match.difficulty === DIFF_CUSTOM;
+  const weekly = match.difficulty === DIFF_WEEKLY;
+
+  el('ctx-difficulty').value = String(match.difficulty);
+  el('ctx-map').value = String(match.map);
+  el('ctx-hunt').value = String(resolveHuntTier());
+  el('ctx-speed').value = String(match.speedIndex);
+
+  el('ctx-map').disabled = weekly;
+  el('ctx-hunt').disabled = !custom;
+  el('ctx-speed').disabled = !custom;
+  syncGivenPills();
+}
+
+function applyMatchSettings(persist = true, rerender = true) {
+  if (match.difficulty === DIFF_WEEKLY) {
+    if (weeklyData) applyWeeklyToMatch(weeklyData);
+    else match.difficulty = 4;
+  } else if (match.difficulty !== DIFF_CUSTOM) {
+    match.speedIndex = 2;
+  }
+
+  speedMult = SPEED_MULTS[match.speedIndex];
+  syncMatchControls();
+  updateHuntLength();
+  updateSpeedLabel();
+  if (persist) saveMatchSettings();
+  if (rerender) run();
+}
+
+el('match-toggle').onclick = () => {
+  const open = el('matchbar').hidden;
+  el('matchbar').hidden = !open;
+  el('match-toggle').classList.toggle('on', open);
+  el('match-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+};
+
+el('ctx-difficulty').onchange = e => {
+  const difficulty = clampInt(Number(e.target.value), 0, DIFF_CUSTOM, 1);
+  if (difficulty === DIFF_WEEKLY && weeklyData) applyWeeklyToMatch(weeklyData);
+  else match.difficulty = difficulty === DIFF_WEEKLY ? 4 : difficulty;
+  applyMatchSettings();
+};
+el('ctx-map').onchange = e => {
+  if (match.difficulty === DIFF_WEEKLY) return;
+  match.map = clampInt(Number(e.target.value), 0, 2, 0);
+  applyMatchSettings();
+};
+el('ctx-hunt').onchange = e => {
+  if (match.difficulty !== DIFF_CUSTOM) return;
+  match.customTier = clampInt(Number(e.target.value), 0, 2, 1);
+  applyMatchSettings();
+};
+el('ctx-speed').onchange = e => {
+  if (match.difficulty !== DIFF_CUSTOM) return;
+  match.speedIndex = clampInt(Number(e.target.value), 0, 4, 2);
+  applyMatchSettings();
+};
+
+function refreshWeeklyData() {
+  fetch(WEEKLY_URL, { cache:'no-cache' })
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(j => {
+      weeklyTooNew = false;
+      const parsed = parseWeekly(j);
+      refreshStaleNotice();
+      if (!parsed) return;
+
+      weeklyData = parsed;
+      try { localStorage.setItem(WEEKLY_STORAGE_KEY, JSON.stringify(j)); } catch (_) { }
+      updateWeeklyOption();
+      if (match.difficulty === DIFF_WEEKLY) applyMatchSettings(true);
+    })
+    .catch(() => { /* offline: retain the last validated cached weekly, if any */ });
+}
+
+applyMatchSettings(false, false);
+refreshStaleNotice();
+refreshWeeklyData();
+
+el('vol').oninput = e => {
+  masterVolume = e.target.value / 100;
+  el('vol-val').textContent = e.target.value + '%';
+};
+el('vol-test').onclick = () => { initAudio(); playAudio('alert'); };   // TestAudio
+
+updateHuntLength();
+updateSpeedLabel();
+updateObamboState();
+
+// ClearAll
+el('reset-timers').onclick = () => {
+  stopFootsteps();
+  for (const k of ['smudge','cooldown','hunt','obambo']) {
+    T[k].on = false;
+    setActive(k, false);
+    setTimer(k, '0:00');
+  }
+  playAudio('alert');
+  T.obambo.fast = false;
+  bloodMoon = cursedHunt = false;
+  el('mod-moon').classList.remove('on');
+  el('mod-cursed').classList.remove('on');
+  el('mod-moon').setAttribute('aria-pressed','false');
+  el('mod-cursed').setAttribute('aria-pressed','false');
+  resetTaps();
+  updateSpeedLabel();
+  updateHuntLength();
+  updateObamboState();
+};
+
+/* ---------------- mobile shell ---------------- Three screens behind a bottom nav. */
+
+function setScreen(name) {
+  document.documentElement.dataset.screen = name;
+  document.querySelectorAll('#m-nav button').forEach(b =>
+    b.classList.toggle('on', b.dataset.screen === name));
+  // Evidence / Timers map onto the existing desktop tabs.
+  if (name === 'evidence' || name === 'timers') {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === name));
+    el('panel-evidence').hidden = name !== 'evidence';
+    el('panel-timers').hidden = name !== 'timers';
+  }
+  window.scrollTo(0, 0);
+}
+
+document.querySelectorAll('#m-nav button').forEach(b => {
+  b.onclick = () => setScreen(b.dataset.screen);
+});
+el('m-cta').onclick = () => setScreen('ghosts');
+el('m-menu').onclick = () => el('dl').click();          // About sheet
+// Toggles the settings sheet. #match-toggle lives in the hidden desktop header, but a
+// programmatic click still works, so there's one code path for both layouts.
+el('m-meta').onclick = () => {
+  const t = el('match-toggle');
+  if (t) t.click();
+  el('m-meta').setAttribute('aria-expanded',
+    t && t.getAttribute('aria-expanded') === 'true' ? 'true' : 'false');
+};
+
+/* Keeps the mobile chrome in step with the engine. Called at the end of every draw(). */
+function syncMobileChrome(possible, confirmed, ruledOut) {
+  const label = possible === 0 ? 'no matches' : possible === 1 ? '1 possible' : possible + ' possible';
+  el('m-ev-count').textContent = label;
+  el('m-gh-count').textContent = label;
+  el('m-nav-count').textContent = possible;
+  el('m-cta').innerHTML = 'View <b>' + possible + '</b> possible ghost' +
+    (possible === 1 ? '' : 's') + ' <span>&rarr;</span>';
+
+  // Active evidence as chips, so the constraints are visible from the Ghosts screen.
+  const chips = confirmed.map(e => '<span class="chip">' + SHORT[e] + ' ✓</span>')
+    .concat(ruledOut.map(e => '<span class="chip out">' + SHORT[e] + ' ✕</span>'));
+  el('m-chips').innerHTML = chips.length
+    ? chips.join('') + '<button type="button" class="edit">EDIT EVIDENCE</button>'
+    : '<button type="button" class="edit" style="margin:0">NO EVIDENCE SET - TAP TO ADD</button>';
+  const edit = el('m-chips').querySelector('.edit');
+  if (edit) edit.onclick = () => setScreen('evidence');
+}
+
+/* Game Settings collapsed to one line: difficulty · map · speed. */
+function syncMetaStrip() {
+  const pick = id => {
+    const s = el(id);
+    return s && s.selectedIndex >= 0 ? s.options[s.selectedIndex].text : '';
+  };
+  const bits = [pick('ctx-difficulty'), pick('ctx-map') + ' MAP', pick('ctx-speed') + ' SPEED']
+    .filter(Boolean).map(t => t.toUpperCase());
+  el('m-meta-text').textContent = bits.join(' · ');
+}
+['ctx-difficulty','ctx-map','ctx-hunt','ctx-speed'].forEach(id => {
+  const s = el(id);
+  if (s) s.addEventListener('change', syncMetaStrip);
+});
+syncMetaStrip();
+setScreen('evidence');
+
+/* ---------------- sidebar tabs ---------------- */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t === tab));
+    el('panel-evidence').hidden = tab.dataset.tab !== 'evidence';
+    el('panel-timers').hidden   = tab.dataset.tab !== 'timers';
+  };
+});
+
+/* ---------------- focus management for overlay layers ---------------- With a sheet open, Tab. */
+
+let focusReturn = null;
+
+function focusablesIn(container) {
+  return [...container.querySelectorAll(
+    'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+    .filter(el => el.offsetParent !== null && !el.disabled);
+}
+
+function enterLayer(container, preferred) {
+  focusReturn = document.activeElement;
+  const target = (preferred && preferred.offsetParent !== null)
+    ? preferred : focusablesIn(container)[0];
+  if (target) target.focus();
+}
+
+function exitLayer() {
+  if (focusReturn && document.contains(focusReturn)) focusReturn.focus();
+  focusReturn = null;
+}
+
+// Topmost open layer wins, matching the Escape order.
+function activeLayer() {
+  if (document.getElementById('lightbox').classList.contains('open')) return null;
+  const ab = document.getElementById('about');
+  if (ab.classList.contains('show')) return document.getElementById('about-panel');
+  const ov = document.getElementById('overlay');
+  if (ov.classList.contains('show') && !ov.classList.contains('closing')) {
+    return document.getElementById('modal');
+  }
+  return null;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Tab') return;
+  const layer = activeLayer();
+  if (!layer) return;
+  const list = focusablesIn(layer);
+  if (!list.length) return;
+  const first = list[0], last = list[list.length - 1];
+  if (!layer.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}, true);
+
+/* ---------------- about view ---------------- */
+// Copy and screenshots mirror phasoverlay.xyz, but the assets are vendored into this repo
+// under assets/ so the page is self-contained and works offline. They are the original
+// 2560x1440 captures re-encoded to WebP (q95), ~2MB total vs ~15MB as PNG.
+const SHOTS = 'assets/screenshots/';
+
+const FEATURES = [
+  { img:'huntcooldownsmudge.webp',
+    alt:'The overlay showing smudge, cooldown, and hunt timers side by side, with the cooldown counting down at 0:19.',
+    icon:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.8M9 2h6"/>',
+    title:'Hunt, Cooldown &amp; Smudge Timers',
+    body:'Track ghost hunts, cooldowns &amp; smudge timers as they happen.' },
+  { img:'evidencetracker.webp',
+    alt:'The full overlay: evidence toggles, a possible-ghost count of 30, per-ghost detail cards, and the settings panel.',
+    icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><polyline points="8 9 9.5 10.5 12.5 7.5"/><polyline points="8 16 9.5 17.5 12.5 14.5"/><path d="M15 9.5h2M15 16.5h2"/>',
+    title:'Evidence Tracker',
+    body:"Track evidence as it's discovered, read about ghost behaviours &amp; tap to ghosts footsteps to narrow down the list." },
+  { img:'ghostspeed.webp',
+    alt:'The overlay under a blood moon, showing an Obambo timer and a speed readout rescaled to 115%.',
+    icon:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none"/>',
+    title:'Track Ghost Speeds',
+    body:"Tap in rhythm with the ghost's footsteps to calculate its speed &amp; narrow down the ghost list instantly." },
+  { img:'modifiers.webp',
+    alt:'Side by side: drawing the Death tarot card lights a cursed indicator in the overlay, and a blood moon night lights a red moon indicator.',
+    icon:'<path d="M20 13.6A8 8 0 1 1 10.4 4a6.3 6.3 0 0 0 9.6 9.6z"/><path d="M17.5 3v3.4M15.8 4.7h3.4"/>',
+    title:'Cursed &amp; Blood Moon Modifiers',
+    body:'Trigger blood moon to automatically adjust ghost speed calculation, or trigger the cursed hunt modifier when you trigger a cursed hunt to adjust hunt durations.' }
+];
+
+const ALSO = [
+  { icon:'<path d="M4 7h8M17 7h3M4 17h3M12 17h8"/><circle cx="14.5" cy="7" r="2.3"/><circle cx="9.5" cy="17" r="2.3"/>',
+    title:'Fully customisable UI',
+    body:'Change the placement of the UI, adjust the scale &amp; opacity to your liking, adjust what modules you want enabled &amp; adjust how loud the sounds are.' },
+  { icon:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/>',
+    title:'Weekly challenge presets',
+    body:'Weekly challenge presets that are updated weekly, so you can play the weekly without having to dig through the settings for it.' },
+  { icon:'<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
+    title:'Fully rebindable hotkeys',
+    body:'Change any hotkey to your liking, defaults to F1 - F7 for timer functions.' },
+  { icon:'<path d="M4 4v16h16"/><path d="M7 16c3.5 0 4-8 8-8 2.2 0 3 2.5 5 2.5"/><circle cx="12" cy="11.4" r="1.6" fill="currentColor" stroke="none"/>',
+    title:'Listen to Ghost Speeds',
+    body:"Listen to what the ghosts footsteps sound like to help identify them, or listen to a ghost's LOS speedup curve." }
+];
+
+const STROKE = 'fill="none" stroke="currentColor" stroke-width="1.6" ' +
+               'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+
+/* Inline shots load a 1280px variant: they render ~451px wide, so the full 2560px file was deco. */
+document.getElementById('feature-rows').innerHTML = FEATURES.map(f =>
+  '<article class="feature-row reveal">' +
+    '<div class="row-shot"><img src="' + SHOTS + f.img.replace('.webp', '-1280.webp') + '" ' +
+      'data-full="' + SHOTS + f.img + '" width="1280" height="720" ' +
+      'alt="' + esc(f.alt) + '" loading="lazy" decoding="async"></div>' +
+    '<div class="row-copy">' +
+      '<svg viewBox="0 0 24 24" ' + STROKE + '>' + f.icon + '</svg>' +
+      '<h3>' + f.title + '</h3><p>' + f.body + '</p>' +
+    '</div>' +
+  '</article>').join('');
+
+document.getElementById('also-grid').innerHTML = ALSO.map(f =>
+  '<div class="feat">' +
+    '<svg viewBox="0 0 24 24" ' + STROKE + '>' + f.icon + '</svg>' +
+    '<h3>' + f.title + '</h3><p>' + f.body + '</p>' +
+  '</div>').join('');
+
+const about = document.getElementById('about');
+const aboutScroll = document.getElementById('about-scroll');
+
+// Matches the site's reveal-on-scroll, but rooted to the panel rather than the window.
+const revealObserver = new IntersectionObserver((entries) => {
+  for (const e of entries) {
+    if (e.isIntersecting) { e.target.classList.add('is-visible'); revealObserver.unobserve(e.target); }
+  }
+}, { root: aboutScroll, rootMargin: '0px 0px -8% 0px' });
+about.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+document.getElementById('dl').onclick = () => {
+  about.classList.add('show');
+  enterLayer(document.getElementById('about-panel'), document.getElementById('about-close'));
+  document.documentElement.classList.add('layer-open');
+  about.setAttribute('aria-hidden', 'false');
+  aboutScroll.scrollTop = 0;
+};
+document.getElementById('about-close').onclick = () => {
+  about.classList.remove('show');
+  exitLayer();
+  if (!overlay.classList.contains('show')) document.documentElement.classList.remove('layer-open');
+  about.setAttribute('aria-hidden', 'true');
+};
+
+const lightbox = document.getElementById('lightbox');
+about.addEventListener('click', e => {
+  // Clicking the blurred area outside the sheet dismisses it, like any overlay.
+  if (e.target === about) { document.getElementById('about-close').click(); return; }
+  const img = e.target.closest('.row-shot img');
+  if (!img) return;
+  // Full 2560x1440 file, fetched only now - the inline copy is a 1280px variant.
+  document.getElementById('lightbox-img').src = img.dataset.full || img.src;
+  lightbox.classList.add('open');
+});
+lightbox.onclick = () => lightbox.classList.remove('open');
+
+/* ---------------- data layer ---------------- */
+// The cached copy renders instantly, then the remote is fetched and swapped in if valid.
+// Mirrors GhostDataService minus the bundled tier: a newer schema is refused rather than
+// cached, and the banner explains why the tracker is showing older data - or none at all.
+
+function refreshStaleNotice() {
+  const bar = document.getElementById('stale');
+  const text = document.getElementById('stale-text');
+  const action = bar.querySelector('a, button');
+
+  if (ghostsTooNew || weeklyTooNew) {
+    const what = ghostsTooNew && weeklyTooNew ? 'Ghost and weekly challenge data'
+      : (ghostsTooNew ? 'Ghost data' : 'Weekly challenge data');
+    // Unlike desktop there is nothing for a web user to install; the fix is a redeploy,
+    // so the action is a reload rather than a link to the releases page.
+    text.textContent = what + ' uses a newer format than this build can read. '
+      + "You're seeing the last version it understands - reload once the site has updated.";
+    action.textContent = 'RELOAD';
+    bar.classList.add('show');
+    return;
+  }
+
+  if (dataUnavailable) {
+    text.textContent = "Couldn't reach the ghost data and nothing is cached yet. "
+      + 'Check your connection and try again.';
+    action.textContent = 'RETRY';
+    bar.classList.add('show');
+    return;
+  }
+
+  bar.classList.remove('show');
+}
+
+function refreshGhostData() {
+  return fetch(GHOSTS_URL, { cache: 'no-cache' })
+    .then(r => r.ok ? r.text() : Promise.reject(r.status))
+    .then(raw => {
+      ghostsTooNew = false;
+      const file = parseGhosts(raw);
+      if (!file) { refreshStaleNotice(); return; }   // parseGhosts sets ghostsTooNew
+
+      try { localStorage.setItem(GHOSTS_STORAGE_KEY, raw); } catch (_) { /* private mode */ }
+      ghosts = mapAll(file.ghosts);
+      dataUnavailable = false;
+      refreshStaleNotice();
+      run();
+    })
+    .catch(() => {
+      // Offline. Keep whatever is cached; only complain if there is nothing to show.
+      dataUnavailable = ghosts.length === 0;
+      refreshStaleNotice();
+    });
+}
+
+document.querySelector('#stale a, #stale button').onclick = e => {
+  e.preventDefault();
+  if (ghostsTooNew || weeklyTooNew) { location.reload(); return; }
+  refreshGhostData();
+  refreshWeeklyData();
+};
+
+refreshGhostData();
+
+run();
+</script>
 </body>
 </html>

@@ -1,27 +1,51 @@
-# Editor / tooling
-.claude/
+# Build / dependency output
+node_modules/
+dist/
+build/
+.cache/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Editors
 .vscode/
 .idea/
+*.code-workspace
 
-# Local working notes: this repo is public and ships the site only
-CLAUDE.md
-NOTES.md
-TODO.md
-*.local.md
-
-# OS junk
+# OS cruft
 Thumbs.db
 ehthumbs.db
-desktop.ini
+Desktop.ini
+$RECYCLE.BIN/
 .DS_Store
+.DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
 
-# Dependencies / build output
-node_modules/
-dist/
-build/
-
-# Logs
+# Logs and temp files
 *.log
+npm-debug.log*
+*.tmp
+*.bak
+*.orig
+*~
+
+# Source images kept locally, not shipped
+assets/**/*.psd
+assets/**/*.xcf
+assets/screenshots/*.png
+
+# Local notes
+notes/
+scratch/
+TODO.md
+*.local
+*.local.*
+CLAUDE.md
+AGENTS.md
+.claude/
+.codex/

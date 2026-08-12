@@ -2003,14 +2003,39 @@ function makeAudioElement(key, url) {
 
 // Browsers refuse to start audio before a gesture, so loading begins on first interaction
 // rather than at load. The desktop has no equivalent restriction.
-document.addEventListener('pointerdown', initAudio, { once: true });
-document.addEventListener('keydown', initAudio, { once: true });
+/* Safari also uses a non-standard 'interrupted' state when the system takes the audio
+   session (silent switch, a call, another app). resume() only works from a gesture, and a
+   context stuck interrupted has to be rebuilt, so this runs on every interaction rather
+   than once. AudioBuffers are plain data and carry over to the new context. */
+function ensureAudioReady() {
+  if (!audioCtx) { initAudio(); return; }
+  if (audioCtx.state === 'running') return;
+
+  if (audioCtx.resume) audioCtx.resume();
+  unlockContext();
+
+  if (audioCtx.state === 'interrupted' || audioCtx.state === 'closed') {
+    try {
+      const old = audioCtx;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      unlockContext();
+      if (old.close) old.close();
+    } catch (_) { }
+  }
+  audioStatus();
+}
+
+document.addEventListener('pointerdown', () => { initAudio(); ensureAudioReady(); });
+document.addEventListener('keydown', () => { initAudio(); ensureAudioReady(); });
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) ensureAudioReady();
+});
 
 function playAudio(key) {
   const volume = (key === 'alert' ? 0.75 : 1.0) * masterVolume;
 
   if (audioCtx && audioBuffers[key]) {
-    if (audioCtx.state !== 'running') { unlockContext(); audioStatus(); }
+    if (audioCtx.state !== 'running') ensureAudioReady();
     const src = audioCtx.createBufferSource();
     src.buffer = audioBuffers[key];
     const gain = audioCtx.createGain();
@@ -2419,7 +2444,7 @@ el('vol').oninput = e => {
   masterVolume = e.target.value / 100;
   el('vol-val').textContent = e.target.value + '%';
 };
-el('vol-test').onclick = () => { initAudio(); unlockContext(); playAudio('alert'); audioStatus(); };   // TestAudio
+el('vol-test').onclick = () => { initAudio(); ensureAudioReady(); playAudio('alert'); audioStatus(); };   // TestAudio
 
 updateHuntLength();
 updateSpeedLabel();

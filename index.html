@@ -78,6 +78,100 @@ body {
 #match-toggle.on { background:var(--accent); border-color:var(--accent); color:var(--strong); }
 #match-toggle svg { width:14px; height:14px; fill:currentColor; flex:none; }
 
+/* Link: a chip to open it, and a slim strip that only exists while connected. */
+#link-toggle {
+  margin-left:8px; height:30px; padding:0 12px;
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--card); border:1px solid var(--border); border-radius:15px;
+  color:var(--secondary); font:inherit; font-size:11px; font-weight:700; cursor:pointer;
+  transition:background .12s, border-color .12s, color .12s;
+}
+#link-toggle:hover { background:var(--hover); border-color:var(--accent); color:var(--strong); }
+#link-toggle.on { background:var(--accent); border-color:var(--accent); color:var(--strong); }
+#link-toggle.pending { background:var(--hover); border-color:var(--disabled); color:var(--muted); }
+#link-toggle.error { background:var(--hover); border-color:var(--danger); color:var(--danger); }
+#link-toggle svg { width:14px; height:14px; fill:currentColor; flex:none; }
+#link-toggle[hidden], #m-link[hidden] { display:none !important; }
+
+#linkbar {
+  flex:none; display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px;
+  padding:14px 25px; border-bottom:1px solid var(--window-border);
+}
+#linkbar[hidden] { display:none; }
+#linkbar .lk-field { display:flex; flex-direction:column; gap:4px; min-width:0; }
+#linkbar label {
+  color:var(--faint); font-family:var(--mono); font-size:9.5px;
+  font-weight:700; letter-spacing:.08em;
+}
+#linkbar input {
+  width:150px; height:32px; padding:0 10px;
+  background:var(--card); border:1px solid var(--border-strong); border-radius:5px;
+  color:var(--strong); font:inherit; font-size:13px; letter-spacing:.14em; text-transform:uppercase;
+}
+#linkbar input:focus { border-color:var(--accent); }
+.lk-btn {
+  height:32px; padding:0 14px; border-radius:6px; cursor:pointer;
+  background:var(--hover); border:1px solid var(--border-strong); color:var(--strong);
+  font:inherit; font-size:12px; font-weight:700;
+}
+.lk-btn:hover { border-color:var(--accent); color:var(--accent); }
+.lk-btn.primary { background:var(--accent); border-color:var(--accent); color:#151515; }
+.lk-btn.primary:hover { background:#C476FF; color:#151515; }
+.lk-btn:disabled { cursor:not-allowed; opacity:.55; }
+.lk-btn:disabled:hover { border-color:var(--border-strong); color:var(--strong); }
+.lk-btn.primary:disabled:hover { background:var(--accent); color:#151515; }
+.lk-or { color:var(--disabled); font-family:var(--mono); font-size:10px; padding-bottom:8px; }
+.lk-note {
+  flex-basis:100%; color:var(--disabled); font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.05em;
+}
+#link-status { min-height:12px; }
+#link-status.pending { color:var(--muted); }
+#link-status.error { color:var(--danger); }
+
+#linkstrip {
+  flex:none; display:flex; align-items:center; gap:12px;
+  padding:9px 25px; font-size:12px; color:var(--primary);
+  background:linear-gradient(90deg, rgba(180,85,255,.14), transparent 70%);
+  border-bottom:1px solid rgba(180,85,255,.3);
+}
+#linkstrip[hidden] { display:none; }
+#linkstrip .dot {
+  width:7px; height:7px; flex:none; border-radius:50%; background:var(--accent);
+  box-shadow:0 0 0 3px rgba(180,85,255,.2);
+}
+#linkstrip .lbl { color:var(--accent); font-family:var(--mono); font-size:9.5px; font-weight:700; letter-spacing:.1em; }
+#linkstrip[data-state="connecting"], #linkstrip[data-state="reconnecting"] {
+  background:linear-gradient(90deg, rgba(136,136,136,.12), transparent 70%);
+  border-bottom-color:var(--border-strong);
+}
+#linkstrip[data-state="connecting"] .dot, #linkstrip[data-state="reconnecting"] .dot {
+  background:var(--muted); box-shadow:0 0 0 3px rgba(170,170,170,.14);
+}
+#linkstrip[data-state="connecting"] .lbl, #linkstrip[data-state="reconnecting"] .lbl { color:var(--muted); }
+#link-code {
+  font-family:var(--mono); font-size:13px; font-weight:700; color:var(--strong); letter-spacing:.18em;
+}
+#link-count { color:var(--muted); font-size:11px; }
+#link-count.error { color:var(--danger); }
+#linkstrip .spacer { flex:1; }
+#linkstrip button {
+  background:none; border:0; padding:0; cursor:pointer;
+  font:inherit; font-size:11px; font-weight:600; color:var(--muted);
+}
+#linkstrip button:hover { color:var(--accent); text-decoration:underline; }
+#link-leave:hover { color:var(--danger); }
+
+/* Mobile: app-bar icon with a player-count badge, and the bar becomes a bottom sheet. */
+#m-link { position:relative; display:none; }
+#m-link-badge {
+  position:absolute; top:-3px; right:-3px; min-width:16px; padding:0 3px;
+  border-radius:999px; background:var(--accent); color:#151515;
+  font-size:9px; font-weight:800; line-height:16px;
+}
+#m-link-meta { color:var(--accent); font-weight:700; }
+
+
 /* Opens the PhasOverlay information sheet from beneath the tracker reset control. */
 #dl {
   width:100%; height:38px; margin-top:9px;
@@ -298,6 +392,11 @@ body {
   border-bottom:1px solid var(--window-border); background:transparent;
 }
 #matchbar[hidden] { display:none; }
+.match-owner {
+  grid-column:1 / -1; color:var(--muted); font-family:var(--mono);
+  font-size:9.5px; font-weight:700; letter-spacing:.08em;
+}
+.match-owner.host { color:var(--accent); }
 .match-field { min-width:0; }
 .match-field label {
   display:block; margin:0 0 3px 2px;
@@ -620,6 +719,11 @@ body {
 .trust-line .icon { flex:none; width:18px; height:18px; color:var(--accent); margin-top:3px; }
 .trust-line strong { color:var(--strong); }
 
+.ab-privacy { margin-top:34px; padding-top:26px; border-top:1px solid var(--border); }
+.ab-privacy h3 { font-size:15px; margin-bottom:12px; }
+.ab-privacy p { color:var(--muted); font-size:13.5px; line-height:1.65; margin:0 0 12px; max-width:660px; }
+.ab-privacy p:last-child { margin-bottom:0; }
+.ab-privacy strong { color:var(--primary); }
 .ab-foot { margin-top:32px; padding-top:24px; border-top:1px solid var(--border);
   display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
   font-family:var(--mono); font-size:11.5px; color:var(--faint); }
@@ -862,6 +966,20 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
     max-height:60vh; overflow-y:auto;
   }
   .match-field select { height:44px; font-size:14px; }
+
+  #m-link { display:inline-flex; align-items:center; justify-content:center; }
+  #linkbar:not([hidden]) {
+    position:fixed; left:0; right:0; z-index:33;
+    bottom:calc(60px + env(safe-area-inset-bottom));
+    padding:16px 14px; gap:10px;
+    background:#151517; border-top:1px solid var(--accent);
+    box-shadow:0 -14px 34px rgba(0,0,0,.65);
+  }
+  #linkbar .lk-field, #linkbar input { width:100%; }
+  #linkbar .lk-btn { flex:1; height:44px; }
+  #linkbar .lk-or { display:none; }
+  #linkstrip { padding:9px 14px; }
+  #linkstrip #link-count { display:none; }
   .match-field label { font-size:9.5px; font-family:var(--mono); letter-spacing:.08em; }
 }
 
@@ -888,9 +1006,14 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   <!-- Mobile chrome. Hidden above the breakpoint; the desktop keeps its own header. -->
   <header id="m-appbar">
     <span class="m-brand"><img src="assets/logo.png" alt=""> PhasOverlay</span>
+    <button id="m-link" type="button" aria-label="Link with other players" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;fill:currentColor"><path d="M7.8 16.2a4 4 0 0 1 0-5.7l2.1-2.1 1.4 1.4-2.1 2.1a2 2 0 0 0 2.8 2.8l2.1-2.1 1.4 1.4-2.1 2.1a4 4 0 0 1-5.7 0zm8.4-8.4a4 4 0 0 1 0 5.7l-2.1 2.1-1.4-1.4 2.1-2.1a2 2 0 0 0-2.8-2.8L9.9 11.4 8.5 10l2.1-2.1a4 4 0 0 1 5.6 0z"/></svg>
+      <span id="m-link-badge" hidden></span>
+    </button>
     <button id="m-menu" type="button" aria-label="About PhasOverlay">&#9776;</button>
   </header>
   <button id="m-meta" type="button" aria-label="Match settings">
+    <span id="m-link-meta"></span>
     <span id="m-meta-text">PROFESSIONAL · MEDIUM MAP · 100% SPEED</span>
     <span class="m-meta-edit">EDIT</span>
   </button>
@@ -909,6 +1032,10 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         <button id="match-toggle" aria-expanded="false" aria-controls="matchbar">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.49.49 0 0 0-.48-.41h-3.84a.49.49 0 0 0-.47.41l-.36 2.54a7.03 7.03 0 0 0-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94 0 .32.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
           Game Settings
+        </button>
+        <button id="link-toggle" type="button" aria-expanded="false" aria-controls="linkbar" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l1.4-1.4 1.4 1.4-1.4 1.4a1 1 0 0 1-1.4 0zM7.8 16.2a4 4 0 0 1 0-5.7l2.1-2.1 1.4 1.4-2.1 2.1a2 2 0 0 0 2.8 2.8l2.1-2.1 1.4 1.4-2.1 2.1a4 4 0 0 1-5.7 0zm8.4-8.4a4 4 0 0 1 0 5.7l-2.1 2.1-1.4-1.4 2.1-2.1a2 2 0 0 0-2.8-2.8L9.9 11.4 8.5 10l2.1-2.1a4 4 0 0 1 5.6 0z"/></svg>
+          LINK
         </button>
       </div>
       <div class="underline" style="width:54px"></div>
@@ -1002,6 +1129,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         <button type="button">RELOAD</button>
       </div>
       <div id="matchbar" hidden>
+        <div class="match-owner" id="match-owner" role="status" aria-live="polite" hidden></div>
         <div class="match-field">
           <label for="ctx-difficulty">DIFFICULTY</label>
           <select id="ctx-difficulty">
@@ -1041,6 +1169,28 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
           </select>
         </div>
       </div>
+      <div id="linkbar" hidden>
+        <div class="lk-field">
+          <label for="link-code-in">ROOM CODE</label>
+          <input id="link-code-in" maxlength="6" minlength="6" pattern="[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}" placeholder="ABC234" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        </div>
+        <button class="lk-btn" id="link-join" type="button">Join room</button>
+        <span class="lk-or">or</span>
+        <button class="lk-btn primary" id="link-create" type="button">Create a room</button>
+        <span class="lk-note">Anyone with the code can edit the board. Only the host controls Game Settings. Timers stay on your device. Rooms expire 30 minutes after everyone leaves.</span>
+        <span class="lk-note" id="link-status" role="status" aria-live="polite"></span>
+      </div>
+
+      <div id="linkstrip" hidden>
+        <span class="dot"></span>
+        <span class="lbl">LINKED</span>
+        <code id="link-code">------</code>
+        <span id="link-count">1 player</span>
+        <span class="spacer"></span>
+        <button id="link-copy" type="button">Copy link</button>
+        <button id="link-leave" type="button">Leave</button>
+      </div>
+
       <div id="scroll">
         <div class="m-title"><h2>Ghosts</h2><span id="m-gh-count">30 possible</span></div>
         <div class="m-rule"></div>
@@ -1132,6 +1282,28 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
             </span>
           </div>
 
+          <section class="ab-privacy reveal" id="privacy">
+            <h3>Privacy</h3>
+            <p>
+              This tracker runs in your browser. Your evidence, timers, match settings and a cached
+              copy of the ghost data are stored on your own device in local storage, so the page works
+              offline and remembers your setup. <strong>There are no cookies, no analytics and no
+              tracking of any kind.</strong>
+            </p>
+            <p>
+              <strong>Link rooms</strong> are the one exception, and only while you are in a room. Rooms
+              run on Cloudflare Workers. The shared board (evidence, filters, ghost marks and the host's
+              match settings) is held by that service until the room expires, 30 minutes after the last
+              player disconnects, and is then deleted. Cloudflare also receives connection metadata such
+              as your IP address, which is unavoidable in order to route the connection.
+            </p>
+            <p>
+              There are no accounts, no names, no chat and no message history. Nothing is sold, shared
+              or used for advertising. A room code is the only thing that grants access to a room, so
+              treat it as private and share it only with people you want on your board.
+            </p>
+          </section>
+
           <div class="ab-foot">
             <span>© 2026 PhasOverlay. Not affiliated with Kinetic Games.</span>
             <span>Licensed under AGPL-3.0</span>
@@ -1214,9 +1386,12 @@ const GHOSTS_URL = 'https://raw.githubusercontent.com/ErrorzMade/PhasOverlay-dat
 const MAX_SCHEMA = 1;   // GhostDataService.MaxSupportedSchema
 const WEEKLY_URL = 'https://raw.githubusercontent.com/ErrorzMade/PhasOverlay-data/main/weekly.json';
 const MAX_WEEKLY_SCHEMA = 1;   // WeeklyDataService.MaxSupportedSchema
+// Paste the deployed Worker URL here (https://...workers.dev). Empty keeps Link unavailable.
+const LINK_URL = 'https://phasoverlay-link.phasoverlay-link-worker.workers.dev';
 const MATCH_STORAGE_KEY = 'phasoverlay-match-settings-v1';
 const WEEKLY_STORAGE_KEY = 'phasoverlay-weekly-v1';
 const GHOSTS_STORAGE_KEY = 'phasoverlay-ghosts-v1';
+const LINK_STORAGE_KEY = 'phasoverlay-link-room-v1';
 const DIFF_WEEKLY = 5, DIFF_CUSTOM = 6;
 const SPEED_MULTS = [0.5, 0.75, 1.0, 1.25, 1.5];
 
@@ -1246,7 +1421,8 @@ let modalGhost = null;
 let ghostsTooNew = false, weeklyTooNew = false;
 let dataUnavailable = ghosts.length === 0;   // no cache and no successful fetch yet
 let weeklyData = loadCachedWeekly();
-let match = { difficulty:1, map:0, customTier:1, speedIndex:2 };
+let match = { difficulty:1, map:0, customTier:1, speedIndex:2, huntTier:1 };
+let linkState = null;       // initialized after the existing tracker controls are built
 
 EV.forEach(e => state[e] = 0);
 loadMatchSettings();
@@ -1337,6 +1513,7 @@ function applyWeeklyToMatch(w) {
   match.difficulty = DIFF_WEEKLY;
   match.map = w.map;
   match.speedIndex = w.speedIndex;
+  match.huntTier = w.huntTier;
   limit = w.evidence;
 }
 
@@ -1347,6 +1524,7 @@ function loadMatchSettings() {
     match.map = clampInt(saved.map, 0, 2, 0);
     match.customTier = clampInt(saved.customTier, 0, 2, 1);
     match.speedIndex = clampInt(saved.speedIndex, 0, 4, 2);
+    match.huntTier = clampInt(saved.huntTier, 0, 2, 1);
     limit = clampInt(saved.evidenceLimit, 0, 3, 3);
   } catch (_) { /* storage is optional */ }
 
@@ -1362,7 +1540,7 @@ function saveMatchSettings() {
   try {
     localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify({
       difficulty:match.difficulty, map:match.map, customTier:match.customTier,
-      speedIndex:match.speedIndex, evidenceLimit:limit
+      speedIndex:match.speedIndex, huntTier:match.huntTier, evidenceLimit:limit
     }));
   } catch (_) { /* storage is optional */ }
 }
@@ -1581,6 +1759,7 @@ function draw(visible, avail, lineLimit, confirmed, ruledOut) {
     card.querySelector('.expand').onclick = e => { e.stopPropagation(); openModal(g); };
     card.onclick = () => {
       const next = ((cardState[g.name] || 0) + 1) % 3;
+      if (sendLinkSet('card', g.name, next)) return;
       // Only one ghost can be marked at a time.
       if (next === 1) for (const k in cardState) if (cardState[k] === 1) cardState[k] = 0;
       cardState[g.name] = next;
@@ -1655,6 +1834,11 @@ function openModal(g) {
       '<button class="' + (ruleout ? 'ruleout' : 'mark') + '">' +
       (ruleout ? '✕ Rule Out' : '✓ Mark Ghost') + '</button>';
     el.querySelector('button').onclick = () => {
+      const next = ruleout ? 2 : 1;
+      if (sendLinkSet('card', g.name, next)) {
+        closeModal();
+        return;
+      }
       if (ruleout) {
         cardState[g.name] = 2;
       } else {
@@ -1838,7 +2022,9 @@ EV.forEach(ev => {
   row.innerHTML = '<span class="track"></span><span class="ev-label">' + ev + '</span>';
   row.onclick = () => {
     if (row.classList.contains('off')) return;
-    state[ev] = (state[ev] + 1) % 3;
+    const next = (state[ev] + 1) % 3;
+    if (sendLinkSet('evidence', ev, next)) return;
+    state[ev] = next;
     document.getElementById('scroll').scrollTop = 0;
     run();
   };
@@ -1862,6 +2048,7 @@ function buildToggles(hostId, defs, store, single) {
     b.innerHTML = '<div>' + d[1] + '</div><span>' + d[2] + '</span>';
     b.onclick = () => {
       const next = !store[d[0]];
+      if (sendLinkSet(hostId, d[0], next)) return;
       if (single) {
         Object.keys(store).forEach(k => store[k] = false);
         [...host.children].forEach(x => {
@@ -1890,6 +2077,7 @@ const given = document.getElementById('given');
   b.textContent = n;
   b.onclick = () => {
     if (match.difficulty === DIFF_WEEKLY) return;
+    if (sendLinkSet('limit', null, n)) return;
     limit = n;
     syncGivenPills();
     saveMatchSettings();
@@ -1910,14 +2098,29 @@ function syncGivenPills() {
 }
 syncGivenPills();
 
-document.getElementById('reset').onclick = () => {
+function syncFilterPills() {
+  [[hunt, HUNT, 'hunt'], [spd, SPD, 'speed']].forEach(([store, defs, id]) => {
+    [...el(id).children].forEach((pill, index) => {
+      const on = !!store[defs[index][0]];
+      pill.classList.toggle('on', on);
+      pill.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  });
+}
+
+function applyTrackerResetLocally() {
   EV.forEach(e => state[e] = 0);
   autoOut.clear();
   cardState = { };
   Object.keys(hunt).forEach(k => hunt[k] = false);
   Object.keys(spd).forEach(k => spd[k] = false);
-  document.querySelectorAll('#hunt .pill, #speed .pill').forEach(x => x.classList.remove('on'));
+  syncFilterPills();
   run();
+}
+
+document.getElementById('reset').onclick = () => {
+  if (sendLinkReset()) return;
+  applyTrackerResetLocally();
 };
 
 /* ---------------- audio ---------------- Port of MainWindow.PlayAudio. */
@@ -2107,7 +2310,8 @@ function resolveHuntTier() {
   if (match.difficulty === 0) return 0;
   if (match.difficulty === 1) return 1;
   if (match.difficulty >= 2 && match.difficulty <= 4) return 2;
-  if (match.difficulty === DIFF_WEEKLY) return weeklyData ? weeklyData.huntTier : 2;
+  if (match.difficulty === DIFF_WEEKLY) return clampInt(match.huntTier, 0, 2,
+    weeklyData ? weeklyData.huntTier : 2);
   if (match.difficulty === DIFF_CUSTOM) return match.customTier;
   return 1;
 }
@@ -2346,24 +2550,40 @@ function syncMatchControls() {
   updateWeeklyOption();
   const custom = match.difficulty === DIFF_CUSTOM;
   const weekly = match.difficulty === DIFF_WEEKLY;
+  const guest = linkSettingsLocked();
 
   el('ctx-difficulty').value = String(match.difficulty);
   el('ctx-map').value = String(match.map);
   el('ctx-hunt').value = String(resolveHuntTier());
   el('ctx-speed').value = String(match.speedIndex);
 
-  el('ctx-map').disabled = weekly;
-  el('ctx-hunt').disabled = !custom;
-  el('ctx-speed').disabled = !custom;
+  el('ctx-difficulty').disabled = guest;
+  el('ctx-map').disabled = guest || weekly;
+  el('ctx-hunt').disabled = guest || !custom;
+  el('ctx-speed').disabled = guest || !custom;
+  const owner = el('match-owner');
+  owner.hidden = !linkIsActive();
+  owner.classList.toggle('host', !!(linkState && linkState.isHost));
+  owner.textContent = linkState && linkState.isHost
+    ? 'YOU ARE THE HOST · THESE SETTINGS SYNC TO THE ROOM'
+    : 'ROOM SETTINGS · ONLY THE HOST CAN CHANGE THESE';
   syncGivenPills();
 }
 
 function applyMatchSettings(persist = true, rerender = true) {
+  const previousLimit = limit;
   if (match.difficulty === DIFF_WEEKLY) {
     if (weeklyData) applyWeeklyToMatch(weeklyData);
     else match.difficulty = 4;
   } else if (match.difficulty !== DIFF_CUSTOM) {
     match.speedIndex = 2;
+  }
+  match.huntTier = resolveHuntTier();
+
+  if (linkState && !linkState.applyingRemote && linkIsActive() && linkState.isHost) {
+    sendLinkConfigure();
+  } else if (linkState && !linkState.applyingRemote && linkIsActive() && !linkState.isHost) {
+    limit = previousLimit;
   }
 
   speedMult = SPEED_MULTS[match.speedIndex];
@@ -2375,6 +2595,7 @@ function applyMatchSettings(persist = true, rerender = true) {
 }
 
 el('match-toggle').onclick = () => {
+  if (linkState && linkState.open) closeLinkPanel(false);
   const open = el('matchbar').hidden;
   el('matchbar').hidden = !open;
   el('match-toggle').classList.toggle('on', open);
@@ -2382,22 +2603,25 @@ el('match-toggle').onclick = () => {
 };
 
 el('ctx-difficulty').onchange = e => {
+  if (linkSettingsLocked()) { syncMatchControls(); return; }
   const difficulty = clampInt(Number(e.target.value), 0, DIFF_CUSTOM, 1);
-  if (difficulty === DIFF_WEEKLY && weeklyData) applyWeeklyToMatch(weeklyData);
-  else match.difficulty = difficulty === DIFF_WEEKLY ? 4 : difficulty;
+  match.difficulty = difficulty === DIFF_WEEKLY && !weeklyData ? 4 : difficulty;
   applyMatchSettings();
 };
 el('ctx-map').onchange = e => {
+  if (linkSettingsLocked()) { syncMatchControls(); return; }
   if (match.difficulty === DIFF_WEEKLY) return;
   match.map = clampInt(Number(e.target.value), 0, 2, 0);
   applyMatchSettings();
 };
 el('ctx-hunt').onchange = e => {
+  if (linkSettingsLocked()) { syncMatchControls(); return; }
   if (match.difficulty !== DIFF_CUSTOM) return;
   match.customTier = clampInt(Number(e.target.value), 0, 2, 1);
   applyMatchSettings();
 };
 el('ctx-speed').onchange = e => {
+  if (linkSettingsLocked()) { syncMatchControls(); return; }
   if (match.difficulty !== DIFF_CUSTOM) return;
   match.speedIndex = clampInt(Number(e.target.value), 0, 4, 2);
   applyMatchSettings();
@@ -2415,7 +2639,7 @@ function refreshWeeklyData() {
       weeklyData = parsed;
       try { localStorage.setItem(WEEKLY_STORAGE_KEY, JSON.stringify(j)); } catch (_) { }
       updateWeeklyOption();
-      if (match.difficulty === DIFF_WEEKLY) applyMatchSettings(true);
+      if (match.difficulty === DIFF_WEEKLY && !linkSettingsLocked()) applyMatchSettings(true);
     })
     .catch(() => { /* offline: retain the last validated cached weekly, if any */ });
 }
@@ -2519,6 +2743,750 @@ function syncMetaStrip() {
 });
 syncMetaStrip();
 setScreen('evidence');
+
+/* ---------------- Link ----------------
+   The room is authoritative. Local controls send intent and change only when the Worker
+   broadcasts the result, so reconnects and simultaneous edits cannot fork the board. */
+
+const LINK_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no O/0, I/1/L
+const LINK_CODE_RE = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
+const LINK_RECONNECT_MAX_MS = 15000;
+const LINK_MESSAGE_MAX = 16384;
+const LINK_HOST_TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
+linkState = {
+  status:'idle', code:null, players:1, open:false, notice:'', noticeKind:'',
+  socket:null, socketGeneration:0, reconnectTimer:null, reconnectAttempt:0,
+  lastRevision:-1, manualLeave:false, terminalError:false, applyingRemote:false,
+  copyFeedback:false, hostToken:null, isHost:false, configPending:false
+};
+let linkReturnFocus = null;
+
+function linkConfigured() {
+  if (!LINK_URL || !LINK_URL.trim()) return false;
+  try { return ['http:', 'https:', 'ws:', 'wss:'].includes(new URL(LINK_URL).protocol); }
+  catch (_) { return false; }
+}
+
+function linkEndpoint(path, websocket = false) {
+  const url = new URL(LINK_URL);
+  if (websocket) url.protocol = url.protocol === 'https:' || url.protocol === 'wss:' ? 'wss:' : 'ws:';
+  else url.protocol = url.protocol === 'wss:' || url.protocol === 'https:' ? 'https:' : 'http:';
+  url.pathname = url.pathname.replace(/\/$/, '') + path;
+  url.search = '';
+  url.hash = '';
+  return url;
+}
+
+function normaliseRoomCode(value) {
+  return String(value || '').replace(/\s+/g, '').toUpperCase();
+}
+
+function newRoomCode() {
+  let out = '';
+  // Rejection sampling avoids modulo bias while preserving crypto.getRandomValues and the
+  // approved unambiguous alphabet.
+  while (out.length < 6) {
+    const bytes = new Uint8Array(6);
+    crypto.getRandomValues(bytes);
+    for (const byte of bytes) {
+      if (byte >= Math.floor(256 / LINK_ALPHABET.length) * LINK_ALPHABET.length) continue;
+      out += LINK_ALPHABET[byte % LINK_ALPHABET.length];
+      if (out.length === 6) break;
+    }
+  }
+  return out;
+}
+
+function newHostToken() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function roomSettingsSnapshot() {
+  return {
+    difficulty:match.difficulty,
+    map:match.map,
+    customTier:match.customTier,
+    speedIndex:match.speedIndex,
+    huntTier:resolveHuntTier()
+  };
+}
+
+function sharedBoardSnapshot() {
+  return {
+    evidence:Object.fromEntries(EV.map(key => [key, autoOut.has(key) ? 0 : state[key]])),
+    limit,
+    hunt:{ ...hunt },
+    speed:{ ...spd },
+    cards:Object.fromEntries(Object.entries(cardState).filter(([, value]) => value === 1 || value === 2)),
+    settings:roomSettingsSnapshot()
+  };
+}
+
+function localBoardIsNotEmpty() {
+  const board = sharedBoardSnapshot();
+  return board.limit !== 3
+    || Object.values(board.evidence).some(Boolean)
+    || Object.values(board.hunt).some(Boolean)
+    || Object.values(board.speed).some(Boolean)
+    || Object.keys(board.cards).length > 0
+    || board.settings.difficulty !== 1
+    || board.settings.map !== 0
+    || board.settings.customTier !== 1
+    || board.settings.speedIndex !== 2;
+}
+
+function exactObject(value, keys) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const wanted = [...keys].sort();
+  return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
+}
+
+function hasOwn(value, key) {
+  return Object.prototype.hasOwnProperty.call(value, key);
+}
+
+function validRemoteCardName(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 64
+    && !/[\u0000-\u001f\u007f]/u.test(value)
+    && !['__proto__','prototype','constructor'].includes(value);
+}
+
+function validRemoteSettings(settings) {
+  if (!exactObject(settings, ['difficulty','map','customTier','speedIndex','huntTier'])
+      || !Number.isInteger(settings.difficulty) || settings.difficulty < 0 || settings.difficulty > 6
+      || !Number.isInteger(settings.map) || settings.map < 0 || settings.map > 2
+      || !Number.isInteger(settings.customTier) || settings.customTier < 0 || settings.customTier > 2
+      || !Number.isInteger(settings.speedIndex) || settings.speedIndex < 0 || settings.speedIndex > 4
+      || !Number.isInteger(settings.huntTier) || settings.huntTier < 0 || settings.huntTier > 2) return false;
+  if (settings.difficulty === 0 && settings.huntTier !== 0) return false;
+  if (settings.difficulty === 1 && settings.huntTier !== 1) return false;
+  if (settings.difficulty >= 2 && settings.difficulty <= 4 && settings.huntTier !== 2) return false;
+  if (settings.difficulty === DIFF_CUSTOM && settings.huntTier !== settings.customTier) return false;
+  if (settings.difficulty !== DIFF_WEEKLY && settings.difficulty !== DIFF_CUSTOM
+      && settings.speedIndex !== 2) return false;
+  return true;
+}
+
+function validRemoteBoard(board) {
+  if (!exactObject(board, ['evidence','limit','hunt','speed','cards','settings'])) return false;
+  if (!exactObject(board.evidence, EV) || !EV.every(key => Number.isInteger(board.evidence[key])
+      && board.evidence[key] >= 0 && board.evidence[key] <= 2)) return false;
+  if (!Number.isInteger(board.limit) || board.limit < 0 || board.limit > 3) return false;
+  if (!exactObject(board.hunt, Object.keys(hunt))
+      || !Object.values(board.hunt).every(value => typeof value === 'boolean')) return false;
+  if (Object.values(board.hunt).filter(Boolean).length > 1) return false;
+  if (!exactObject(board.speed, Object.keys(spd))
+      || !Object.values(board.speed).every(value => typeof value === 'boolean')) return false;
+  if (!board.cards || typeof board.cards !== 'object' || Array.isArray(board.cards)
+      || Object.keys(board.cards).length > 64) return false;
+  let marked = 0;
+  for (const [name, value] of Object.entries(board.cards)) {
+    if (!validRemoteCardName(name)
+        || !Number.isInteger(value) || value < 0 || value > 2) return false;
+    if (value === 1 && ++marked > 1) return false;
+  }
+  return validRemoteSettings(board.settings);
+}
+
+function syncSharedBoardControls() {
+  syncGivenPills();
+  syncFilterPills();
+  syncMatchControls();
+}
+
+function applyRemoteSettings(settings) {
+  if (!validRemoteSettings(settings)) return false;
+  match.difficulty = settings.difficulty;
+  match.map = settings.map;
+  match.customTier = settings.customTier;
+  match.speedIndex = settings.speedIndex;
+  match.huntTier = settings.huntTier;
+  speedMult = SPEED_MULTS[match.speedIndex];
+  updateHuntLength();
+  updateSpeedLabel();
+  return true;
+}
+
+function applyRemoteBoard(board) {
+  if (!validRemoteBoard(board)) return false;
+  linkState.applyingRemote = true;
+  try {
+    autoOut.clear();
+    EV.forEach(key => { state[key] = board.evidence[key]; });
+    limit = board.limit;
+    Object.keys(hunt).forEach(key => { hunt[key] = board.hunt[key]; });
+    Object.keys(spd).forEach(key => { spd[key] = board.speed[key]; });
+    cardState = { ...board.cards };
+    if (!applyRemoteSettings(board.settings)) return false;
+    syncSharedBoardControls();
+    saveMatchSettings();
+    run();
+  } finally {
+    linkState.applyingRemote = false;
+  }
+  return true;
+}
+
+function validRemoteChange(change) {
+  if (!change || typeof change !== 'object' || Array.isArray(change)) return false;
+  if (change.field === 'limit') {
+    return exactObject(change, ['field','value']) && Number.isInteger(change.value)
+      && change.value >= 0 && change.value <= 3;
+  }
+  if (change.field === 'settings') {
+    return exactObject(change, ['field','value']) && validRemoteSettings(change.value);
+  }
+  if (!exactObject(change, ['field','key','value'])) return false;
+  if (change.field === 'evidence') return EV.includes(change.key)
+    && Number.isInteger(change.value) && change.value >= 0 && change.value <= 2;
+  if (change.field === 'hunt') return hasOwn(hunt, change.key) && typeof change.value === 'boolean';
+  if (change.field === 'speed') return hasOwn(spd, change.key) && typeof change.value === 'boolean';
+  return change.field === 'card' && validRemoteCardName(change.key)
+    && Number.isInteger(change.value) && change.value >= 0 && change.value <= 2;
+}
+
+function applyRemoteChanges(changes) {
+  if (!Array.isArray(changes) || changes.length < 1 || changes.length > 8
+      || !changes.every(validRemoteChange)) return false;
+  linkState.applyingRemote = true;
+  try {
+    for (const change of changes) {
+      if (change.field === 'limit') limit = change.value;
+      else if (change.field === 'settings') applyRemoteSettings(change.value);
+      else if (change.field === 'evidence') state[change.key] = change.value;
+      else if (change.field === 'hunt') hunt[change.key] = change.value;
+      else if (change.field === 'speed') spd[change.key] = change.value;
+      else if (change.value === 0) delete cardState[change.key];
+      else cardState[change.key] = change.value;
+    }
+    syncSharedBoardControls();
+    saveMatchSettings();
+    run();
+  } finally {
+    linkState.applyingRemote = false;
+  }
+  return true;
+}
+
+function linkIsActive() {
+  return !!(linkState && linkState.code)
+    && ['creating','connecting','connected','reconnecting'].includes(linkState.status);
+}
+
+function linkSettingsLocked() {
+  return linkIsActive()
+    && (!linkState.isHost || linkState.status !== 'connected' || linkState.configPending);
+}
+
+function renderLink() {
+  const configured = linkConfigured();
+  const connected = linkState.status === 'connected';
+  const pending = linkState.status === 'creating' || linkState.status === 'connecting'
+    || linkState.status === 'reconnecting';
+  const active = linkIsActive();
+  const toggle = el('link-toggle');
+  const mobile = el('m-link');
+  const strip = el('linkstrip');
+  const panel = el('linkbar');
+
+  toggle.hidden = !configured;
+  mobile.hidden = !configured;
+  panel.hidden = !configured || !linkState.open || active;
+  strip.hidden = !configured || !active;
+  strip.dataset.state = pending ? (linkState.status === 'reconnecting' ? 'reconnecting' : 'connecting') : 'connected';
+
+  toggle.classList.toggle('on', connected || linkState.open);
+  toggle.classList.toggle('pending', pending);
+  toggle.classList.toggle('error', linkState.status === 'error');
+  toggle.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
+  toggle.setAttribute('aria-label', connected ? `Link room ${linkState.code}, ${linkState.players} players`
+    : pending ? `Link room ${linkState.code}, ${linkState.status}` : 'Link with other players');
+
+  el('link-code').textContent = linkState.code || '------';
+  strip.querySelector('.lbl').textContent = connected ? (linkState.isHost ? 'HOST' : 'LINKED')
+    : linkState.status === 'reconnecting' ? 'RECONNECTING' : 'CONNECTING';
+  el('link-count').textContent = connected
+    ? (linkState.notice || (linkState.players === 1 ? '1 player' : linkState.players + ' players'))
+    : linkState.status === 'reconnecting' ? 'Connection lost · retrying…'
+    : linkState.status === 'creating' ? 'Creating room…' : 'Joining room…';
+  el('link-count').classList.toggle('error', connected && linkState.noticeKind === 'error');
+
+  const badge = el('m-link-badge');
+  badge.hidden = !connected;
+  badge.textContent = connected ? linkState.players : '';
+  mobile.style.color = connected ? 'var(--accent)' : pending ? 'var(--muted)' : '';
+  mobile.setAttribute('aria-label', connected
+    ? `Link room ${linkState.code}, ${linkState.players} players`
+    : pending ? `Link ${linkState.status}` : 'Link with other players');
+  el('m-link-meta').textContent = connected ? 'LINKED ' + linkState.code + ' · '
+    : linkState.status === 'reconnecting' ? 'RECONNECTING ' + linkState.code + ' · ' : '';
+
+  const busy = linkState.status === 'creating' || linkState.status === 'connecting';
+  el('link-code-in').disabled = busy;
+  el('link-join').disabled = busy;
+  el('link-create').disabled = busy;
+  const status = el('link-status');
+  status.textContent = linkState.notice;
+  status.className = 'lk-note' + (linkState.noticeKind ? ' ' + linkState.noticeKind : '');
+  el('link-copy').textContent = linkState.copyFeedback ? 'Copied' : 'Copy link';
+  syncMatchControls();
+}
+
+function isMobileLinkSheet() {
+  return matchMedia('(max-width:768px) and (pointer:coarse)').matches;
+}
+
+function openLinkPanel(message = '', kind = '') {
+  if (!linkConfigured()) return;
+  if (!linkState.open) linkReturnFocus = document.activeElement;
+  el('matchbar').hidden = true;
+  el('match-toggle').classList.remove('on');
+  el('match-toggle').setAttribute('aria-expanded', 'false');
+  el('m-meta').setAttribute('aria-expanded', 'false');
+  linkState.open = true;
+  linkState.notice = message;
+  linkState.noticeKind = kind;
+  renderLink();
+  requestAnimationFrame(() => { if (!el('linkbar').hidden) el('link-code-in').focus(); });
+}
+
+function closeLinkPanel(returnFocus = true) {
+  linkState.open = false;
+  renderLink();
+  if (returnFocus && linkReturnFocus && typeof linkReturnFocus.focus === 'function') linkReturnFocus.focus();
+  linkReturnFocus = null;
+}
+
+el('link-toggle').onclick = () => {
+  if (linkIsActive()) { el('linkstrip').scrollIntoView({ block:'nearest' }); return; }
+  if (linkState.open) closeLinkPanel();
+  else openLinkPanel();
+};
+
+document.addEventListener('keydown', event => {
+  if (!linkState.open || el('linkbar').hidden) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeLinkPanel();
+    return;
+  }
+  if (event.key !== 'Tab' || !isMobileLinkSheet()) return;
+  const focusable = [...el('linkbar').querySelectorAll('input:not(:disabled),button:not(:disabled)')];
+  if (!focusable.length) return;
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault(); last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault(); first.focus();
+  }
+});
+
+function rememberRoom() {
+  try {
+    const saved = { code:linkState.code };
+    if (LINK_HOST_TOKEN_RE.test(linkState.hostToken || '')) saved.hostToken = linkState.hostToken;
+    localStorage.setItem(LINK_STORAGE_KEY, JSON.stringify(saved));
+  }
+  catch (_) { /* storage is optional */ }
+}
+
+function forgetRoom() {
+  try { localStorage.removeItem(LINK_STORAGE_KEY); }
+  catch (_) { /* storage is optional */ }
+}
+
+function roomFromStorage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LINK_STORAGE_KEY) || '{}');
+    if (!LINK_CODE_RE.test(saved.code || '')) return null;
+    return {
+      code:saved.code,
+      hostToken:LINK_HOST_TOKEN_RE.test(saved.hostToken || '') ? saved.hostToken : null
+    };
+  } catch (_) { return null; }
+}
+
+function roomFromLocation() {
+  try {
+    const url = new URL(location.href);
+    const queryCode = normaliseRoomCode(url.searchParams.get('room'));
+    if (LINK_CODE_RE.test(queryCode)) return queryCode;
+    const hashCode = normaliseRoomCode(url.hash.slice(1));
+    return LINK_CODE_RE.test(hashCode) ? hashCode : null;
+  } catch (_) { return null; }
+}
+
+function putRoomInLocation(code) {
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('room', code);
+    if (LINK_CODE_RE.test(normaliseRoomCode(url.hash.slice(1)))) url.hash = '';
+    history.replaceState(null, '', url);
+  } catch (_) { /* file URLs and locked-down browsers may refuse history changes */ }
+}
+
+function removeRoomFromLocation() {
+  try {
+    const url = new URL(location.href);
+    url.searchParams.delete('room');
+    if (LINK_CODE_RE.test(normaliseRoomCode(url.hash.slice(1)))) url.hash = '';
+    history.replaceState(null, '', url);
+  } catch (_) { /* optional */ }
+}
+
+function terminalLinkError(code, fallback) {
+  const messages = {
+    room_not_found:'That room code is wrong or the room has expired.',
+    room_full:'That room is full (8 players maximum).',
+    schema_mismatch:'This room uses different ghost data. Refresh the tracker and try again.',
+    invalid_code:'Enter a valid 6-character room code.',
+    origin_not_allowed:'This copy of the tracker is not allowed to use the Link service.'
+  };
+  linkState.terminalError = true;
+  linkState.status = 'error';
+  linkState.notice = messages[code] || fallback || 'Link could not connect. Try again.';
+  linkState.noticeKind = 'error';
+  linkState.open = true;
+  if (['room_not_found','schema_mismatch','room_full'].includes(code)) forgetRoom();
+  renderLink();
+  requestAnimationFrame(() => el('link-code-in').focus());
+}
+
+function scheduleLinkReconnect() {
+  if (linkState.manualLeave || linkState.terminalError || !linkState.code || linkState.reconnectTimer) return;
+  linkState.status = 'reconnecting';
+  linkState.notice = 'Connection lost. Retrying automatically…';
+  linkState.noticeKind = 'pending';
+  const base = Math.min(LINK_RECONNECT_MAX_MS, 1000 * Math.pow(2, linkState.reconnectAttempt++));
+  const delay = Math.round(base * (0.85 + Math.random() * 0.3));
+  renderLink();
+  linkState.reconnectTimer = setTimeout(() => {
+    linkState.reconnectTimer = null;
+    openLinkSocket(true);
+  }, delay);
+}
+
+function closeCurrentLinkSocket(code = 1000, reason = 'leaving') {
+  const socket = linkState.socket;
+  linkState.socket = null;
+  linkState.socketGeneration += 1;
+  if (socket && socket.readyState < WebSocket.CLOSING) {
+    try { socket.close(code, reason); } catch (_) { /* already gone */ }
+  }
+}
+
+function openLinkSocket(reconnecting = false) {
+  if (!linkState.code || linkState.manualLeave || linkState.terminalError) return;
+  closeCurrentLinkSocket(1000, 'replaced');
+  linkState.status = reconnecting ? 'reconnecting' : 'connecting';
+  linkState.notice = reconnecting ? 'Connection lost. Retrying automatically…' : '';
+  linkState.noticeKind = reconnecting ? 'pending' : '';
+  const generation = ++linkState.socketGeneration;
+  const url = linkEndpoint('/rooms/' + linkState.code, true);
+  url.searchParams.set('schema', String(MAX_SCHEMA));
+  url.searchParams.set('weeklySchema', String(MAX_WEEKLY_SCHEMA));
+
+  let socket;
+  try { socket = new WebSocket(url); }
+  catch (_) { scheduleLinkReconnect(); return; }
+  linkState.socket = socket;
+  renderLink();
+
+  socket.onopen = () => {
+    if (generation !== linkState.socketGeneration || socket !== linkState.socket) return;
+    if (LINK_HOST_TOKEN_RE.test(linkState.hostToken || '')) {
+      socket.send(JSON.stringify({ type:'host_auth', token:linkState.hostToken }));
+    }
+  };
+
+  socket.onmessage = event => {
+    if (generation !== linkState.socketGeneration) return;
+    if (typeof event.data !== 'string'
+        || new TextEncoder().encode(event.data).byteLength > LINK_MESSAGE_MAX) {
+      socket.close(4002, 'invalid_frame');
+      return;
+    }
+    let message;
+    try { message = JSON.parse(event.data); }
+    catch (_) { socket.close(4002, 'invalid_json'); return; }
+
+    if (message.type === 'snapshot') {
+      linkState.configPending = false;
+      if (!exactObject(message, ['type','revision','players','host','state'])
+          || !Number.isInteger(message.revision) || message.revision < 0
+          || !Number.isInteger(message.players) || message.players < 1 || message.players > 8
+          || typeof message.host !== 'boolean'
+          || !applyRemoteBoard(message.state)) {
+        socket.close(4002, 'invalid_snapshot');
+        return;
+      }
+      linkState.lastRevision = message.revision;
+      linkState.players = message.players;
+      linkState.isHost = message.host;
+      linkState.status = 'connected';
+      linkState.notice = '';
+      linkState.noticeKind = '';
+      linkState.reconnectAttempt = 0;
+      linkState.terminalError = false;
+      rememberRoom();
+      putRoomInLocation(linkState.code);
+      renderLink();
+      return;
+    }
+
+    if (message.type === 'host') {
+      if (!exactObject(message, ['type','host']) || typeof message.host !== 'boolean') {
+        socket.close(4002, 'invalid_host_status');
+        return;
+      }
+      linkState.isHost = message.host;
+      if (!message.host && linkState.hostToken) linkState.hostToken = null;
+      rememberRoom();
+      renderLink();
+      return;
+    }
+
+    if (message.type === 'presence') {
+      if (!exactObject(message, ['type','players']) || !Number.isInteger(message.players)
+          || message.players < 1 || message.players > 8) return;
+      linkState.players = message.players;
+      renderLink();
+      return;
+    }
+
+    if (message.type === 'patch' || message.type === 'reset') {
+      if (!Number.isInteger(message.revision) || message.revision <= linkState.lastRevision) return;
+      if (message.revision !== linkState.lastRevision + 1) {
+        socket.close(4012, 'revision_gap');
+        return;
+      }
+      const applied = message.type === 'patch'
+        ? exactObject(message, ['type','revision','changes']) && applyRemoteChanges(message.changes)
+        : exactObject(message, ['type','revision','state']) && applyRemoteBoard(message.state);
+      if (!applied) { socket.close(4002, 'invalid_update'); return; }
+      if (message.type === 'patch' && message.changes.some(change => change.field === 'settings')) {
+        linkState.configPending = false;
+      }
+      linkState.lastRevision = message.revision;
+      linkState.notice = '';
+      linkState.noticeKind = '';
+      renderLink();
+      return;
+    }
+
+    if (message.type === 'error' && exactObject(message, ['type','code','message'])
+        && typeof message.code === 'string' && typeof message.message === 'string'
+        && message.code.length <= 64 && message.message.length <= 256) {
+      if (message.code === 'rate_limited') {
+        linkState.notice = 'Too many changes. Slow down and try again.';
+        linkState.noticeKind = 'error';
+        renderLink();
+      } else if (message.code === 'host_only') {
+        linkState.notice = 'Only the room host can change Game Settings.';
+        linkState.noticeKind = 'error';
+        renderLink();
+      } else if (message.code === 'invalid_message') {
+        socket.close(4002, 'message_rejected');
+      } else {
+        terminalLinkError(message.code, typeof message.message === 'string' ? message.message : '');
+        socket.close(4008, message.code.slice(0, 80));
+      }
+      return;
+    }
+    socket.close(4002, 'unknown_message');
+  };
+
+  socket.onclose = () => {
+    if (generation !== linkState.socketGeneration) return;
+    linkState.socket = null;
+    if (!linkState.manualLeave && !linkState.terminalError) scheduleLinkReconnect();
+  };
+  socket.onerror = () => { /* onclose owns reconnection so it runs once */ };
+}
+
+async function createRoom() {
+  if (!linkConfigured() || linkIsActive()) return;
+  if (linkState.open) closeLinkPanel();
+  linkState.manualLeave = false;
+  linkState.terminalError = false;
+  linkState.status = 'creating';
+  linkState.open = false;
+  linkState.notice = '';
+  linkState.noticeKind = '';
+  linkState.hostToken = newHostToken();
+  linkState.isHost = false;
+  linkState.configPending = false;
+  const body = JSON.stringify({
+    schema:MAX_SCHEMA,
+    weeklySchema:MAX_WEEKLY_SCHEMA,
+    state:sharedBoardSnapshot(),
+    hostToken:linkState.hostToken
+  });
+
+  try {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      linkState.code = newRoomCode();
+      renderLink();
+      const response = await fetch(linkEndpoint('/rooms/' + linkState.code), {
+        method:'POST',
+        headers:{ 'content-type':'application/json' },
+        body,
+        cache:'no-store',
+        credentials:'omit'
+      });
+      if (response.status === 409) continue;
+      if (!response.ok) {
+        let error = {};
+        try { error = await response.json(); } catch (_) { /* use the generic message */ }
+        terminalLinkError(error.error || 'create_failed', 'The room could not be created. Try again.');
+        return;
+      }
+      openLinkSocket(false);
+      return;
+    }
+    terminalLinkError('create_failed', 'A unique room code could not be created. Try again.');
+  } catch (_) {
+    terminalLinkError('service_unavailable', 'The Link service is unavailable. Check your connection and try again.');
+  }
+}
+
+function joinRoom(code, resume = false, hostToken = null) {
+  code = normaliseRoomCode(code);
+  if (!LINK_CODE_RE.test(code)) {
+    openLinkPanel('Enter a valid 6-character room code.', 'error');
+    return;
+  }
+  if (!resume && localBoardIsNotEmpty()
+      && !confirm("Joining will replace your current evidence and Game Settings with the room's.")) return;
+
+  if (linkState.open) closeLinkPanel();
+
+  linkState.code = code;
+  linkState.players = 1;
+  linkState.lastRevision = -1;
+  linkState.hostToken = LINK_HOST_TOKEN_RE.test(hostToken || '') ? hostToken : null;
+  linkState.isHost = false;
+  linkState.configPending = false;
+  linkState.manualLeave = false;
+  linkState.terminalError = false;
+  linkState.open = false;
+  linkState.notice = '';
+  linkState.noticeKind = '';
+  openLinkSocket(false);
+}
+
+function leaveRoom() {
+  const focusTarget = isMobileLinkSheet() ? el('m-link') : el('link-toggle');
+  linkState.manualLeave = true;
+  if (linkState.reconnectTimer) clearTimeout(linkState.reconnectTimer);
+  linkState.reconnectTimer = null;
+  closeCurrentLinkSocket(1000, 'left_room');
+  linkState.status = 'idle';
+  linkState.code = null;
+  linkState.players = 1;
+  linkState.open = false;
+  linkState.notice = '';
+  linkState.noticeKind = '';
+  linkState.lastRevision = -1;
+  linkState.hostToken = null;
+  linkState.isHost = false;
+  linkState.configPending = false;
+  linkState.copyFeedback = false;
+  forgetRoom();
+  removeRoomFromLocation();
+  renderLink();
+  focusTarget.focus();
+}
+
+function sendLinkIntent(intent) {
+  if (!linkState || linkState.applyingRemote || !linkState.code || linkState.status === 'idle'
+      || linkState.status === 'error') return false;
+  const socket = linkState.socket;
+  if (linkState.status === 'connected' && socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify(intent));
+  } else {
+    linkState.notice = 'Reconnecting before that change can be applied…';
+    linkState.noticeKind = 'pending';
+    renderLink();
+  }
+  return true;
+}
+
+function sendLinkSet(field, key, value) {
+  const intent = field === 'limit' ? { type:'set', field, value }
+    : { type:'set', field, key, value };
+  return sendLinkIntent(intent);
+}
+
+function sendLinkReset() {
+  return sendLinkIntent({ type:'reset' });
+}
+
+function sendLinkConfigure() {
+  if (!linkState || !linkState.isHost || linkState.configPending) return false;
+  linkState.configPending = true;
+  const sent = sendLinkIntent({ type:'configure', settings:roomSettingsSnapshot(), limit });
+  if (!sent) linkState.configPending = false;
+  renderLink();
+  return sent;
+}
+
+el('link-create').onclick = createRoom;
+el('link-join').onclick = () => joinRoom(el('link-code-in').value);
+el('link-code-in').oninput = event => {
+  const clean = normaliseRoomCode(event.target.value).replace(/[^ABCDEFGHJKLMNPQRSTUVWXYZ23456789]/g, '');
+  if (event.target.value !== clean) event.target.value = clean;
+};
+el('link-code-in').onkeydown = event => { if (event.key === 'Enter') el('link-join').click(); };
+
+el('link-copy').onclick = async () => {
+  if (!linkState.code) return;
+  const url = new URL(location.href);
+  url.searchParams.set('room', linkState.code);
+  url.hash = '';
+  try {
+    if (!navigator.clipboard) throw new Error('clipboard unavailable');
+    await navigator.clipboard.writeText(url.href);
+    linkState.copyFeedback = true;
+    renderLink();
+    setTimeout(() => { linkState.copyFeedback = false; renderLink(); }, 1400);
+  } catch (_) {
+    linkState.notice = 'Copy failed. Select the room code and share it instead.';
+    linkState.noticeKind = 'error';
+    renderLink();
+  }
+};
+
+el('link-leave').onclick = leaveRoom;
+// Mobile entry point reuses the bar as a bottom sheet, like Game Settings.
+el('m-link').onclick = () => el('link-toggle').click();
+
+window.addEventListener('online', () => {
+  if (linkState.status !== 'reconnecting' || linkState.manualLeave || linkState.terminalError) return;
+  if (linkState.reconnectTimer) clearTimeout(linkState.reconnectTimer);
+  linkState.reconnectTimer = null;
+  openLinkSocket(true);
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !linkState.code || linkState.manualLeave
+      || linkState.terminalError) return;
+  if (!linkState.socket || linkState.socket.readyState >= WebSocket.CLOSING) openLinkSocket(true);
+});
+
+renderLink();
+if (linkConfigured()) {
+  const sharedCode = roomFromLocation();
+  const savedRoom = roomFromStorage();
+  if (sharedCode) {
+    joinRoom(sharedCode, !!savedRoom && savedRoom.code === sharedCode,
+      savedRoom && savedRoom.code === sharedCode ? savedRoom.hostToken : null);
+  } else if (savedRoom) joinRoom(savedRoom.code, true, savedRoom.hostToken);
+}
 
 /* ---------------- sidebar tabs ---------------- */
 document.querySelectorAll('.tab').forEach(tab => {

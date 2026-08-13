@@ -3,6 +3,7 @@ node_modules/
 dist/
 build/
 .cache/
+worker/
 
 # Environment and secrets
 .env
@@ -40,6 +41,7 @@ assets/**/*.xcf
 assets/screenshots/*.png
 
 # Local notes
+DELETE-BEFORE-PUSH*
 notes/
 scratch/
 TODO.md

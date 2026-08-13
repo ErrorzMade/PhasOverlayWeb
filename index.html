@@ -130,7 +130,7 @@ body {
 #link-status.error { color:var(--danger); }
 
 #linkstrip {
-  flex:none; display:flex; align-items:center; gap:12px;
+  position:relative; flex:none; display:flex; align-items:center; gap:12px;
   padding:9px 25px; font-size:12px; color:var(--primary);
   background:linear-gradient(90deg, rgba(180,85,255,.14), transparent 70%);
   border-bottom:1px solid rgba(180,85,255,.3);
@@ -152,7 +152,9 @@ body {
 #link-code {
   font-family:var(--mono); font-size:13px; font-weight:700; color:var(--strong); letter-spacing:.18em;
 }
-#link-count { color:var(--muted); font-size:11px; }
+#link-participants { display:flex; align-items:center; gap:6px; min-width:0; }
+#link-participants[hidden] { display:none; }
+#link-count { color:var(--muted); font-size:11px; white-space:nowrap; }
 #link-count.error { color:var(--danger); }
 #linkstrip .spacer { flex:1; }
 #linkstrip button {
@@ -160,7 +162,37 @@ body {
   font:inherit; font-size:11px; font-weight:600; color:var(--muted);
 }
 #linkstrip button:hover { color:var(--accent); text-decoration:underline; }
+#linkstrip .lk-strip-person {
+  display:flex; align-items:center; gap:5px; max-width:126px; height:24px; padding:0 8px;
+  background:rgba(63,63,70,.55); border:1px solid var(--border-strong); border-radius:12px;
+  color:var(--primary); text-decoration:none;
+}
+#linkstrip button.lk-strip-person:hover { border-color:var(--accent); text-decoration:none; }
+#linkstrip .lk-strip-person.host { border-color:rgba(180,85,255,.55); color:var(--strong); }
+.lk-strip-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lk-strip-tag { flex:none; color:var(--accent); font-family:var(--mono); font-size:7.5px; font-weight:700; letter-spacing:.06em; }
 #link-leave:hover { color:var(--danger); }
+
+#linkpeople {
+  position:absolute; top:calc(100% + 6px); z-index:34; width:260px; padding:8px;
+  background:#18181b; border:1px solid var(--border-strong); border-radius:8px;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);
+}
+#linkpeople[hidden] { display:none; }
+#linkpeople-list { display:flex; flex-direction:column; gap:6px; }
+.lk-person {
+  width:100%; min-width:0; display:flex; align-items:center; gap:8px; padding:8px 10px;
+  background:var(--hover); border:1px solid var(--border); border-radius:6px;
+}
+.lk-person.host { border-color:rgba(180,85,255,.55); }
+.lk-person-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--strong); font-size:12px; }
+.lk-person-tag { color:var(--accent); font-family:var(--mono); font-size:8.5px; font-weight:700; letter-spacing:.08em; }
+.lk-person .lk-make-host {
+  margin-left:auto; background:none; border:0; padding:0; cursor:pointer;
+  color:var(--muted); font:inherit; font-size:10px; font-weight:600;
+}
+.lk-person .lk-make-host:hover { color:var(--accent); text-decoration:underline; }
+#link-rename { width:100%; height:32px; margin-top:8px; }
 
 /* Mobile: app-bar icon with a player-count badge, and the bar becomes a bottom sheet. */
 #m-link { position:relative; display:none; }
@@ -760,31 +792,43 @@ body {
 }
 
 /* One-time privacy notice, shown before the first room is created or joined. */
-#lknotice {
+#lknotice, #lkname {
   position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center;
   padding:24px; background:rgba(8,8,9,.72);
 }
-#lknotice[hidden] { display:none; }
-#lknotice-panel {
+#lknotice[hidden], #lkname[hidden] { display:none; }
+#lknotice-panel, #lkname-panel {
   width:100%; max-width:440px; padding:26px;
   background:var(--modal); border:1px solid var(--border-strong); border-radius:12px;
   box-shadow:0 24px 70px rgba(0,0,0,.7);
 }
-#lknotice-panel h2 { font-size:19px; font-weight:700; color:var(--strong); margin-bottom:12px; }
+#lknotice-panel h2, #lkname-panel h2 { font-size:19px; font-weight:700; color:var(--strong); margin-bottom:12px; }
 #lknotice-panel p { color:var(--muted); font-size:13.5px; line-height:1.65; margin:0; }
 #lknotice-panel a { color:var(--accent); }
+#lkname-panel label {
+  display:block; margin-bottom:5px; color:var(--faint); font-family:var(--mono);
+  font-size:9.5px; font-weight:700; letter-spacing:.08em;
+}
+#lkname-in {
+  width:100%; height:38px; padding:0 11px; background:var(--card);
+  border:1px solid var(--border-strong); border-radius:5px; color:var(--strong);
+  font:inherit; font-size:14px;
+}
+#lkname-in:focus { border-color:var(--accent); }
+#lkname-status { min-height:14px; margin-top:6px; color:var(--danger); font-family:var(--mono); font-size:9.5px; }
 .lkn-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
-#lknotice-cancel {
+#lknotice-cancel, #lkname-cancel {
   height:36px; padding:0 14px; border-radius:6px; cursor:pointer;
   background:none; border:1px solid var(--border-strong); color:var(--muted);
   font:inherit; font-size:12px; font-weight:700;
 }
-#lknotice-cancel:hover { border-color:var(--danger); color:var(--danger); }
+#lknotice-cancel:hover, #lkname-cancel:hover { border-color:var(--danger); color:var(--danger); }
 #lknotice .lk-btn.primary { height:36px; }
+#lkname .lk-btn.primary { height:36px; }
 
 @media (max-width:768px) {
-  #lknotice { align-items:flex-end; padding:0; }
-  #lknotice-panel { max-width:none; border-radius:14px 14px 0 0; border-bottom:0; padding:22px 18px 26px; }
+  #lknotice, #lkname { align-items:flex-end; padding:0; }
+  #lknotice-panel, #lkname-panel { max-width:none; border-radius:14px 14px 0 0; border-bottom:0; padding:22px 18px 26px; }
   .lkn-actions button { flex:1; height:44px; }
 }
 
@@ -826,6 +870,7 @@ body {
   #m-timergrid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   #m-timergrid .tmr { margin:0; height:100%; padding:12px; }
   #modal { width:100%; max-width:none; border-radius:0; border:0; }
+  #link-participants, #linkstrip .dot, #linkstrip .lbl { display:none; }
 }
 
 /* Overlays must cover the viewport, not the document. */
@@ -1008,7 +1053,15 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   #linkbar .lk-btn { flex:1; height:44px; }
   #linkbar .lk-or { display:none; }
   #linkstrip { padding:9px 14px; }
-  #linkstrip #link-count { display:none; }
+  #linkpeople:not([hidden]) {
+    position:fixed; left:0; right:0; top:auto; z-index:33; width:auto;
+    bottom:calc(60px + env(safe-area-inset-bottom)); padding:16px 14px;
+    background:#151517; border:0; border-top:1px solid var(--accent); border-radius:0;
+    box-shadow:0 -14px 34px rgba(0,0,0,.65); max-height:60vh; overflow-y:auto;
+  }
+  #linkpeople-list { flex-direction:column; }
+  .lk-person { width:100%; min-height:44px; }
+  #link-rename { height:38px; }
   .match-field label { font-size:9.5px; font-family:var(--mono); letter-spacing:.08em; }
 }
 
@@ -1213,10 +1266,15 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         <span class="dot"></span>
         <span class="lbl">LINKED</span>
         <code id="link-code">------</code>
-        <span id="link-count">1 player</span>
+        <div id="link-participants" aria-label="Players"></div>
+        <button id="link-count" type="button" aria-expanded="false">1 player</button>
         <span class="spacer"></span>
         <button id="link-copy" type="button">Copy link</button>
         <button id="link-leave" type="button">Leave</button>
+        <div id="linkpeople" hidden>
+          <div id="linkpeople-list" role="list" aria-label="Players"></div>
+          <button id="link-rename" class="lk-btn" type="button">Change Your Username</button>
+        </div>
       </div>
 
       <div id="scroll">
@@ -1316,7 +1374,8 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
               Link rooms run on Cloudflare Workers. While you are in a room, Cloudflare routes the
               connection and receives your IP address and request metadata, as described in their
               <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">privacy
-              policy</a>. The shared board is stored until the room expires.
+              policy</a>. Your username is saved in this browser and shared with the room. The
+              shared board is stored until the room expires.
             </p>
           </section>
 
@@ -1339,11 +1398,25 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         Link rooms run on Cloudflare Workers. While you are in a room, Cloudflare routes the
         connection and receives your IP address and request metadata, as described in their
         <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">privacy
-        policy</a>. The shared board is stored until the room expires.
+        policy</a>. Your username is saved in this browser and shared with the room. The shared
+        board is stored until the room expires.
       </p>
       <div class="lkn-actions">
         <button type="button" id="lknotice-cancel">Cancel</button>
         <button type="button" id="lknotice-ok" class="lk-btn primary">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lkname" hidden>
+    <div id="lkname-panel" role="dialog" aria-modal="true" aria-labelledby="lkname-h">
+      <h2 id="lkname-h">Choose a Username</h2>
+      <label for="lkname-in">USERNAME</label>
+      <input id="lkname-in" autocomplete="nickname" spellcheck="false">
+      <div id="lkname-status" role="status" aria-live="polite"></div>
+      <div class="lkn-actions">
+        <button type="button" id="lkname-cancel">Cancel</button>
+        <button type="button" id="lkname-save" class="lk-btn primary">Save</button>
       </div>
     </div>
   </div>
@@ -1424,6 +1497,7 @@ const MATCH_STORAGE_KEY = 'phasoverlay-match-settings-v1';
 const WEEKLY_STORAGE_KEY = 'phasoverlay-weekly-v1';
 const GHOSTS_STORAGE_KEY = 'phasoverlay-ghosts-v1';
 const LINK_STORAGE_KEY = 'phasoverlay-link-room-v1';
+const LINK_PROFILE_STORAGE_KEY = 'phasoverlay-link-profile-v1';
 const DIFF_WEEKLY = 5, DIFF_CUSTOM = 6;
 const SPEED_MULTS = [0.5, 0.75, 1.0, 1.25, 1.5];
 
@@ -1455,6 +1529,7 @@ let dataUnavailable = ghosts.length === 0;   // no cache and no successful fetch
 let weeklyData = loadCachedWeekly();
 let match = { difficulty:1, map:0, customTier:1, speedIndex:2, huntTier:1 };
 let linkState = null;       // initialized after the existing tracker controls are built
+let focusReturn = null;
 
 EV.forEach(e => state[e] = 0);
 loadMatchSettings();
@@ -1912,7 +1987,14 @@ overlay.onclick = e => { if (e.target === overlay) closeModal(); };
 // Escape unwinds one layer at a time: lightbox, then the about view, then the ghost modal.
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  if (!document.getElementById('lkname').hidden) { closeUsernameDialog(false); return; }
   if (!document.getElementById('lknotice').hidden) { closeLinkNotice(false); return; }
+  if (linkState && linkState.peopleOpen) {
+    linkState.peopleOpen = false;
+    linkState.peopleTarget = null;
+    renderLink();
+    return;
+  }
   const lb = document.getElementById('lightbox');
   if (lb.classList.contains('open')) { lb.classList.remove('open'); return; }
   const ab = document.getElementById('about');
@@ -2627,6 +2709,11 @@ function applyMatchSettings(persist = true, rerender = true) {
 
 el('match-toggle').onclick = () => {
   if (linkState && linkState.open) closeLinkPanel(false);
+  if (linkState && linkState.peopleOpen) {
+    linkState.peopleOpen = false;
+    linkState.peopleTarget = null;
+    renderLink();
+  }
   const open = el('matchbar').hidden;
   el('matchbar').hidden = !open;
   el('match-toggle').classList.toggle('on', open);
@@ -2781,16 +2868,21 @@ setScreen('evidence');
 
 const LINK_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no O/0, I/1/L
 const LINK_CODE_RE = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
+const LINK_PROTOCOL = 2;
 const LINK_RECONNECT_MAX_MS = 15000;
 const LINK_MESSAGE_MAX = 16384;
 const LINK_HOST_TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
+const LINK_PARTICIPANT_ID_RE = /^[A-Za-z0-9_-]{22}$/;
 linkState = {
   status:'idle', code:null, players:1, open:false, notice:'', noticeKind:'',
   socket:null, socketGeneration:0, reconnectTimer:null, reconnectAttempt:0,
   lastRevision:-1, manualLeave:false, terminalError:false, applyingRemote:false,
-  copyFeedback:false, hostToken:null, isHost:false, configPending:false
+  copyFeedback:false, hostToken:null, isHost:false, configPending:false,
+  participants:[], peopleOpen:false, peopleTarget:null, peopleLeft:12,
+  candidateToken:null, candidateHash:null
 };
 let linkReturnFocus = null;
+let linkProfile = loadLinkProfile();
 
 function linkConfigured() {
   if (!LINK_URL || !LINK_URL.trim()) return false;
@@ -2836,6 +2928,29 @@ function newHostToken() {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
+function newParticipantId() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function hashLinkToken(token) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  let binary = '';
+  for (const byte of new Uint8Array(digest)) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function normalizeLinkUsername(value) {
+  const normalized = String(value || '').normalize('NFC').trim().replace(/\s+/gu, ' ');
+  const length = Array.from(normalized).length;
+  if (length < 2 || length > 20) return null;
+  if (/[\u0000-\u001f\u007f-\u009f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/u.test(normalized)) return null;
+  return normalized;
+}
+
 function roomSettingsSnapshot() {
   return {
     difficulty:match.difficulty,
@@ -2879,6 +2994,22 @@ function exactObject(value, keys) {
 
 function hasOwn(value, key) {
   return Object.prototype.hasOwnProperty.call(value, key);
+}
+
+function validLinkParticipants(value) {
+  if (!Array.isArray(value) || value.length < 1 || value.length > 8) return false;
+  const ids = new Set();
+  let hosts = 0;
+  for (const participant of value) {
+    if (!exactObject(participant, ['id','username','host'])
+        || !LINK_PARTICIPANT_ID_RE.test(participant.id)
+        || normalizeLinkUsername(participant.username) !== participant.username
+        || typeof participant.host !== 'boolean'
+        || ids.has(participant.id)) return false;
+    ids.add(participant.id);
+    if (participant.host && ++hosts > 1) return false;
+  }
+  return true;
 }
 
 function validRemoteCardName(value) {
@@ -3014,6 +3145,143 @@ function linkSettingsLocked() {
     && (!linkState.isHost || linkState.status !== 'connected' || linkState.configPending);
 }
 
+function participantLabel(participant, counts) {
+  return counts.get(participant.username) > 1
+    ? `${participant.username} · ${participant.id.slice(-2).toUpperCase()}`
+    : participant.username;
+}
+
+function linkParticipantCounts() {
+  const counts = new Map();
+  for (const participant of linkState.participants) {
+    counts.set(participant.username, (counts.get(participant.username) || 0) + 1);
+  }
+  return counts;
+}
+
+function orderedLinkParticipants() {
+  const ownId = linkProfile?.id;
+  return [...linkState.participants].sort((a, b) =>
+    Number(b.host) - Number(a.host) || Number(b.id === ownId) - Number(a.id === ownId));
+}
+
+function toggleLinkPeople(target, anchor = null) {
+  if (linkState.status !== 'connected') return;
+  const closing = linkState.peopleOpen && linkState.peopleTarget === target;
+  linkState.peopleOpen = !closing;
+  linkState.peopleTarget = closing ? null : target;
+  if (!closing) {
+    el('matchbar').hidden = true;
+    el('match-toggle').classList.remove('on');
+    el('match-toggle').setAttribute('aria-expanded', 'false');
+  }
+  if (!closing && anchor && !matchMedia('(max-width:768px)').matches) {
+    const stripRect = el('linkstrip').getBoundingClientRect();
+    const anchorRect = anchor.getBoundingClientRect();
+    linkState.peopleLeft = Math.max(12, Math.min(anchorRect.left - stripRect.left, stripRect.width - 272));
+  }
+  renderLink();
+}
+
+function renderLinkStripPeople() {
+  const container = el('link-participants');
+  container.replaceChildren();
+  const connected = linkState.status === 'connected' && !linkState.notice;
+  container.hidden = !connected;
+  if (!connected) return 0;
+
+  const counts = linkParticipantCounts();
+  const ownId = linkProfile?.id;
+  const participants = orderedLinkParticipants();
+  const shown = participants.slice(0, 3);
+  for (const participant of shown) {
+    const interactive = participant.id === ownId || (linkState.isHost && !participant.host);
+    const chip = document.createElement(interactive ? 'button' : 'span');
+    if (interactive) chip.type = 'button';
+    chip.className = 'lk-strip-person' + (participant.host ? ' host' : '');
+    const label = participantLabel(participant, counts);
+    chip.setAttribute('aria-label', label + (participant.host ? ', host' : '')
+      + (participant.id === ownId ? ', you' : ''));
+    if (interactive) {
+      chip.setAttribute('aria-controls', 'linkpeople');
+      chip.setAttribute('aria-expanded', linkState.peopleOpen && linkState.peopleTarget === participant.id ? 'true' : 'false');
+    }
+    const name = document.createElement('span');
+    name.className = 'lk-strip-name';
+    name.textContent = label;
+    chip.appendChild(name);
+    if (participant.id === ownId) {
+      const you = document.createElement('span');
+      you.className = 'lk-strip-tag';
+      you.textContent = 'YOU';
+      chip.appendChild(you);
+    }
+    if (interactive) {
+      chip.onclick = () => toggleLinkPeople(participant.id, chip);
+    }
+    container.appendChild(chip);
+  }
+  return participants.length - shown.length;
+}
+
+function renderLinkPeople() {
+  const panel = el('linkpeople');
+  const connected = linkState.status === 'connected';
+  panel.hidden = !connected || !linkState.peopleOpen;
+  panel.style.left = `${linkState.peopleLeft}px`;
+  const countExpanded = !panel.hidden && ['all','overflow'].includes(linkState.peopleTarget);
+  el('link-count').setAttribute('aria-expanded', countExpanded ? 'true' : 'false');
+  const rename = el('link-rename');
+  rename.hidden = true;
+  if (panel.hidden) return;
+
+  const list = el('linkpeople-list');
+  list.replaceChildren();
+  const counts = linkParticipantCounts();
+  const ordered = orderedLinkParticipants();
+  const participants = linkState.peopleTarget === 'all' ? ordered
+    : linkState.peopleTarget === 'overflow' ? ordered.slice(3)
+    : ordered.filter(participant => participant.id === linkState.peopleTarget);
+  if (!participants.length) {
+    panel.hidden = true;
+    linkState.peopleOpen = false;
+    linkState.peopleTarget = null;
+    return;
+  }
+  for (const participant of participants) {
+    const row = document.createElement('div');
+    row.className = 'lk-person' + (participant.host ? ' host' : '');
+    row.setAttribute('role', 'listitem');
+    const name = document.createElement('span');
+    name.className = 'lk-person-name';
+    const label = participantLabel(participant, counts);
+    name.textContent = label;
+    row.appendChild(name);
+    if (participant.id === linkProfile?.id) {
+      const you = document.createElement('span');
+      you.className = 'lk-person-tag';
+      you.textContent = 'YOU';
+      row.appendChild(you);
+    }
+    if (!participant.host && participant.id !== linkProfile?.id && linkState.isHost) {
+      const makeHost = document.createElement('button');
+      makeHost.type = 'button';
+      makeHost.className = 'lk-make-host';
+      makeHost.textContent = 'Make Host';
+      makeHost.onclick = () => {
+        if (!confirm(`Make ${label} host?`)) return;
+        linkState.peopleOpen = false;
+        linkState.peopleTarget = null;
+        sendLinkIntent({ type:'transfer_host', targetId:participant.id });
+        renderLink();
+      };
+      row.appendChild(makeHost);
+    }
+    list.appendChild(row);
+  }
+  rename.hidden = !participants.some(participant => participant.id === linkProfile?.id);
+}
+
 function renderLink() {
   const configured = linkConfigured();
   const connected = linkState.status === 'connected';
@@ -3024,35 +3292,41 @@ function renderLink() {
   const mobile = el('m-link');
   const strip = el('linkstrip');
   const panel = el('linkbar');
+  const playerLabel = linkState.players === 1 ? '1 player' : linkState.players + ' players';
 
   toggle.hidden = !configured;
   mobile.hidden = !configured;
   panel.hidden = !configured || !linkState.open || active;
   strip.hidden = !configured || !active;
   strip.dataset.state = pending ? (linkState.status === 'reconnecting' ? 'reconnecting' : 'connecting') : 'connected';
+  const hiddenPlayers = renderLinkStripPeople();
+  renderLinkPeople();
 
   toggle.classList.toggle('on', connected || linkState.open);
   toggle.classList.toggle('pending', pending);
   toggle.classList.toggle('error', linkState.status === 'error');
-  toggle.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
-  toggle.setAttribute('aria-label', connected ? `Link room ${linkState.code}, ${linkState.players} players`
+  toggle.setAttribute('aria-expanded', panel.hidden && el('linkpeople').hidden ? 'false' : 'true');
+  toggle.setAttribute('aria-label', connected ? `Link room ${linkState.code}, ${playerLabel}`
     : pending ? `Link room ${linkState.code}, ${linkState.status}` : 'Link with other players');
 
   el('link-code').textContent = linkState.code || '------';
   strip.querySelector('.lbl').textContent = connected ? (linkState.isHost ? 'HOST' : 'LINKED')
     : linkState.status === 'reconnecting' ? 'RECONNECTING' : 'CONNECTING';
-  el('link-count').textContent = connected
-    ? (linkState.notice || (linkState.players === 1 ? '1 player' : linkState.players + ' players'))
+  const compactStrip = matchMedia('(max-width:768px)').matches;
+  const count = el('link-count');
+  count.hidden = connected && !linkState.notice && !compactStrip && hiddenPlayers === 0;
+  count.textContent = connected
+    ? (linkState.notice || (compactStrip ? playerLabel : `+${hiddenPlayers}`))
     : linkState.status === 'reconnecting' ? 'Connection lost · retrying…'
     : linkState.status === 'creating' ? 'Creating room…' : 'Joining room…';
-  el('link-count').classList.toggle('error', connected && linkState.noticeKind === 'error');
+  count.classList.toggle('error', connected && linkState.noticeKind === 'error');
 
   const badge = el('m-link-badge');
   badge.hidden = !connected;
   badge.textContent = connected ? linkState.players : '';
   mobile.style.color = connected ? 'var(--accent)' : pending ? 'var(--muted)' : '';
   mobile.setAttribute('aria-label', connected
-    ? `Link room ${linkState.code}, ${linkState.players} players`
+    ? `Link room ${linkState.code}, ${playerLabel}`
     : pending ? `Link ${linkState.status}` : 'Link with other players');
   el('m-link-meta').textContent = connected ? 'LINKED ' + linkState.code + ' · '
     : linkState.status === 'reconnecting' ? 'RECONNECTING ' + linkState.code + ' · ' : '';
@@ -3094,7 +3368,12 @@ function closeLinkPanel(returnFocus = true) {
 }
 
 el('link-toggle').onclick = () => {
-  if (linkIsActive()) { el('linkstrip').scrollIntoView({ block:'nearest' }); return; }
+  if (linkIsActive()) {
+    if (linkState.status === 'connected') {
+      toggleLinkPeople('all', el('link-participants').firstElementChild || el('link-code'));
+    }
+    return;
+  }
   if (linkState.open) closeLinkPanel();
   else openLinkPanel();
 };
@@ -3116,6 +3395,26 @@ document.addEventListener('keydown', event => {
     event.preventDefault(); first.focus();
   }
 });
+
+function loadLinkProfile() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LINK_PROFILE_STORAGE_KEY) || '{}');
+    const username = normalizeLinkUsername(saved.username);
+    if (!LINK_PARTICIPANT_ID_RE.test(saved.id || '') || username !== saved.username) return null;
+    return { id:saved.id, username };
+  } catch (_) { return null; }
+}
+
+function saveLinkProfile(username) {
+  const profile = {
+    id:linkProfile && LINK_PARTICIPANT_ID_RE.test(linkProfile.id) ? linkProfile.id : newParticipantId(),
+    username
+  };
+  linkProfile = profile;
+  try { localStorage.setItem(LINK_PROFILE_STORAGE_KEY, JSON.stringify(profile)); }
+  catch (_) { /* storage is optional */ }
+  return profile;
+}
 
 function rememberRoom() {
   try {
@@ -3175,6 +3474,10 @@ function terminalLinkError(code, fallback) {
     room_not_found:'That room code is wrong or the room has expired.',
     room_full:'That room is full (8 players maximum).',
     schema_mismatch:'This room uses different ghost data. Refresh the tracker and try again.',
+    protocol_mismatch:'This room uses a different Link version.',
+    identity_in_use:'That Link profile is already connected.',
+    host_left:'The room has ended.',
+    inactive:'The room has expired.',
     invalid_code:'Enter a valid 6-character room code.',
     origin_not_allowed:'This copy of the tracker is not allowed to use the Link service.'
   };
@@ -3183,7 +3486,10 @@ function terminalLinkError(code, fallback) {
   linkState.notice = messages[code] || fallback || 'Link could not connect. Try again.';
   linkState.noticeKind = 'error';
   linkState.open = true;
-  if (['room_not_found','schema_mismatch','room_full'].includes(code)) forgetRoom();
+  if (['room_not_found','schema_mismatch','protocol_mismatch','room_full','identity_in_use','host_left','inactive'].includes(code)) {
+    forgetRoom();
+    removeRoomFromLocation();
+  }
   renderLink();
   requestAnimationFrame(() => el('link-code-in').focus());
 }
@@ -3211,6 +3517,18 @@ function closeCurrentLinkSocket(code = 1000, reason = 'leaving') {
   }
 }
 
+async function refreshHostCandidate(socket, generation) {
+  const token = newHostToken();
+  let candidateHash;
+  try { candidateHash = await hashLinkToken(token); }
+  catch (_) { socket.close(4002, 'identity_failed'); return; }
+  if (generation !== linkState.socketGeneration || socket !== linkState.socket
+      || socket.readyState !== WebSocket.OPEN) return;
+  linkState.candidateToken = token;
+  linkState.candidateHash = candidateHash;
+  socket.send(JSON.stringify({ type:'host_candidate', candidateHash }));
+}
+
 function openLinkSocket(reconnecting = false) {
   if (!linkState.code || linkState.manualLeave || linkState.terminalError) return;
   closeCurrentLinkSocket(1000, 'replaced');
@@ -3219,8 +3537,13 @@ function openLinkSocket(reconnecting = false) {
   linkState.noticeKind = reconnecting ? 'pending' : '';
   const generation = ++linkState.socketGeneration;
   const url = linkEndpoint('/rooms/' + linkState.code, true);
+  url.searchParams.set('protocol', String(LINK_PROTOCOL));
   url.searchParams.set('schema', String(MAX_SCHEMA));
   url.searchParams.set('weeklySchema', String(MAX_WEEKLY_SCHEMA));
+  const candidateToken = newHostToken();
+  const candidateHash = hashLinkToken(candidateToken);
+  linkState.candidateToken = candidateToken;
+  linkState.candidateHash = null;
 
   let socket;
   try { socket = new WebSocket(url); }
@@ -3228,11 +3551,20 @@ function openLinkSocket(reconnecting = false) {
   linkState.socket = socket;
   renderLink();
 
-  socket.onopen = () => {
+  socket.onopen = async () => {
     if (generation !== linkState.socketGeneration || socket !== linkState.socket) return;
-    if (LINK_HOST_TOKEN_RE.test(linkState.hostToken || '')) {
-      socket.send(JSON.stringify({ type:'host_auth', token:linkState.hostToken }));
-    }
+    if (!linkProfile) { socket.close(4002, 'profile_missing'); return; }
+    let resolvedHash;
+    try { resolvedHash = await candidateHash; }
+    catch (_) { socket.close(4002, 'identity_failed'); return; }
+    if (generation !== linkState.socketGeneration || socket !== linkState.socket
+        || socket.readyState !== WebSocket.OPEN) return;
+    linkState.candidateHash = resolvedHash;
+    socket.send(JSON.stringify({
+      type:'identify', id:linkProfile.id, username:linkProfile.username,
+      candidateHash:resolvedHash,
+      hostToken:LINK_HOST_TOKEN_RE.test(linkState.hostToken || '') ? linkState.hostToken : null
+    }));
   };
 
   socket.onmessage = event => {
@@ -3248,17 +3580,19 @@ function openLinkSocket(reconnecting = false) {
 
     if (message.type === 'snapshot') {
       linkState.configPending = false;
-      if (!exactObject(message, ['type','revision','players','host','state'])
+      if (!exactObject(message, ['type','revision','participants','host','state'])
           || !Number.isInteger(message.revision) || message.revision < 0
-          || !Number.isInteger(message.players) || message.players < 1 || message.players > 8
+          || !validLinkParticipants(message.participants)
           || typeof message.host !== 'boolean'
           || !applyRemoteBoard(message.state)) {
         socket.close(4002, 'invalid_snapshot');
         return;
       }
       linkState.lastRevision = message.revision;
-      linkState.players = message.players;
+      linkState.participants = message.participants;
+      linkState.players = message.participants.length;
       linkState.isHost = message.host;
+      if (!message.host && linkState.hostToken) linkState.hostToken = null;
       linkState.status = 'connected';
       linkState.notice = '';
       linkState.noticeKind = '';
@@ -3282,11 +3616,34 @@ function openLinkSocket(reconnecting = false) {
       return;
     }
 
-    if (message.type === 'presence') {
-      if (!exactObject(message, ['type','players']) || !Number.isInteger(message.players)
-          || message.players < 1 || message.players > 8) return;
-      linkState.players = message.players;
+    if (message.type === 'host_granted') {
+      if (!exactObject(message, ['type']) || !LINK_HOST_TOKEN_RE.test(linkState.candidateToken || '')) {
+        socket.close(4002, 'invalid_host_grant');
+        return;
+      }
+      linkState.hostToken = linkState.candidateToken;
+      linkState.isHost = true;
+      rememberRoom();
+      refreshHostCandidate(socket, generation);
       renderLink();
+      return;
+    }
+
+    if (message.type === 'presence') {
+      if (!exactObject(message, ['type','participants']) || !validLinkParticipants(message.participants)) return;
+      linkState.participants = message.participants;
+      linkState.players = message.participants.length;
+      renderLink();
+      return;
+    }
+
+    if (message.type === 'room_ended') {
+      if (!exactObject(message, ['type','reason']) || !['host_left','inactive'].includes(message.reason)) {
+        socket.close(4002, 'invalid_room_end');
+        return;
+      }
+      terminalLinkError(message.reason);
+      socket.close(4004, 'room_ended');
       return;
     }
 
@@ -3318,7 +3675,11 @@ function openLinkSocket(reconnecting = false) {
         linkState.noticeKind = 'error';
         renderLink();
       } else if (message.code === 'host_only') {
-        linkState.notice = 'Only the room host can change Game Settings.';
+        linkState.notice = 'Only the room host can do that.';
+        linkState.noticeKind = 'error';
+        renderLink();
+      } else if (message.code === 'participant_unavailable') {
+        linkState.notice = 'That player is no longer available.';
         linkState.noticeKind = 'error';
         renderLink();
       } else if (message.code === 'invalid_message') {
@@ -3352,7 +3713,11 @@ async function createRoom() {
   linkState.hostToken = newHostToken();
   linkState.isHost = false;
   linkState.configPending = false;
+  linkState.participants = [];
+  linkState.peopleOpen = false;
+  linkState.peopleTarget = null;
   const body = JSON.stringify({
+    protocol:LINK_PROTOCOL,
     schema:MAX_SCHEMA,
     weeklySchema:MAX_WEEKLY_SCHEMA,
     state:sharedBoardSnapshot(),
@@ -3403,6 +3768,9 @@ function joinRoom(code, resume = false, hostToken = null) {
   linkState.hostToken = LINK_HOST_TOKEN_RE.test(hostToken || '') ? hostToken : null;
   linkState.isHost = false;
   linkState.configPending = false;
+  linkState.participants = [];
+  linkState.peopleOpen = false;
+  linkState.peopleTarget = null;
   linkState.manualLeave = false;
   linkState.terminalError = false;
   linkState.open = false;
@@ -3413,6 +3781,11 @@ function joinRoom(code, resume = false, hostToken = null) {
 
 function leaveRoom() {
   const focusTarget = isMobileLinkSheet() ? el('m-link') : el('link-toggle');
+  const socket = linkState.socket;
+  if (linkState.isHost && linkState.status === 'connected'
+      && socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ type:'end_room' }));
+  }
   linkState.manualLeave = true;
   if (linkState.reconnectTimer) clearTimeout(linkState.reconnectTimer);
   linkState.reconnectTimer = null;
@@ -3428,6 +3801,11 @@ function leaveRoom() {
   linkState.isHost = false;
   linkState.configPending = false;
   linkState.copyFeedback = false;
+  linkState.participants = [];
+  linkState.peopleOpen = false;
+  linkState.peopleTarget = null;
+  linkState.candidateToken = null;
+  linkState.candidateHash = null;
   forgetRoom();
   removeRoomFromLocation();
   renderLink();
@@ -3467,16 +3845,14 @@ function sendLinkConfigure() {
   return sent;
 }
 
-/* One-time privacy notice. Versioned key: bump it if what is disclosed ever changes, so
-   everyone sees the new wording once instead of being stranded on the old one. */
-const LINK_NOTICE_KEY = 'phasoverlay-link-notice-v1';
+const LINK_NOTICE_KEY = 'phasoverlay-link-notice-v2';
 let linkNoticePending = null;
+let linkNamePending = null;
 
 function linkNoticeSeen() {
   try { return localStorage.getItem(LINK_NOTICE_KEY) === '1'; } catch (_) { return false; }
 }
 
-// Runs action immediately once acknowledged, otherwise holds it until the dialog is accepted.
 function withLinkNotice(action, joining) {
   if (linkNoticeSeen()) { action(); return; }
   linkNoticePending = action;
@@ -3505,10 +3881,55 @@ el('lknotice-ok').onclick = () => {
 el('lknotice-cancel').onclick = () => closeLinkNotice(false);
 el('lknotice').onclick = event => { if (event.target === el('lknotice')) closeLinkNotice(false); };
 
-el('link-create').onclick = () => withLinkNotice(createRoom);
+function openUsernameDialog(action = null, changing = false) {
+  linkNamePending = action;
+  el('lkname-h').textContent = changing ? 'Change Your Username' : 'Choose a Username';
+  el('lkname-in').value = linkProfile ? linkProfile.username : '';
+  el('lkname-status').textContent = '';
+  el('lkname').hidden = false;
+  enterLayer(el('lkname-panel'), el('lkname-in'));
+  document.documentElement.classList.add('layer-open');
+}
+
+function closeUsernameDialog(proceed) {
+  if (el('lkname').hidden) return;
+  el('lkname').hidden = true;
+  exitLayer();
+  if (el('lknotice').hidden && !about.classList.contains('show') && !overlay.classList.contains('show')) {
+    document.documentElement.classList.remove('layer-open');
+  }
+  const pending = linkNamePending;
+  linkNamePending = null;
+  if (proceed && pending) pending();
+}
+
+function withLinkProfile(action) {
+  if (linkProfile) { action(); return; }
+  openUsernameDialog(action, false);
+}
+
+function saveUsername() {
+  const username = normalizeLinkUsername(el('lkname-in').value);
+  if (!username) {
+    el('lkname-status').textContent = 'Use 2–20 characters.';
+    return;
+  }
+  const changed = !linkProfile || linkProfile.username !== username;
+  saveLinkProfile(username);
+  if (changed && linkState.status === 'connected') sendLinkIntent({ type:'rename', username });
+  closeUsernameDialog(true);
+  renderLink();
+}
+
+el('lkname-save').onclick = saveUsername;
+el('lkname-cancel').onclick = () => closeUsernameDialog(false);
+el('lkname').onclick = event => { if (event.target === el('lkname')) closeUsernameDialog(false); };
+el('lkname-in').onkeydown = event => { if (event.key === 'Enter') saveUsername(); };
+
+el('link-create').onclick = () => withLinkNotice(() => withLinkProfile(createRoom));
 el('link-join').onclick = () => {
   const code = el('link-code-in').value;   // captured before the dialog opens
-  withLinkNotice(() => joinRoom(code), true);
+  withLinkNotice(() => withLinkProfile(() => joinRoom(code)), true);
 };
 el('link-code-in').oninput = event => {
   const clean = normaliseRoomCode(event.target.value).replace(/[^ABCDEFGHJKLMNPQRSTUVWXYZ23456789]/g, '');
@@ -3535,6 +3956,24 @@ el('link-copy').onclick = async () => {
 };
 
 el('link-leave').onclick = leaveRoom;
+el('link-count').onclick = () => {
+  if (linkState.status !== 'connected') return;
+  const target = matchMedia('(max-width:768px)').matches ? 'all' : 'overflow';
+  toggleLinkPeople(target, el('link-count'));
+};
+el('link-rename').onclick = () => {
+  linkState.peopleOpen = false;
+  linkState.peopleTarget = null;
+  renderLink();
+  openUsernameDialog(null, true);
+};
+document.addEventListener('click', event => {
+  if (!linkState.peopleOpen || !(event.target instanceof Element)) return;
+  if (event.target.closest('#linkpeople, .lk-strip-person, #link-count, #link-toggle, #m-link')) return;
+  linkState.peopleOpen = false;
+  linkState.peopleTarget = null;
+  renderLink();
+});
 // Mobile entry point reuses the bar as a bottom sheet, like Game Settings.
 el('m-link').onclick = () => el('link-toggle').click();
 
@@ -3557,12 +3996,9 @@ if (linkConfigured()) {
   if (sharedCode) {
     const resuming = !!savedRoom && savedRoom.code === sharedCode;
     const token = resuming ? savedRoom.hostToken : null;
-    withLinkNotice(() => joinRoom(sharedCode, resuming, token), true);
+    withLinkNotice(() => withLinkProfile(() => joinRoom(sharedCode, resuming, token)), true);
   } else if (savedRoom && linkNoticeSeen()) {
-    // Silent auto-resume only. Gating a background reconnect behind the notice would pop a
-    // dialog on page load with no action from the user; an unacknowledged resume is simply
-    // skipped, and the chip is there to reconnect deliberately.
-    joinRoom(savedRoom.code, true, savedRoom.hostToken);
+    withLinkProfile(() => joinRoom(savedRoom.code, true, savedRoom.hostToken));
   }
 }
 
@@ -3576,8 +4012,6 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 /* ---------------- focus management for overlay layers ---------------- With a sheet open, Tab. */
-
-let focusReturn = null;
 
 function focusablesIn(container) {
   return [...container.querySelectorAll(
@@ -3599,6 +4033,7 @@ function exitLayer() {
 
 // Topmost open layer wins, matching the Escape order.
 function activeLayer() {
+  if (!document.getElementById('lkname').hidden) return document.getElementById('lkname-panel');
   if (!document.getElementById('lknotice').hidden) return document.getElementById('lknotice-panel');
   if (document.getElementById('lightbox').classList.contains('open')) return null;
   const ab = document.getElementById('about');

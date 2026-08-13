@@ -296,7 +296,7 @@ body {
 }
 #spd-click:hover { border-color:var(--accent); color:var(--accent); }
 #spd-click:active { background:var(--accent); border-color:var(--accent); color:#151515; transform:scale(.985); }
-.spd-foot { display:flex; align-items:center; justify-content:space-between; margin-top:7px; font-size:10.5px; color:var(--faint); }
+.spd-foot { display:flex; align-items:center; justify-content:flex-end; margin-top:7px; font-size:10.5px; color:var(--faint); }
 .spd-foot button { background:none; border:0; padding:0; cursor:pointer; font:inherit; font-size:10.5px; color:var(--muted); }
 .spd-foot button:hover { color:var(--accent); text-decoration:underline; }
 
@@ -1125,7 +1125,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
           <div class="tmr-head"><span class="tmr-name" id="spd-label">SPEED (100%)</span>
             <span class="tmr-val"><span id="spd-val">-</span><i>m/s</i></span></div>
           <button id="spd-click">CLICK WITH FOOTSTEPS</button>
-          <div class="spd-foot"><span id="spd-taps">0 clicks</span><button id="spd-reset">Reset speed</button></div>
+          <div class="spd-foot"><button id="spd-reset">Reset speed</button></div>
         </div>
 
         <div class="sec">Modifiers</div>
@@ -2523,7 +2523,6 @@ function recordTap() {
   }
   if (taps.length > TAP_WINDOW) taps.shift();
 
-  el('spd-taps').textContent = taps.length + (taps.length === 1 ? ' click' : ' clicks');
   document.querySelector('.speed-box').classList.add('live');
   run();
 }
@@ -2532,7 +2531,6 @@ function resetTaps() {
   taps = [];
   measuredSpeed = null;
   el('spd-val').textContent = '-';
-  el('spd-taps').textContent = '0 clicks';
   document.querySelector('.speed-box').classList.remove('live');
   run();
 }

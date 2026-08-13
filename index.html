@@ -723,7 +723,7 @@ body {
 .ab-privacy h3 { font-size:15px; margin-bottom:12px; }
 .ab-privacy p { color:var(--muted); font-size:13.5px; line-height:1.65; margin:0 0 12px; max-width:660px; }
 .ab-privacy p:last-child { margin-bottom:0; }
-.ab-privacy strong { color:var(--primary); }
+.ab-privacy a { color:var(--accent); }
 .ab-foot { margin-top:32px; padding-top:24px; border-top:1px solid var(--border);
   display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
   font-family:var(--mono); font-size:11.5px; color:var(--faint); }
@@ -757,6 +757,35 @@ body {
   .get-actions::before { width:340px; }
   .get-title { font-size:34px; }
   .ab-foot { flex-direction:column; }
+}
+
+/* One-time privacy notice, shown before the first room is created or joined. */
+#lknotice {
+  position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center;
+  padding:24px; background:rgba(8,8,9,.72);
+}
+#lknotice[hidden] { display:none; }
+#lknotice-panel {
+  width:100%; max-width:440px; padding:26px;
+  background:var(--modal); border:1px solid var(--border-strong); border-radius:12px;
+  box-shadow:0 24px 70px rgba(0,0,0,.7);
+}
+#lknotice-panel h2 { font-size:19px; font-weight:700; color:var(--strong); margin-bottom:12px; }
+#lknotice-panel p { color:var(--muted); font-size:13.5px; line-height:1.65; margin:0; }
+#lknotice-panel a { color:var(--accent); }
+.lkn-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
+#lknotice-cancel {
+  height:36px; padding:0 14px; border-radius:6px; cursor:pointer;
+  background:none; border:1px solid var(--border-strong); color:var(--muted);
+  font:inherit; font-size:12px; font-weight:700;
+}
+#lknotice-cancel:hover { border-color:var(--danger); color:var(--danger); }
+#lknotice .lk-btn.primary { height:36px; }
+
+@media (max-width:768px) {
+  #lknotice { align-items:flex-end; padding:0; }
+  #lknotice-panel { max-width:none; border-radius:14px 14px 0 0; border-bottom:0; padding:22px 18px 26px; }
+  .lkn-actions button { flex:1; height:44px; }
 }
 
 /* Dark scrollbars: Width 5, thumb #3F3F46 radius 2. */
@@ -1177,7 +1206,6 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         <button class="lk-btn" id="link-join" type="button">Join room</button>
         <span class="lk-or">or</span>
         <button class="lk-btn primary" id="link-create" type="button">Create a room</button>
-        <span class="lk-note">Anyone with the code can edit the board. Only the host controls Game Settings. Timers stay on your device. Rooms expire 30 minutes after everyone leaves.</span>
         <span class="lk-note" id="link-status" role="status" aria-live="polite"></span>
       </div>
 
@@ -1285,22 +1313,10 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
           <section class="ab-privacy reveal" id="privacy">
             <h3>Privacy</h3>
             <p>
-              This tracker runs in your browser. Your evidence, timers, match settings and a cached
-              copy of the ghost data are stored on your own device in local storage, so the page works
-              offline and remembers your setup. <strong>There are no cookies, no analytics and no
-              tracking of any kind.</strong>
-            </p>
-            <p>
-              <strong>Link rooms</strong> are the one exception, and only while you are in a room. Rooms
-              run on Cloudflare Workers. The shared board (evidence, filters, ghost marks and the host's
-              match settings) is held by that service until the room expires, 30 minutes after the last
-              player disconnects, and is then deleted. Cloudflare also receives connection metadata such
-              as your IP address, which is unavoidable in order to route the connection.
-            </p>
-            <p>
-              There are no accounts, no names, no chat and no message history. Nothing is sold, shared
-              or used for advertising. A room code is the only thing that grants access to a room, so
-              treat it as private and share it only with people you want on your board.
+              Link rooms run on Cloudflare Workers. While you are in a room, Cloudflare routes the
+              connection and receives your IP address and request metadata, as described in their
+              <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">privacy
+              policy</a>. The shared board is stored until the room expires.
             </p>
           </section>
 
@@ -1314,6 +1330,22 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
    </div>
 
     <div id="lightbox"><img id="lightbox-img" alt=""></div>
+  </div>
+
+  <div id="lknotice" hidden>
+    <div id="lknotice-panel" role="dialog" aria-modal="true" aria-labelledby="lknotice-h">
+      <h2 id="lknotice-h">Before you create a room</h2>
+      <p>
+        Link rooms run on Cloudflare Workers. While you are in a room, Cloudflare routes the
+        connection and receives your IP address and request metadata, as described in their
+        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">privacy
+        policy</a>. The shared board is stored until the room expires.
+      </p>
+      <div class="lkn-actions">
+        <button type="button" id="lknotice-cancel">Cancel</button>
+        <button type="button" id="lknotice-ok" class="lk-btn primary">Got it</button>
+      </div>
+    </div>
   </div>
 
   <div id="overlay">
@@ -1880,6 +1912,7 @@ overlay.onclick = e => { if (e.target === overlay) closeModal(); };
 // Escape unwinds one layer at a time: lightbox, then the about view, then the ghost modal.
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  if (!document.getElementById('lknotice').hidden) { closeLinkNotice(false); return; }
   const lb = document.getElementById('lightbox');
   if (lb.classList.contains('open')) { lb.classList.remove('open'); return; }
   const ab = document.getElementById('about');
@@ -3436,8 +3469,49 @@ function sendLinkConfigure() {
   return sent;
 }
 
-el('link-create').onclick = createRoom;
-el('link-join').onclick = () => joinRoom(el('link-code-in').value);
+/* One-time privacy notice. Versioned key: bump it if what is disclosed ever changes, so
+   everyone sees the new wording once instead of being stranded on the old one. */
+const LINK_NOTICE_KEY = 'phasoverlay-link-notice-v1';
+let linkNoticePending = null;
+
+function linkNoticeSeen() {
+  try { return localStorage.getItem(LINK_NOTICE_KEY) === '1'; } catch (_) { return false; }
+}
+
+// Runs action immediately once acknowledged, otherwise holds it until the dialog is accepted.
+function withLinkNotice(action, joining) {
+  if (linkNoticeSeen()) { action(); return; }
+  linkNoticePending = action;
+  el('lknotice-h').textContent = joining ? 'Before you join a room' : 'Before you create a room';
+  el('lknotice').hidden = false;
+  enterLayer(el('lknotice-panel'), el('lknotice-ok'));
+  document.documentElement.classList.add('layer-open');
+}
+
+function closeLinkNotice(proceed) {
+  if (el('lknotice').hidden) return;
+  el('lknotice').hidden = true;
+  exitLayer();
+  if (!about.classList.contains('show') && !overlay.classList.contains('show')) {
+    document.documentElement.classList.remove('layer-open');
+  }
+  const pending = linkNoticePending;
+  linkNoticePending = null;
+  if (proceed && pending) pending();
+}
+
+el('lknotice-ok').onclick = () => {
+  try { localStorage.setItem(LINK_NOTICE_KEY, '1'); } catch (_) { }
+  closeLinkNotice(true);
+};
+el('lknotice-cancel').onclick = () => closeLinkNotice(false);
+el('lknotice').onclick = event => { if (event.target === el('lknotice')) closeLinkNotice(false); };
+
+el('link-create').onclick = () => withLinkNotice(createRoom);
+el('link-join').onclick = () => {
+  const code = el('link-code-in').value;   // captured before the dialog opens
+  withLinkNotice(() => joinRoom(code), true);
+};
 el('link-code-in').oninput = event => {
   const clean = normaliseRoomCode(event.target.value).replace(/[^ABCDEFGHJKLMNPQRSTUVWXYZ23456789]/g, '');
   if (event.target.value !== clean) event.target.value = clean;
@@ -3483,9 +3557,15 @@ if (linkConfigured()) {
   const sharedCode = roomFromLocation();
   const savedRoom = roomFromStorage();
   if (sharedCode) {
-    joinRoom(sharedCode, !!savedRoom && savedRoom.code === sharedCode,
-      savedRoom && savedRoom.code === sharedCode ? savedRoom.hostToken : null);
-  } else if (savedRoom) joinRoom(savedRoom.code, true, savedRoom.hostToken);
+    const resuming = !!savedRoom && savedRoom.code === sharedCode;
+    const token = resuming ? savedRoom.hostToken : null;
+    withLinkNotice(() => joinRoom(sharedCode, resuming, token), true);
+  } else if (savedRoom && linkNoticeSeen()) {
+    // Silent auto-resume only. Gating a background reconnect behind the notice would pop a
+    // dialog on page load with no action from the user; an unacknowledged resume is simply
+    // skipped, and the chip is there to reconnect deliberately.
+    joinRoom(savedRoom.code, true, savedRoom.hostToken);
+  }
 }
 
 /* ---------------- sidebar tabs ---------------- */
@@ -3521,6 +3601,7 @@ function exitLayer() {
 
 // Topmost open layer wins, matching the Escape order.
 function activeLayer() {
+  if (!document.getElementById('lknotice').hidden) return document.getElementById('lknotice-panel');
   if (document.getElementById('lightbox').classList.contains('open')) return null;
   const ab = document.getElementById('about');
   if (ab.classList.contains('show')) return document.getElementById('about-panel');

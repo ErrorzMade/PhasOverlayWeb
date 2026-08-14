@@ -1516,6 +1516,8 @@ const LOS_TOOLTIP = 'LOS speedup is when a ghost gradually speeds up as it has c
 const GRAPH_MAX_TIME = 15.0;   // fixed X axis
 const GRAPH_MAX_SPEED = 4.0;   // fixed Y axis
 
+let ghostContentText = '';
+let ghostContentHash = null;
 let ghosts = loadCachedGhosts();
 let state = { };            // evidence -> 0 unset, 1 confirmed, 2 ruled out
 let autoOut = new Set();   // engine-locked evidence
@@ -1610,9 +1612,23 @@ function parseGhosts(json) {
 
 function loadCachedGhosts() {
   try {
-    const file = parseGhosts(localStorage.getItem(GHOSTS_STORAGE_KEY) || '');
-    return file ? mapAll(file.ghosts) : [];
+    const raw = localStorage.getItem(GHOSTS_STORAGE_KEY) || '';
+    const file = parseGhosts(raw);
+    if (!file) return [];
+    setGhostContent(raw);
+    return mapAll(file.ghosts);
   } catch (_) { return []; }
+}
+
+function setGhostContent(raw) {
+  ghostContentText = String(raw).replace(/\r\n/g, '\n').trim();
+  ghostContentHash = null;
+}
+
+function currentGhostContentHash() {
+  if (!ghostContentText) return Promise.resolve(null);
+  if (!ghostContentHash) ghostContentHash = hashLinkToken(ghostContentText);
+  return ghostContentHash;
 }
 
 function applyWeeklyToMatch(w) {
@@ -2191,8 +2207,8 @@ const given = document.getElementById('given');
   b.setAttribute('aria-pressed', n === limit ? 'true' : 'false');
   b.textContent = n;
   b.onclick = () => {
-    if (match.difficulty === DIFF_WEEKLY) return;
-    if (sendLinkSet('limit', null, n)) return;
+    if (match.difficulty === DIFF_WEEKLY || linkSettingsLocked()) return;
+    if (linkIsActive()) { sendLinkConfigure(n); return; }
     limit = n;
     syncGivenPills();
     saveMatchSettings();
@@ -2203,7 +2219,7 @@ const given = document.getElementById('given');
 });
 
 function syncGivenPills() {
-  const locked = match.difficulty === DIFF_WEEKLY;
+  const locked = match.difficulty === DIFF_WEEKLY || linkSettingsLocked();
   [...given.children].forEach((pill, i) => {
     pill.classList.toggle('on', i === limit);
     pill.classList.toggle('locked', locked);
@@ -2879,7 +2895,7 @@ linkState = {
   lastRevision:-1, manualLeave:false, terminalError:false, applyingRemote:false,
   copyFeedback:false, hostToken:null, isHost:false, configPending:false,
   participants:[], peopleOpen:false, peopleTarget:null, peopleLeft:12,
-  candidateToken:null, candidateHash:null
+  candidateToken:null, candidateHash:null, content:null
 };
 let linkReturnFocus = null;
 let linkProfile = loadLinkProfile();
@@ -3529,6 +3545,17 @@ async function refreshHostCandidate(socket, generation) {
   socket.send(JSON.stringify({ type:'host_candidate', candidateHash }));
 }
 
+async function prepareLinkContent() {
+  await refreshGhostData();
+  const hash = await currentGhostContentHash();
+  if (!hash) {
+    terminalLinkError('no_ghost_data', "Ghost data isn't available yet. Check your connection and try again.");
+    return false;
+  }
+  linkState.content = hash;
+  return true;
+}
+
 function openLinkSocket(reconnecting = false) {
   if (!linkState.code || linkState.manualLeave || linkState.terminalError) return;
   closeCurrentLinkSocket(1000, 'replaced');
@@ -3539,7 +3566,7 @@ function openLinkSocket(reconnecting = false) {
   const url = linkEndpoint('/rooms/' + linkState.code, true);
   url.searchParams.set('protocol', String(LINK_PROTOCOL));
   url.searchParams.set('schema', String(MAX_SCHEMA));
-  url.searchParams.set('weeklySchema', String(MAX_WEEKLY_SCHEMA));
+  url.searchParams.set('content', linkState.content || '');
   const candidateToken = newHostToken();
   const candidateHash = hashLinkToken(candidateToken);
   linkState.candidateToken = candidateToken;
@@ -3716,10 +3743,11 @@ async function createRoom() {
   linkState.participants = [];
   linkState.peopleOpen = false;
   linkState.peopleTarget = null;
+  if (!await prepareLinkContent()) return;
   const body = JSON.stringify({
     protocol:LINK_PROTOCOL,
     schema:MAX_SCHEMA,
-    weeklySchema:MAX_WEEKLY_SCHEMA,
+    content:linkState.content,
     state:sharedBoardSnapshot(),
     hostToken:linkState.hostToken
   });
@@ -3751,7 +3779,7 @@ async function createRoom() {
   }
 }
 
-function joinRoom(code, resume = false, hostToken = null) {
+async function joinRoom(code, resume = false, hostToken = null) {
   code = normaliseRoomCode(code);
   if (!LINK_CODE_RE.test(code)) {
     openLinkPanel('Enter a valid 6-character room code.', 'error');
@@ -3776,6 +3804,7 @@ function joinRoom(code, resume = false, hostToken = null) {
   linkState.open = false;
   linkState.notice = '';
   linkState.noticeKind = '';
+  if (!await prepareLinkContent()) return;
   openLinkSocket(false);
 }
 
@@ -3836,10 +3865,10 @@ function sendLinkReset() {
   return sendLinkIntent({ type:'reset' });
 }
 
-function sendLinkConfigure() {
+function sendLinkConfigure(nextLimit = limit) {
   if (!linkState || !linkState.isHost || linkState.configPending) return false;
   linkState.configPending = true;
-  const sent = sendLinkIntent({ type:'configure', settings:roomSettingsSnapshot(), limit });
+  const sent = sendLinkIntent({ type:'configure', settings:roomSettingsSnapshot(), limit:nextLimit });
   if (!sent) linkState.configPending = false;
   renderLink();
   return sent;
@@ -4201,6 +4230,7 @@ function refreshGhostData() {
       if (!file) { refreshStaleNotice(); return; }   // parseGhosts sets ghostsTooNew
 
       try { localStorage.setItem(GHOSTS_STORAGE_KEY, raw); } catch (_) { /* private mode */ }
+      setGhostContent(raw);
       ghosts = mapAll(file.ghosts);
       dataUnavailable = false;
       refreshStaleNotice();

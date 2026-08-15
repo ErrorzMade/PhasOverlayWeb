@@ -1040,7 +1040,12 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
     box-shadow:0 -14px 34px rgba(0,0,0,.65);
     max-height:60vh; overflow-y:auto;
   }
-  .match-field select { height:44px; font-size:14px; }
+  /* iOS Safari zooms into any focused field under 16px and never zooms back out, leaving the
+     user to pinch out manually. 16px is the threshold at which it stops doing that. */
+  .match-field select,
+  #linkbar input,
+  #lkname-in { font-size:16px; }
+  .match-field select { height:44px; }
 
   #m-link { display:inline-flex; align-items:center; justify-content:center; }
   #linkbar:not([hidden]) {

@@ -28,6 +28,7 @@
   --window:#111112; --window-border:#252528;
   --card:#1C1C1F; --hover:#2D2D30; --border:#2A2A2E; --border-strong:#3F3F46;
   --modal:#131317;
+  --kb:0px;   /* on-screen keyboard inset, set from visualViewport */
   /* From the site's style.css, used by the about view. */
   --ease:cubic-bezier(.25,1,.5,1);
   --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
@@ -196,6 +197,7 @@ body {
 
 /* Mobile: app-bar icon with a player-count badge, and the bar becomes a bottom sheet. */
 #m-link { position:relative; display:none; }
+#m-link svg { width:19px; height:19px; }
 #m-link-badge {
   position:absolute; top:-3px; right:-3px; min-width:16px; padding:0 3px;
   border-radius:999px; background:var(--accent); color:#151515;
@@ -827,7 +829,9 @@ body {
 #lkname .lk-btn.primary { height:36px; }
 
 @media (max-width:768px) {
-  #lknotice, #lkname { align-items:flex-end; padding:0; }
+  /* iOS keeps the layout viewport full height when the keyboard opens, so anything anchored
+     to the bottom ends up behind it. --kb is the space the keyboard is actually taking. */
+  #lknotice, #lkname { align-items:flex-end; padding:0 0 var(--kb); }
   #lknotice-panel, #lkname-panel { max-width:none; border-radius:14px 14px 0 0; border-bottom:0; padding:22px 18px 26px; }
   .lkn-actions button { flex:1; height:44px; }
 }
@@ -1034,7 +1038,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   /* Game Settings as a bottom sheet, above the nav. */
   #matchbar:not([hidden]) {
     position:fixed; left:0; right:0; z-index:33;
-    bottom:calc(60px + env(safe-area-inset-bottom));
+    bottom:calc(60px + env(safe-area-inset-bottom) + var(--kb));
     grid-template-columns:1fr 1fr; gap:12px; padding:16px 14px;
     background:#151517; border-top:1px solid var(--accent);
     box-shadow:0 -14px 34px rgba(0,0,0,.65);
@@ -1047,10 +1051,17 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   #lkname-in { font-size:16px; }
   .match-field select { height:44px; }
 
-  #m-link { display:inline-flex; align-items:center; justify-content:center; }
+  /* Matches the hamburger box beside it; accent icon so it is not missed. */
+  #m-link {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:40px; height:40px; flex:none; border-radius:8px; cursor:pointer;
+    background:var(--card); border:1px solid var(--border-strong); color:var(--accent);
+  }
+  #m-link.on { background:var(--accent); border-color:var(--accent); color:#151515; }
+  #m-link.pending { color:var(--muted); }
   #linkbar:not([hidden]) {
     position:fixed; left:0; right:0; z-index:33;
-    bottom:calc(60px + env(safe-area-inset-bottom));
+    bottom:calc(60px + env(safe-area-inset-bottom) + var(--kb));
     padding:16px 14px; gap:10px;
     background:#151517; border-top:1px solid var(--accent);
     box-shadow:0 -14px 34px rgba(0,0,0,.65);
@@ -1095,7 +1106,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   <header id="m-appbar">
     <span class="m-brand"><img src="assets/logo.png" alt=""> <span>Phas<span class="ac">Overlay</span></span></span>
     <button id="m-link" type="button" aria-label="Link with other players" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;fill:currentColor"><path d="M7.8 16.2a4 4 0 0 1 0-5.7l2.1-2.1 1.4 1.4-2.1 2.1a2 2 0 0 0 2.8 2.8l2.1-2.1 1.4 1.4-2.1 2.1a4 4 0 0 1-5.7 0zm8.4-8.4a4 4 0 0 1 0 5.7l-2.1 2.1-1.4-1.4 2.1-2.1a2 2 0 0 0-2.8-2.8L9.9 11.4 8.5 10l2.1-2.1a4 4 0 0 1 5.6 0z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.8278 11.2437L12.7074 18.3641C10.7548 20.3167 7.58896 20.3167 5.63634 18.3641C3.68372 16.4114 3.68372 13.2456 5.63634 11.293L12.4717 4.45763C13.7735 3.15589 15.884 3.15589 17.1858 4.45763C18.4875 5.75938 18.4875 7.86993 17.1858 9.17168L10.3614 15.9961C9.71048 16.647 8.6552 16.647 8.00433 15.9961C7.35345 15.3452 7.35345 14.2899 8.00433 13.6391L14.2258 7.41762"/></svg>
       <span id="m-link-badge" hidden></span>
     </button>
     <button id="m-menu" type="button" aria-label="About PhasOverlay">&#9776;</button>
@@ -3346,7 +3357,8 @@ function renderLink() {
   const badge = el('m-link-badge');
   badge.hidden = !connected;
   badge.textContent = connected ? linkState.players : '';
-  mobile.style.color = connected ? 'var(--accent)' : pending ? 'var(--muted)' : '';
+  mobile.classList.toggle('on', !!connected);
+  mobile.classList.toggle('pending', !connected && !!pending);
   mobile.setAttribute('aria-label', connected
     ? `Link room ${linkState.code}, ${playerLabel}`
     : pending ? `Link ${linkState.status}` : 'Link with other players');
@@ -4036,6 +4048,20 @@ if (linkConfigured()) {
     withLinkProfile(() => joinRoom(savedRoom.code, true, savedRoom.hostToken));
   }
 }
+
+/* Reports how much of the viewport the on-screen keyboard is covering. Safari fires resize
+   on visualViewport but never changes innerHeight, so this is the only reliable source. */
+(function trackKeyboardInset() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const apply = () => {
+    const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    document.documentElement.style.setProperty('--kb', Math.round(inset) + 'px');
+  };
+  vv.addEventListener('resize', apply);
+  vv.addEventListener('scroll', apply);
+  apply();
+})();
 
 /* ---------------- sidebar tabs ---------------- */
 document.querySelectorAll('.tab').forEach(tab => {

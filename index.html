@@ -1734,18 +1734,17 @@ function passes(g, confirmed, ruledOut, f) {
     if (n >= limit && confirmed.indexOf(g.forced) < 0) return false;
   }
 
-  if (f.speed) {
+  if (f.anySpeed) {
     let ok = false;
-    if (f.slow   && g.canBe.indexOf('slow')   >= 0) ok = true;
-    if (f.normal && g.canBe.indexOf('normal') >= 0) ok = true;
-    if (f.fast   && g.canBe.indexOf('fast')   >= 0) ok = true;
+    for (const k of ['slow','normal','fast'])
+      if (f.speed[k] && g.canBe.indexOf(k) >= 0) ok = true;
     if (!ok) return false;
   }
 
-  if (f.hunt) {
+  if (f.anyHunt) {
     let ok = false;
     for (const k of ['veryearly','early','normal','late'])
-      if (f[k] && g.canHunt.indexOf(k) >= 0) ok = true;
+      if (f.hunt[k] && g.canHunt.indexOf(k) >= 0) ok = true;
     if (!ok) return false;
   }
   return true;
@@ -1766,10 +1765,10 @@ function run() {
   const ruledOut  = EV.filter(e => state[e] === 2);
 
   const f = {
-    speed: spd.slow || spd.normal || spd.fast,
-    slow: spd.slow, normal: spd.normal, fast: spd.fast,
-    hunt: hunt.veryearly || hunt.early || hunt.normal || hunt.late,
-    veryearly: hunt.veryearly, early: hunt.early, normal: hunt.normal, late: hunt.late
+    anySpeed: spd.slow || spd.normal || spd.fast,
+    speed: spd,
+    anyHunt: hunt.veryearly || hunt.early || hunt.normal || hunt.late,
+    hunt: hunt
   };
 
   let visible = [], mimicValid = false;

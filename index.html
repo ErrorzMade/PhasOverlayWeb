@@ -907,8 +907,14 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   .m-brand .ac { color:var(--accent); }
   #m-menu {
     width:40px; height:40px; flex:none; border-radius:8px; cursor:pointer;
-    background:var(--card); border:1px solid var(--border-strong); color:var(--primary); font-size:15px;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--card); border:1px solid var(--border-strong); color:var(--primary);
   }
+  /* Filled icon, not stroked like #m-link and the nav — currentColor picks up --primary.
+     Authored duotone (opacity:.5 on the tray) is dropped: flat, it reads at 13.9 perceptual
+     ink against the 24.6 of the link icon sitting beside it, and the half-opacity tray took
+     that to 10.2, which looked washed out next to it. 21px for the same reason. */
+  #m-menu svg { width:21px; height:21px; fill:currentColor; }
 
   /* ---- match summary: Game Settings collapsed to one tappable line ---- */
   #m-meta {
@@ -960,8 +966,10 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   .ev-row[data-s="2"]::after { content:"RULED OUT"; color:var(--danger); }
   .ev-row[data-s="2"] .ev-label { color:var(--muted); }
 
-  /* Evidence Given moves into Game Settings - it's set once a match, not tapped. */
-  #panel-evidence > .sec:nth-of-type(3), #given { display:none; }
+  /* Evidence Given moves into Game Settings - it's set once a match, not tapped.
+     Targeted by id, not :nth-of-type: that counts div siblings rather than .sec ones, so it
+     matched nothing and left this label stranded above RESET TRACKER. */
+  #given-label, #given { display:none; }
   .sec { font-size:11px; font-family:var(--mono); letter-spacing:.1em; color:var(--faint);
          font-weight:700; margin:22px 0 8px; }
   .pill { height:48px; }
@@ -999,8 +1007,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
     background:rgba(180,85,255,.12);
   }
   #m-chips .chip.out { border-color:var(--danger); color:var(--danger); background:rgba(255,85,85,.12); }
-  #m-chips .edit { margin-left:auto; background:none; border:0; cursor:pointer;
-                   font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; color:var(--muted); }
+  #m-chips:empty { display:none; }   /* no chips, no stray 14px gap above the grid */
 
   /* ---- sticky CTA + bottom nav ---- */
   #m-cta {
@@ -1019,11 +1026,22 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
     padding:6px 6px calc(6px + env(safe-area-inset-bottom));
   }
   #m-nav button {
-    flex:1; background:none; border:0; cursor:pointer; padding:8px 4px; border-radius:8px;
+    flex:1; background:none; border:0; cursor:pointer; padding:4px 4px 5px; border-radius:8px;
     display:flex; flex-direction:column; align-items:center; gap:3px;
     font:inherit; font-size:11px; font-weight:600; color:var(--faint);
   }
-  #m-nav button i { font-family:var(--mono); font-style:normal; font-size:9px; letter-spacing:.1em; opacity:.7; }
+  /* No colour of their own — currentColor inherits the button's --faint / --accent state.
+     Round caps are load-bearing on the ghost: its eyes are zero-length path segments that
+     only render as dots with them.
+     One weight for all three on purpose. Evidence carries ~1.55x the ink of the other two
+     because it is the only one with an outer container; thinning it to match would need
+     ~1.05, and mismatched line weight reads worse than the extra density. If it ever needs
+     to sit lighter, drop its outer rounded square rather than changing its stroke-width. */
+  #m-nav button svg {
+    width:19px; height:19px; flex:none;
+    fill:none; stroke:currentColor; stroke-width:1.8;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
   #m-nav button.on { color:var(--accent); background:rgba(180,85,255,.12); }
   #m-nav #m-nav-count {
     position:absolute; transform:translate(26px,-6px);
@@ -1113,7 +1131,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.8278 11.2437L12.7074 18.3641C10.7548 20.3167 7.58896 20.3167 5.63634 18.3641C3.68372 16.4114 3.68372 13.2456 5.63634 11.293L12.4717 4.45763C13.7735 3.15589 15.884 3.15589 17.1858 4.45763C18.4875 5.75938 18.4875 7.86993 17.1858 9.17168L10.3614 15.9961C9.71048 16.647 8.6552 16.647 8.00433 15.9961C7.35345 15.3452 7.35345 14.2899 8.00433 13.6391L14.2258 7.41762"/></svg>
       <span id="m-link-badge" hidden></span>
     </button>
-    <button id="m-menu" type="button" aria-label="About PhasOverlay">&#9776;</button>
+    <button id="m-menu" type="button" aria-label="About PhasOverlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M3 14.25C3.41421 14.25 3.75 14.5858 3.75 15C3.75 16.4354 3.75159 17.4365 3.85315 18.1919C3.9518 18.9257 4.13225 19.3142 4.40901 19.591C4.68577 19.8678 5.07435 20.0482 5.80812 20.1469C6.56347 20.2484 7.56459 20.25 9 20.25H15C16.4354 20.25 17.4365 20.2484 18.1919 20.1469C18.9257 20.0482 19.3142 19.8678 19.591 19.591C19.8678 19.3142 20.0482 18.9257 20.1469 18.1919C20.2484 17.4365 20.25 16.4354 20.25 15C20.25 14.5858 20.5858 14.25 21 14.25C21.4142 14.25 21.75 14.5858 21.75 15V15.0549C21.75 16.4225 21.75 17.5248 21.6335 18.3918C21.5125 19.2919 21.2536 20.0497 20.6517 20.6516C20.0497 21.2536 19.2919 21.5125 18.3918 21.6335C17.5248 21.75 16.4225 21.75 15.0549 21.75H8.94513C7.57754 21.75 6.47522 21.75 5.60825 21.6335C4.70814 21.5125 3.95027 21.2536 3.34835 20.6517C2.74643 20.0497 2.48754 19.2919 2.36652 18.3918C2.24996 17.5248 2.24998 16.4225 2.25 15.0549C2.25 15.0366 2.25 15.0183 2.25 15C2.25 14.5858 2.58579 14.25 3 14.25Z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12 16.75C12.2106 16.75 12.4114 16.6615 12.5535 16.5061L16.5535 12.1311C16.833 11.8254 16.8118 11.351 16.5061 11.0715C16.2004 10.792 15.726 10.8132 15.4465 11.1189L12.75 14.0682V3C12.75 2.58579 12.4142 2.25 12 2.25C11.5858 2.25 11.25 2.58579 11.25 3V14.0682L8.55353 11.1189C8.27403 10.8132 7.79963 10.792 7.49393 11.0715C7.18823 11.351 7.16698 11.8254 7.44648 12.1311L11.4465 16.5061C11.5886 16.6615 11.7894 16.75 12 16.75Z"/></svg></button>
   </header>
   <button id="m-meta" type="button" aria-label="Match settings">
     <span id="m-link-meta"></span>
@@ -1158,7 +1176,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         <div class="sec">Speed</div>
         <div class="pills c3" id="speed"></div>
 
-        <div class="sec">Evidence Given</div>
+        <div class="sec" id="given-label">Evidence Given</div>
         <div class="pills c4" id="given"></div>
 
         <button id="reset">RESET TRACKER</button>
@@ -1208,14 +1226,15 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
           <button type="button" class="pill" id="mod-cursed" aria-pressed="false"><div>Cursed Hunt</div><span>+20s hunt</span></button>
         </div>
 
+        <button id="reset-timers">RESET TIMERS</button>
+
+        <!-- Volume trails the panel: it is a persistent setting, not part of a match. -->
         <div class="sec">Volume</div>
         <div class="vol-row">
           <input id="vol" type="range" min="0" max="100" value="100" aria-label="Master volume">
           <span id="vol-val">100%</span>
           <button id="vol-test">Test</button>
         </div>
-
-        <button id="reset-timers">RESET TIMERS</button>
       </div>
 
       <div id="side-fill"></div>
@@ -1310,9 +1329,9 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   <button id="m-cta" type="button">View <b>30</b> possible ghosts <span>&rarr;</span></button>
 
   <nav id="m-nav" aria-label="Sections">
-    <button type="button" data-screen="evidence" class="on"><i>01</i>Evidence</button>
-    <button type="button" data-screen="ghosts"><i>02</i>Ghosts<span id="m-nav-count">30</span></button>
-    <button type="button" data-screen="timers"><i>03</i>Timers</button>
+    <button type="button" data-screen="evidence" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z"/><path d="M6 15.8L7.14286 17L10 14"/><path d="M6 8.8L7.14286 10L10 7"/><path d="M13 9L18 9"/><path d="M13 16L18 16"/></svg>Evidence</button>
+    <button type="button" data-screen="ghosts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 10H9.009M15 10H15.009M5 10C5 6.13401 8.13401 3 12 3C15.866 3 19 6.13401 19 10V21L18.1828 20.4552C17.4052 19.9368 17.0165 19.6777 16.605 19.6045C16.2421 19.54 15.8685 19.577 15.5253 19.7114C15.1362 19.8638 14.8058 20.1942 14.145 20.855C14.0649 20.9351 13.9351 20.935 13.8549 20.855C13.4039 20.4052 13.1548 20.1686 12.888 20.0364C12.3285 19.7591 11.6715 19.7591 11.112 20.0364C10.8452 20.1686 10.5961 20.4052 10.1451 20.855C10.0649 20.935 9.93508 20.9351 9.855 20.855C9.19423 20.1942 8.86384 19.8638 8.47469 19.7114C8.13152 19.577 7.75788 19.54 7.39501 19.6045C6.98352 19.6777 6.59475 19.9368 5.81722 20.4552L5 21V10Z"/></svg>Ghosts<span id="m-nav-count">30</span></button>
+    <button type="button" data-screen="timers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.51555 7C3.55827 8.4301 3 10.1499 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3V6M12 12L8 8"/></svg>Timers</button>
   </nav>
 
   <!-- ============ ABOUT: the phasoverlay.xyz landing page, in-app ============ -->
@@ -2872,13 +2891,11 @@ function syncMobileChrome(possible, confirmed, ruledOut) {
     (possible === 1 ? '' : 's') + ' <span>&rarr;</span>';
 
   // Active evidence as chips, so the constraints are visible from the Ghosts screen.
+  // Display only - the bottom nav's Evidence tab is already one tap away, so there is no
+  // edit affordance here. Empty renders nothing and #m-chips:empty collapses the row.
   const chips = confirmed.map(e => '<span class="chip">' + SHORT[e] + ' ✓</span>')
     .concat(ruledOut.map(e => '<span class="chip out">' + SHORT[e] + ' ✕</span>'));
-  el('m-chips').innerHTML = chips.length
-    ? chips.join('') + '<button type="button" class="edit">EDIT EVIDENCE</button>'
-    : '<button type="button" class="edit" style="margin:0">NO EVIDENCE SET - TAP TO ADD</button>';
-  const edit = el('m-chips').querySelector('.edit');
-  if (edit) edit.onclick = () => setScreen('evidence');
+  el('m-chips').innerHTML = chips.join('');
 }
 
 /* Game Settings collapsed to one line: difficulty · map · speed. */

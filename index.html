@@ -2924,11 +2924,17 @@ const LINK_CODE_RE = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
 const LINK_PROTOCOL = 2;
 const LINK_RECONNECT_MAX_MS = 15000;
 const LINK_MESSAGE_MAX = 16384;
+const LINK_CONNECT_TIMEOUT_MS = 10000;
+const LINK_SNAPSHOT_TIMEOUT_MS = 10000;
+const LINK_HEARTBEAT_IDLE_MS = 60000;
+const LINK_HEARTBEAT_TIMEOUT_MS = 15000;
 const LINK_HOST_TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
 const LINK_PARTICIPANT_ID_RE = /^[A-Za-z0-9_-]{22}$/;
 linkState = {
   status:'idle', code:null, players:1, open:false, notice:'', noticeKind:'',
   socket:null, socketGeneration:0, reconnectTimer:null, reconnectAttempt:0,
+  connectTimer:null, snapshotTimer:null, heartbeatTimer:null, pongTimer:null,
+  lastInboundAt:0, pingSentAt:0,
   lastRevision:-1, manualLeave:false, terminalError:false, applyingRemote:false,
   copyFeedback:false, hostToken:null, isHost:false, configPending:false,
   participants:[], peopleOpen:false, peopleTarget:null, peopleLeft:12,
@@ -3523,6 +3529,24 @@ function removeRoomFromLocation() {
   } catch (_) { /* optional */ }
 }
 
+function clearLinkTimer(name) {
+  if (linkState[name] !== null) clearTimeout(linkState[name]);
+  linkState[name] = null;
+}
+
+function clearLinkConnectionTimers() {
+  clearLinkTimer('connectTimer');
+  clearLinkTimer('snapshotTimer');
+  clearLinkTimer('heartbeatTimer');
+  clearLinkTimer('pongTimer');
+  linkState.lastInboundAt = 0;
+  linkState.pingSentAt = 0;
+}
+
+function linkSocketIsCurrent(socket, generation) {
+  return generation === linkState.socketGeneration && socket === linkState.socket;
+}
+
 function terminalLinkError(code, fallback) {
   const messages = {
     room_not_found:'That room code is wrong or the room has expired.',
@@ -3540,6 +3564,8 @@ function terminalLinkError(code, fallback) {
   linkState.notice = messages[code] || fallback || 'Link could not connect. Try again.';
   linkState.noticeKind = 'error';
   linkState.open = true;
+  clearLinkTimer('reconnectTimer');
+  clearLinkConnectionTimers();
   if (['room_not_found','schema_mismatch','protocol_mismatch','room_full','identity_in_use','host_left','inactive'].includes(code)) {
     forgetRoom();
     removeRoomFromLocation();
@@ -3558,12 +3584,14 @@ function scheduleLinkReconnect() {
   renderLink();
   linkState.reconnectTimer = setTimeout(() => {
     linkState.reconnectTimer = null;
+    if (linkState.socket && linkState.socket.readyState < WebSocket.CLOSING) return;
     openLinkSocket(true);
   }, delay);
 }
 
 function closeCurrentLinkSocket(code = 1000, reason = 'leaving') {
   const socket = linkState.socket;
+  clearLinkConnectionTimers();
   linkState.socket = null;
   linkState.socketGeneration += 1;
   if (socket && socket.readyState < WebSocket.CLOSING) {
@@ -3571,16 +3599,84 @@ function closeCurrentLinkSocket(code = 1000, reason = 'leaving') {
   }
 }
 
+function retryCurrentLinkSocket(socket, generation, reason) {
+  if (!linkSocketIsCurrent(socket, generation)) return;
+  clearLinkConnectionTimers();
+  linkState.socket = null;
+  linkState.socketGeneration += 1;
+  if (socket.readyState < WebSocket.CLOSING) {
+    try { socket.close(4000, reason); } catch (_) { }
+  }
+  scheduleLinkReconnect();
+}
+
+function sendCurrentLinkFrame(socket, generation, frame) {
+  if (!linkSocketIsCurrent(socket, generation) || socket.readyState !== WebSocket.OPEN) return false;
+  try {
+    socket.send(frame);
+    return true;
+  } catch (_) {
+    retryCurrentLinkSocket(socket, generation, 'send_failed');
+    return false;
+  }
+}
+
+function sendLinkHeartbeat(socket, generation) {
+  clearLinkTimer('heartbeatTimer');
+  if (!linkSocketIsCurrent(socket, generation) || linkState.status !== 'connected'
+      || socket.readyState !== WebSocket.OPEN || linkState.pongTimer !== null) return;
+  if (!sendCurrentLinkFrame(socket, generation, 'ping')) return;
+  linkState.pingSentAt = Date.now();
+  linkState.pongTimer = setTimeout(() => {
+    linkState.pongTimer = null;
+    retryCurrentLinkSocket(socket, generation, 'heartbeat_timeout');
+  }, LINK_HEARTBEAT_TIMEOUT_MS);
+}
+
+function armLinkHeartbeat(socket, generation) {
+  clearLinkTimer('heartbeatTimer');
+  if (!linkSocketIsCurrent(socket, generation) || linkState.status !== 'connected'
+      || socket.readyState !== WebSocket.OPEN || linkState.pongTimer !== null) return;
+  const idleFor = Math.max(0, Date.now() - linkState.lastInboundAt);
+  linkState.heartbeatTimer = setTimeout(() => {
+    linkState.heartbeatTimer = null;
+    sendLinkHeartbeat(socket, generation);
+  }, Math.max(0, LINK_HEARTBEAT_IDLE_MS - idleFor));
+}
+
+function noteLinkInbound(socket, generation) {
+  if (!linkSocketIsCurrent(socket, generation)) return;
+  linkState.lastInboundAt = Date.now();
+  linkState.pingSentAt = 0;
+  clearLinkTimer('pongTimer');
+  if (linkState.status === 'connected') armLinkHeartbeat(socket, generation);
+}
+
+function checkLinkHeartbeat(socket, generation, sendNow = false) {
+  if (!linkSocketIsCurrent(socket, generation) || linkState.status !== 'connected'
+      || socket.readyState !== WebSocket.OPEN) return;
+  if (linkState.pongTimer !== null) {
+    if (linkState.pingSentAt && Date.now() - linkState.pingSentAt >= LINK_HEARTBEAT_TIMEOUT_MS) {
+      retryCurrentLinkSocket(socket, generation, 'heartbeat_timeout');
+    }
+    return;
+  }
+  if (sendNow || Date.now() - linkState.lastInboundAt >= LINK_HEARTBEAT_IDLE_MS) {
+    sendLinkHeartbeat(socket, generation);
+  } else {
+    armLinkHeartbeat(socket, generation);
+  }
+}
+
 async function refreshHostCandidate(socket, generation) {
   const token = newHostToken();
   let candidateHash;
   try { candidateHash = await hashLinkToken(token); }
-  catch (_) { socket.close(4002, 'identity_failed'); return; }
-  if (generation !== linkState.socketGeneration || socket !== linkState.socket
-      || socket.readyState !== WebSocket.OPEN) return;
+  catch (_) { retryCurrentLinkSocket(socket, generation, 'identity_failed'); return; }
+  if (!linkSocketIsCurrent(socket, generation) || socket.readyState !== WebSocket.OPEN) return;
   linkState.candidateToken = token;
   linkState.candidateHash = candidateHash;
-  socket.send(JSON.stringify({ type:'host_candidate', candidateHash }));
+  sendCurrentLinkFrame(socket, generation, JSON.stringify({ type:'host_candidate', candidateHash }));
 }
 
 async function prepareLinkContent() {
@@ -3614,18 +3710,26 @@ function openLinkSocket(reconnecting = false) {
   try { socket = new WebSocket(url); }
   catch (_) { scheduleLinkReconnect(); return; }
   linkState.socket = socket;
+  linkState.connectTimer = setTimeout(() => {
+    linkState.connectTimer = null;
+    retryCurrentLinkSocket(socket, generation, 'connect_timeout');
+  }, LINK_CONNECT_TIMEOUT_MS);
   renderLink();
 
   socket.onopen = async () => {
-    if (generation !== linkState.socketGeneration || socket !== linkState.socket) return;
-    if (!linkProfile) { socket.close(4002, 'profile_missing'); return; }
+    if (!linkSocketIsCurrent(socket, generation)) return;
+    clearLinkTimer('connectTimer');
+    linkState.snapshotTimer = setTimeout(() => {
+      linkState.snapshotTimer = null;
+      retryCurrentLinkSocket(socket, generation, 'snapshot_timeout');
+    }, LINK_SNAPSHOT_TIMEOUT_MS);
+    if (!linkProfile) { retryCurrentLinkSocket(socket, generation, 'profile_missing'); return; }
     let resolvedHash;
     try { resolvedHash = await candidateHash; }
-    catch (_) { socket.close(4002, 'identity_failed'); return; }
-    if (generation !== linkState.socketGeneration || socket !== linkState.socket
-        || socket.readyState !== WebSocket.OPEN) return;
+    catch (_) { retryCurrentLinkSocket(socket, generation, 'identity_failed'); return; }
+    if (!linkSocketIsCurrent(socket, generation) || socket.readyState !== WebSocket.OPEN) return;
     linkState.candidateHash = resolvedHash;
-    socket.send(JSON.stringify({
+    sendCurrentLinkFrame(socket, generation, JSON.stringify({
       type:'identify', id:linkProfile.id, username:linkProfile.username,
       candidateHash:resolvedHash,
       hostToken:LINK_HOST_TOKEN_RE.test(linkState.hostToken || '') ? linkState.hostToken : null
@@ -3633,7 +3737,11 @@ function openLinkSocket(reconnecting = false) {
   };
 
   socket.onmessage = event => {
-    if (generation !== linkState.socketGeneration) return;
+    if (!linkSocketIsCurrent(socket, generation)) return;
+    if (event.data === 'pong') {
+      noteLinkInbound(socket, generation);
+      return;
+    }
     if (typeof event.data !== 'string'
         || new TextEncoder().encode(event.data).byteLength > LINK_MESSAGE_MAX) {
       socket.close(4002, 'invalid_frame');
@@ -3642,6 +3750,7 @@ function openLinkSocket(reconnecting = false) {
     let message;
     try { message = JSON.parse(event.data); }
     catch (_) { socket.close(4002, 'invalid_json'); return; }
+    noteLinkInbound(socket, generation);
 
     if (message.type === 'snapshot') {
       linkState.configPending = false;
@@ -3663,6 +3772,8 @@ function openLinkSocket(reconnecting = false) {
       linkState.noticeKind = '';
       linkState.reconnectAttempt = 0;
       linkState.terminalError = false;
+      clearLinkTimer('snapshotTimer');
+      noteLinkInbound(socket, generation);
       rememberRoom();
       putRoomInLocation(linkState.code);
       renderLink();
@@ -3759,7 +3870,8 @@ function openLinkSocket(reconnecting = false) {
   };
 
   socket.onclose = () => {
-    if (generation !== linkState.socketGeneration) return;
+    if (!linkSocketIsCurrent(socket, generation)) return;
+    clearLinkConnectionTimers();
     linkState.socket = null;
     if (!linkState.manualLeave && !linkState.terminalError) scheduleLinkReconnect();
   };
@@ -3851,7 +3963,7 @@ function leaveRoom() {
   const socket = linkState.socket;
   if (linkState.isHost && linkState.status === 'connected'
       && socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({ type:'end_room' }));
+    sendCurrentLinkFrame(socket, linkState.socketGeneration, JSON.stringify({ type:'end_room' }));
   }
   linkState.manualLeave = true;
   if (linkState.reconnectTimer) clearTimeout(linkState.reconnectTimer);
@@ -3884,7 +3996,7 @@ function sendLinkIntent(intent) {
       || linkState.status === 'error') return false;
   const socket = linkState.socket;
   if (linkState.status === 'connected' && socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify(intent));
+    sendCurrentLinkFrame(socket, linkState.socketGeneration, JSON.stringify(intent));
   } else {
     linkState.notice = 'Reconnecting before that change can be applied…';
     linkState.noticeKind = 'pending';
@@ -4044,16 +4156,28 @@ document.addEventListener('click', event => {
 // Mobile entry point reuses the bar as a bottom sheet, like Game Settings.
 el('m-link').onclick = () => el('link-toggle').click();
 
-window.addEventListener('online', () => {
+function resumeLinkReconnect() {
   if (linkState.status !== 'reconnecting' || linkState.manualLeave || linkState.terminalError) return;
-  if (linkState.reconnectTimer) clearTimeout(linkState.reconnectTimer);
-  linkState.reconnectTimer = null;
+  if (linkState.socket && linkState.socket.readyState < WebSocket.CLOSING) return;
+  clearLinkTimer('reconnectTimer');
   openLinkSocket(true);
+}
+
+window.addEventListener('online', () => {
+  if (linkState.status === 'connected' && linkState.socket) {
+    checkLinkHeartbeat(linkState.socket, linkState.socketGeneration, true);
+    return;
+  }
+  resumeLinkReconnect();
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible' || !linkState.code || linkState.manualLeave
       || linkState.terminalError) return;
-  if (!linkState.socket || linkState.socket.readyState >= WebSocket.CLOSING) openLinkSocket(true);
+  if (linkState.status === 'connected' && linkState.socket) {
+    checkLinkHeartbeat(linkState.socket, linkState.socketGeneration);
+  } else {
+    resumeLinkReconnect();
+  }
 });
 
 renderLink();

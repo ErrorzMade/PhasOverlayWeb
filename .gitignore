@@ -40,11 +40,19 @@ assets/**/*.psd
 assets/**/*.xcf
 assets/screenshots/*.png
 
-# Local notes
+# Local notes. Working notes and design records stay on disk: the published repo is the site,
+# not the notebook. LICENSE and NOTICE.md are the exceptions, they are the licence and the
+# attribution the build is required to carry.
 DELETE-BEFORE-PUSH*
 notes/
 scratch/
 TODO.md
+MAPS.md
+*-spec.md
+*-notes.md
+
+# Local tooling and test harnesses. They generate what ships; they are not what ships.
+tools/
 *.local
 *.local.*
 CLAUDE.md

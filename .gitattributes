@@ -9,3 +9,8 @@ CNAME text eol=lf
 *.jpg  binary
 *.webp binary
 *.mp3  binary
+
+# Generated map bundle, stored byte for byte. Normalising maps.json would rewrite the
+# bytes that assets/maps/manifest.json has already hashed, leaving a manifest that lies.
+# The data repo pins maps/** for the same reason.
+assets/maps/** -text

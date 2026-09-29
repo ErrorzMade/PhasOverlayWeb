@@ -209,19 +209,18 @@ body {
 }
 #m-link-meta { color:var(--accent); font-weight:700; }
 
-
-/* Opens the PhasOverlay information sheet from beneath the tracker reset control. */
+/* Opens the PhasOverlay information sheet. Solid accent, because it is the one control here
+   that sends someone somewhere else. */
 #dl {
-  width:100%; height:38px; margin-top:9px;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:0 14px; border:1px solid transparent; border-radius:6px;
-  background:var(--accent); color:#151515;
-  font:inherit; font-size:14px; font-weight:700; text-decoration:none; white-space:nowrap;
-  cursor:pointer;
+  margin-left:8px; height:30px; padding:0 14px;
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--accent); border:1px solid var(--accent); border-radius:15px;
+  color:#151515; font:inherit; font-size:11px; font-weight:700;
+  text-decoration:none; white-space:nowrap; cursor:pointer;
   transition:background .12s, box-shadow .12s;
 }
 #dl:hover { background:#C47BFF; box-shadow:0 0 14px rgba(180,85,255,.4); }
-#dl svg { width:16px; height:16px; fill:currentColor; flex:none; }
+#dl svg { width:14px; height:14px; fill:currentColor; flex:none; }
 
 /* ---------------- body (Grid.Row 1) ---------------- */
 #body { flex:1; display:flex; min-height:0; }
@@ -832,7 +831,7 @@ body {
 #lknotice .lk-btn.primary { height:36px; }
 #lkname .lk-btn.primary { height:36px; }
 
-@media (max-width:768px) {
+@media (max-width:768px), (pointer:coarse) and (max-width:1180px) {
   /* iOS keeps the layout viewport full height when the keyboard opens, so anything anchored
      to the bottom ends up behind it. --kb is the space the keyboard is actually taking. */
   #lknotice, #lkname { align-items:flex-end; padding:0 0 var(--kb); }
@@ -859,6 +858,292 @@ body {
   #matchbar { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 
+/* ================= MAPS ================= Floor plans with cursed possession and power box
+   markers, read from PhasOverlay-data at runtime. Not a dialog: the panel takes over the ghost
+   grid inside #right, so the evidence sidebar stays live beside it. */
+#maps { flex:1; min-height:0; display:flex; flex-direction:column; }
+#maps[hidden] { display:none; }
+
+/* ---- picker ---- Same gutters as #scroll, so the two modes line up as you toggle between. */
+#maps-picker { flex:1; min-height:0; overflow-y:auto; padding:10px 25px 25px; }
+#maps-picker[hidden] { display:none; }
+.maps-group-head { display:flex; align-items:center; gap:12px; margin:0 0 14px; }
+.maps-group-head b {
+  color:var(--faint); font-family:var(--mono); font-size:11px;
+  font-weight:700; letter-spacing:.1em;
+}
+.maps-group-head i { flex:1; height:1px; background:var(--window-border); }
+.maps-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(228px,1fr));
+  gap:18px; margin:0 0 34px;
+}
+.maps-card {
+  display:block; padding:0; overflow:hidden; text-align:left; cursor:pointer;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  font:inherit; color:var(--strong);
+  transition:background .14s, border-color .14s, transform .14s;
+}
+.maps-card:hover { background:#222226; border-color:var(--accent); transform:translateY(-2px); }
+.maps-shotwrap { position:relative; aspect-ratio:16/9; background:#0C0C0D; overflow:hidden; }
+.maps-shotwrap img {
+  width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .4s var(--ease);
+}
+.maps-card:hover .maps-shotwrap img { transform:scale(1.04); }
+.maps-shotwrap::after {
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(28,28,31,.75) 0%, rgba(28,28,31,0) 55%);
+}
+/* Two lines held open so "Brownstone High School Restricted" does not resize its row. */
+.maps-card b {
+  display:block; padding:12px 13px 14px; min-height:54px;
+  font-size:14px; font-weight:700; line-height:18px;
+}
+/* A map with nothing behind it must not light up under the cursor: it reads as broken. */
+.maps-card[aria-disabled="true"] {
+  cursor:default; background:#161618; border-color:#232326; transform:none;
+}
+.maps-card[aria-disabled="true"] b { color:var(--disabled); }
+.maps-card[aria-disabled="true"] img { filter:grayscale(1); opacity:.45; transform:none; }
+
+/* ---- map view ---- The rail takes the width a browser has and the desktop window never did:
+   ten floors as a list beats ten floors in a rail that scrolls. */
+#maps-view { flex:1; min-height:0; display:flex; gap:20px; padding:10px 25px 25px; }
+#maps-view[hidden] { display:none; }
+#maps-rail {
+  width:232px; flex:none; display:flex; flex-direction:column; gap:20px;
+  overflow-y:auto; overscroll-behavior:contain;
+}
+#maps-back {
+  flex:none; align-self:flex-start; display:inline-flex; align-items:center; gap:8px;
+  height:32px; padding:0 12px 0 10px; border-radius:6px; cursor:pointer;
+  background:var(--card); border:1px solid var(--border); color:var(--secondary);
+  font:inherit; font-size:12px; font-weight:700;
+  transition:background .12s, border-color .12s, color .12s;
+}
+#maps-back:hover { background:var(--hover); border-color:var(--accent); color:var(--strong); }
+#maps-ident { display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+#maps-title { color:var(--strong); font-size:21px; font-weight:700; line-height:1.2; }
+#maps-size {
+  background:var(--border); border-radius:4px; padding:3px 9px;
+  color:var(--secondary); font-family:var(--mono); font-size:10px;
+  font-weight:700; letter-spacing:.08em;
+}
+#maps-size[hidden], .maps-seg-group[hidden] { display:none; }
+.maps-seg-group { display:flex; flex-direction:column; gap:8px; min-width:0; }
+.maps-seg-label {
+  color:var(--faint); font-family:var(--mono); font-size:9.5px;
+  font-weight:700; letter-spacing:.1em;
+}
+.maps-seg { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.maps-seg button {
+  padding:9px 12px; border:0; border-radius:6px; cursor:pointer; text-align:left;
+  background:transparent; color:var(--muted);
+  font:inherit; font-size:12.5px; font-weight:700;
+  transition:background .12s, color .12s;
+}
+.maps-seg button:hover { background:var(--hover); color:var(--strong); }
+.maps-seg button.on { background:var(--accent); color:#151515; }
+
+/* The glossary: every possession's badge with its name, then the power box. Built from
+   POSSESSIONS in the script, so the legend and the markers cannot disagree. */
+#maps-key { display:flex; flex-direction:column; gap:7px; }
+.maps-key-row { display:flex; align-items:center; gap:10px; color:var(--secondary); font-size:12px; font-weight:600; }
+.maps-key-row .maps-pos { width:30px; height:30px; }
+.maps-key-row .maps-pos .maps-glyph { width:24px; height:24px; }
+.maps-key-row .maps-box { width:24px; height:24px; margin:0 3px; box-shadow:none; }
+.maps-key-row .maps-box svg { width:9px; height:14px; }
+#maps-keywrap { margin-top:auto; padding-top:16px; display:flex; flex-direction:column; gap:10px; }
+.maps-key-sep { height:1px; background:var(--window-border); margin:3px 0; }
+#maps-credit { margin-top:4px; color:var(--disabled); font-size:10px; line-height:1.45; }
+#maps-credit a { color:var(--faint); text-decoration:none; }
+#maps-credit a:hover { color:var(--accent); text-decoration:underline; }
+
+#maps-pane { position:relative; flex:1; min-width:0; display:flex; flex-direction:column; }
+#maps-stage {
+  position:relative; flex:1; min-height:0; display:flex; flex-direction:column;
+  background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden;
+}
+#maps-viewport { flex:1; position:relative; overflow:hidden; touch-action:none; cursor:grab; }
+#maps-viewport.drag { cursor:grabbing; }
+#maps-plan { position:absolute; left:0; top:0; transform-origin:0 0; max-width:none; }
+#maps-plan[hidden] { display:none; }
+#maps-markers { position:absolute; inset:0; pointer-events:none; }
+#maps-noplan {
+  position:absolute; inset:0; display:grid; place-items:center;
+  color:var(--muted); font-size:15px; font-weight:600;
+}
+#maps-noplan[hidden] { display:none; }
+
+.maps-mk {
+  position:absolute; width:40px; height:40px; padding:0; border:0; background:none;
+  display:grid; place-items:center; pointer-events:auto; transform:translate(-50%,-50%);
+}
+.maps-mk.hit { cursor:pointer; }
+/* The outline must be dark: the chained shadows bleed into the glyph's internal gaps, so a bright
+   one fills the detail in. The filter sits on the wrapper; on the masked element the mask cuts it. */
+.maps-pos {
+  position:relative; flex:none; display:grid; place-items:center;
+  filter:
+    drop-shadow(1px 0 0 #0B0B0D) drop-shadow(-1px 0 0 #0B0B0D)
+    drop-shadow(0 1px 0 #0B0B0D) drop-shadow(0 -1px 0 #0B0B0D)
+    drop-shadow(0 0 4px rgba(180,85,255,.55)) drop-shadow(0 2px 3px rgba(0,0,0,.8));
+  transition:transform .12s;
+}
+/* The icons are single colour PNGs used as masks, so the fill is ours rather than Flaticon's black. */
+.maps-glyph {
+  display:block; width:30px; height:30px; background:#C27BFF;
+  -webkit-mask-position:center; mask-position:center;
+  -webkit-mask-size:contain; mask-size:contain;
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+}
+.maps-glyph.none { width:9px; height:9px; border-radius:50%; background:var(--accent); }
+.maps-pos b { color:#F4ECFF; font-size:17px; font-weight:800; line-height:1; }
+.maps-mk.hit:hover .maps-pos, .maps-mk.hit:focus-visible .maps-pos { transform:scale(1.18); }
+
+/* #4ADE80 is sampled from the plans, where it is the exit door and the power box. Off the accent
+   and a different shape, so a landmark never reads as a possession. */
+.maps-box {
+  position:relative; width:26px; height:26px; flex:none; border-radius:5px; display:grid; place-items:center;
+  background:rgba(10,38,22,.96); border:1.5px solid #4ADE80;
+  box-shadow:0 2px 6px rgba(0,0,0,.6);
+  transition:transform .12s, background .12s;
+}
+.maps-box svg { width:10px; height:15px; fill:#4ADE80; transition:fill .12s; }
+.maps-mk.hit:hover .maps-box, .maps-mk.hit:focus-visible .maps-box { transform:scale(1.14); background:rgba(18,62,36,.96); }
+.maps-mk.hit:hover .maps-box svg, .maps-mk.hit:focus-visible .maps-box svg { fill:#9CF7BF; }
+/* Several possessions can share one spawn point, so the badge says how many are stacked. */
+.maps-mk .many {
+  position:absolute; top:-2px; right:-2px; z-index:1;
+  min-width:16px; padding:0 4px; border-radius:999px;
+  background:var(--accent); color:#151515;
+  font-size:9.5px; font-weight:800; line-height:16px; text-align:center;
+}
+
+/* Floating over the plan rather than taking a strip of its height. */
+/* Inside the stage, for the same reason as the photo: a sibling of it does not render in
+   fullscreen, which left no zoom control and no way out but Escape. */
+#maps-tools { position:absolute; right:14px; bottom:14px; z-index:2; display:flex; gap:8px; }
+#maps-tools[hidden] { display:none; }
+#maps-zoomer {
+  display:flex; align-items:center; height:32px;
+  background:rgba(26,26,29,.92); border:1px solid var(--border-strong);
+  border-radius:7px; overflow:hidden;
+}
+#maps-zoomer button {
+  width:32px; height:100%; border:0; background:transparent; cursor:pointer;
+  color:var(--secondary); font:inherit; font-size:14px; font-weight:700;
+}
+#maps-zoomer button:hover:not(:disabled) { background:var(--hover); color:var(--strong); }
+#maps-zoomer button:disabled { color:var(--disabled); cursor:default; }
+#maps-zoom {
+  width:48px; text-align:center; color:var(--secondary); font-size:11px; font-weight:700;
+  border-left:1px solid var(--border-strong); border-right:1px solid var(--border-strong);
+}
+#maps-full {
+  height:32px; padding:0 13px; border-radius:7px; cursor:pointer;
+  background:rgba(26,26,29,.92); border:1px solid var(--border-strong); color:var(--secondary);
+  font:inherit; font-size:11px; font-weight:700;
+}
+#maps-full:hover { background:var(--hover); border-color:var(--accent); color:var(--strong); }
+#maps-full[hidden] { display:none; }
+
+/* ---- full screen ---- Assume a dark room and a glance from a metre away. */
+#maps-fsbar {
+  display:none; flex:none; align-items:center; gap:16px;
+  padding:18px 26px 14px; border-bottom:1px solid #1C1C1F;
+}
+#maps-fsbar h3 { color:var(--strong); font-size:22px; font-weight:700; }
+#maps-fsvar {
+  flex:none; border:1px solid rgba(180,85,255,.45); border-radius:999px; padding:4px 12px;
+  color:var(--accent); font-size:12px; font-weight:700;
+}
+#maps-fsvar[hidden] { display:none; }
+#maps-fsfloors { margin-left:auto; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+#maps-fsfloors::-webkit-scrollbar { display:none; }
+#maps-fsfloors button {
+  flex:none; border:0; border-radius:12px; padding:6px 15px; cursor:pointer;
+  background:transparent; color:#9A9AA2; font:inherit; font-size:14px; font-weight:700; white-space:nowrap;
+}
+#maps-fsfloors button:hover { color:var(--strong); }
+#maps-fsfloors button.on { background:var(--accent); color:#151515; }
+/* Split from the :fullscreen rules below: one unknown selector would drop the whole list. */
+#maps-stage:fullscreen { border:0; border-radius:0; background:#0A0A0B; }
+#maps-stage:fullscreen #maps-fsbar { display:flex; }
+#maps-stage:-webkit-full-screen { border:0; border-radius:0; background:#0A0A0B; }
+#maps-stage:-webkit-full-screen #maps-fsbar { display:flex; }
+
+/* ---- possession photo ---- Inside the stage: only the fullscreen element and its descendants
+   render, so as a sibling the photo opened where it could not be seen. */
+#maps-shot {
+  position:absolute; inset:0; z-index:40; display:grid; place-items:center;
+  padding:30px; background:rgba(8,8,9,.7);
+}
+#maps-shot[hidden] { display:none; }
+#maps-shot > div {
+  max-width:min(720px,100%); max-height:100%; overflow:auto; padding:11px;
+  background:rgba(26,26,29,.97); border:1px solid var(--accent); border-radius:10px;
+  box-shadow:0 18px 60px rgba(0,0,0,.7);
+}
+#maps-shot img { display:block; width:100%; height:auto; border-radius:5px; }
+#maps-shot img[hidden] { display:none; }
+#maps-shot h4 { color:var(--strong); font-size:14px; font-weight:700; margin:11px 2px 0; }
+#maps-shot p { color:var(--faint); font-size:12px; margin:4px 2px 0; }
+#maps-shot p[hidden] { display:none; }
+
+/* The other phone screens head themselves; an open map is headed by its own name instead. */
+#maps-mhead { display:none; }
+#maps-mhead[hidden] { display:none; }
+
+/* ---- the sidebar toggle ---- Carries the selected map, so the panel does not have to. */
+/* A sidebar button that lines up with RESET TRACKER above it, not a header chip. It used to
+   share the chip rule and kept its margin-left, which pushed it 8px past everything else. */
+#maps-toggle {
+  width:100%; height:38px; margin:9px 0 0; padding:0 13px;
+  display:flex; align-items:center; gap:10px; text-align:left; cursor:pointer;
+  background:var(--card); border:1px solid var(--border); border-radius:6px;
+  color:var(--secondary); font:inherit;
+  transition:background .12s, border-color .12s, color .12s;
+}
+#maps-toggle:hover { background:var(--hover); border-color:var(--accent); color:var(--strong); }
+#maps-toggle svg { width:17px; height:17px; flex:none; fill:none; stroke:currentColor;
+  stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+#maps-toggle .lbl {
+  flex:1; min-width:0; font-size:13px; font-weight:700; color:var(--strong);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#maps-toggle .sz {
+  flex:none; background:var(--border); border-radius:4px; padding:2px 7px;
+  color:var(--muted); font-family:var(--mono); font-size:9px;
+  font-weight:700; letter-spacing:.08em;
+}
+#maps-toggle .sz[hidden] { display:none; }
+#maps-toggle.on { background:var(--accent); border-color:var(--accent); }
+#maps-toggle.on .lbl, #maps-toggle.on svg { color:#151515; }
+#maps-toggle.on:hover { background:#C47BFF; }
+
+/* Below the two column width the rail lies down above the plan. */
+@media (max-width:1100px), (pointer:coarse) and (max-width:1180px) {
+  #maps-view { flex-direction:column; gap:14px; }
+  #maps-rail {
+    width:auto; flex-direction:row; flex-wrap:wrap; align-items:center; gap:10px 16px;
+    overflow:visible;
+  }
+  #maps-ident { flex-direction:row; align-items:center; gap:10px; }
+  #maps-title { font-size:18px; }
+  .maps-seg-group { flex-direction:row; align-items:center; gap:9px; }
+  .maps-seg {
+    flex-direction:row; gap:2px; max-width:100%; overflow-x:auto; scrollbar-width:none;
+    background:var(--card); border:1px solid var(--border); border-radius:8px; padding:3px;
+  }
+  .maps-seg::-webkit-scrollbar { display:none; }
+  .maps-seg button { flex:none; padding:7px 12px; font-size:11.5px; white-space:nowrap; }
+  #maps-keywrap { width:100%; margin:0; padding:0; }
+  #maps-key { flex-direction:row; flex-wrap:wrap; gap:8px 16px; }
+  .maps-key-sep { display:none; }
+  #maps-credit { width:100%; margin:0; }
+}
+
 /* ===================== MOBILE ===================== Phone layout is a different shape, not a s. */
 #m-appbar, #m-meta, #m-nav, #m-cta, .m-title, .m-rule, #m-chips, .mfact { display:none; }
 
@@ -881,15 +1166,46 @@ body {
   #link-participants, #linkstrip .dot, #linkstrip .lbl { display:none; }
 }
 
-/* Overlays must cover the viewport, not the document. */
-@media (max-width:768px) {
+/* Overlays must cover the viewport, not the document. Width alone is not the trigger: the touch
+   shell makes the document scroll at tablet widths too. */
+@media (max-width:768px), (pointer:coarse) and (max-width:1180px) {
   #overlay, #about { position:fixed; }
+  /* The panel scrolls with the document here, so its photo has to be pinned to the viewport. */
+  #maps-shot { position:fixed; padding:16px; }
   #modal { height:100%; max-height:none; }
+}
+
+/* The panel scrolls with the document rather than owning a pane, so the plan needs a height
+   of its own instead of inheriting one from a flexed ancestor. Same gate as the overlays above. */
+@media (max-width:768px), (pointer:coarse) and (max-width:1180px) {
+  /* Block, not flex: inside a flex column the stage's flex:1 wins over any height it is
+     given, which letterboxed the plan in a slab of empty card. */
+  #maps { display:block; }
+  #maps-mhead { display:block; padding:16px 14px 0; }
+  #maps-picker { overflow:visible; padding:14px; }
+  #maps-view { padding:0 14px 18px; }
+  #maps-rail { overflow:visible; }
+  #maps-pane { display:block; }
+  #maps-stage { flex:none; height:min(62vh,540px); }
+  /* The stage is only as tall as the plan here, so floating controls sat on top of markers. */
+  /* Static here, as a row under the plan: floating, it sat on markers on a short stage.
+     sizeStageForFlow adds its height so the plan keeps its aspect. */
+  #maps-tools { position:static; margin:0; padding:8px 10px; justify-content:flex-end; }
+  #maps-title { font-size:17px; }
+  .maps-grid { grid-template-columns:repeat(auto-fill,minmax(152px,1fr)); gap:12px; margin-bottom:24px; }
+  .maps-card b { padding:10px 11px 12px; min-height:48px; font-size:13px; line-height:16px; }
+  #maps-keywrap { width:100%; margin:0; }
+}
+
+/* A finger is not a 13px dot. The badge keeps its size; only the hit box grows. */
+@media (pointer:coarse) {
+  .maps-mk { width:44px; height:44px; }
 }
 html.layer-open, html.layer-open body { overflow:hidden !important; touch-action:none; }
 
-/* Phone chrome: gated on touch input, so desktop zoom does not trigger it. */
-@media (max-width:768px) and (pointer:coarse) {
+/* Touch shell. Gated on touch so desktop zoom never reaches it. 1180 covers every phone and every
+   tablet to an 11 inch landscape; a 12.9 inch landscape keeps the desktop layout it has room for. */
+@media (pointer:coarse) and (max-width:1180px) {
   html, body { height:auto; overflow:visible; }
   #app { position:static; inset:auto; min-height:100vh; padding-bottom:118px; }
   #topbar { display:none; }
@@ -930,7 +1246,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   #side { width:100%; border-right:0; overflow:visible; padding:16px 14px 8px; }
   #right { min-height:60vh; }
   #scroll { overflow:visible; padding:14px; }
-  html[data-screen="ghosts"] #side { display:none; }
+  html[data-screen="ghosts"] #side, html[data-screen="maps"] #side { display:none; }
   /* #right stays in the layout on every screen: the Game Settings sheet lives inside it, and a di. */
   html:not([data-screen="ghosts"]) #scroll { display:none; }
   html:not([data-screen="ghosts"]) #right { min-height:0; }
@@ -974,7 +1290,8 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
          font-weight:700; margin:22px 0 8px; }
   .pill { height:48px; }
   .pill.short { height:40px; }
-  #dl { display:none; }   /* the hamburger opens About instead */
+  /* The hamburger opens About, and the bottom nav owns Maps. */
+  #maps-toggle { display:none; }
   #reset, #reset-timers { height:48px; margin-top:22px; }  /* touch-sized */
 
   /* ---- timers: 2x2 grid, then the oversized tap target ---- */
@@ -1017,7 +1334,8 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
     background:var(--accent); color:#151515; font:inherit; font-size:14px; font-weight:700;
     box-shadow:0 6px 22px rgba(180,85,255,.35);
   }
-  html[data-screen="ghosts"] #m-cta, html[data-screen="timers"] #m-cta { display:none; }
+  html[data-screen="ghosts"] #m-cta, html[data-screen="timers"] #m-cta,
+  html[data-screen="maps"] #m-cta { display:none; }
   #m-cta b { font-weight:800; }
 
   #m-nav {
@@ -1118,6 +1436,33 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
   #mside { width:100%; margin-top:20px; }
   #matchbar { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+/* Tablet: the touch shell above, minus the assumption that the screen is 390px wide. The phone
+   rules stretch one column across the whole width, which leaves a tablet mostly empty. */
+@media (pointer:coarse) and (min-width:769px) and (max-width:1180px) {
+  /* Reading a full width row on a tablet means tracking a name 900px away from its state.
+     Centred with align-self, not auto margins: an auto margin on a flex item stops it stretching,
+     so the column collapsed to fit-content and the ghost grid never had room for a second column. */
+  #side { width:100%; max-width:980px; align-self:center; padding:22px 20px 10px; }
+  #evlist { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  #m-timergrid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  #scroll { width:100%; max-width:1180px; align-self:center; padding:18px 20px; }
+  #grid { grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); }
+  .gcard { margin:0; }
+  .tell { display:block; }          /* there is room for the tell again */
+  .mfact { display:none; }
+  /* Full bleed controls look stranded on a tablet, so they keep to a thumb friendly width. */
+  #m-nav { justify-content:center; gap:10px; }
+  #m-nav button { flex:0 1 170px; }
+  #m-cta { left:50%; right:auto; transform:translateX(-50%); width:min(520px, calc(100% - 24px)); }
+  /* The nav and the floating CTA together need more clearance than the phone reserves, or a
+     short screen ends with the CTA sitting on top of the last line of content. */
+  #app { padding-bottom:150px; }
+  #m-meta { padding:11px 20px; }
+  #maps-picker, #maps-view { padding:20px; }
+  #maps-stage { height:min(66vh,760px); }
+  .maps-grid { grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; }
+  #maps-mhead { padding:20px 20px 0; }
+}
 </style>
 </head>
 <body>
@@ -1158,6 +1503,10 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l1.4-1.4 1.4 1.4-1.4 1.4a1 1 0 0 1-1.4 0zM7.8 16.2a4 4 0 0 1 0-5.7l2.1-2.1 1.4 1.4-2.1 2.1a2 2 0 0 0 2.8 2.8l2.1-2.1 1.4 1.4-2.1 2.1a4 4 0 0 1-5.7 0zm8.4-8.4a4 4 0 0 1 0 5.7l-2.1 2.1-1.4-1.4 2.1-2.1a2 2 0 0 0-2.8-2.8L9.9 11.4 8.5 10l2.1-2.1a4 4 0 0 1 5.6 0z"/></svg>
           LINK
         </button>
+        <button id="dl" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4h-2v7H7.5l4.5 5 4.5-5H13V4zM5 18h14v2H5z"/></svg>
+          Get PhasOverlay
+        </button>
       </div>
       <div class="underline" style="width:54px"></div>
     </div>
@@ -1180,9 +1529,10 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         <div class="pills c4" id="given"></div>
 
         <button id="reset">RESET TRACKER</button>
-        <button id="dl" title="Get PhasOverlay">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4h-2v7H7.5l4.5 5 4.5-5H13V4zM5 18h14v2H5z"/></svg>
-          PhasOverlay
+        <button id="maps-toggle" type="button" aria-expanded="false" aria-controls="maps">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5 3.5 5.7v14.8L9 18.3l6 2.2 5.5-2.2V3.5L15 5.7 9 3.5Z"/><path d="M9 3.5v14.8M15 5.7v14.8"/></svg>
+          <span class="lbl">Maps</span>
+          <span class="sz" hidden></span>
         </button>
       </div>
 
@@ -1323,6 +1673,71 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         <div id="m-chips"></div>
         <div id="grid"></div>
       </div>
+
+      <!-- Maps takes over the ghost grid rather than floating over it, so the evidence
+           sidebar stays usable beside an open map. -->
+      <div id="maps" hidden>
+        <!-- Phone only: the other three screens carry this heading, so Maps does too. -->
+        <div id="maps-mhead">
+          <div class="m-title"><h2>Maps</h2></div>
+          <div class="m-rule"></div>
+        </div>
+        <div id="maps-picker"></div>
+
+        <div id="maps-view" hidden>
+          <div id="maps-rail">
+            <button id="maps-back" type="button">&#8592; All maps</button>
+            <div id="maps-ident">
+              <h3 id="maps-title"></h3>
+              <span id="maps-size" hidden></span>
+            </div>
+            <div class="maps-seg-group" id="maps-vargroup" hidden>
+              <span class="maps-seg-label">VARIATION</span>
+              <div class="maps-seg" id="maps-variations" role="group" aria-label="Variation"></div>
+            </div>
+            <div class="maps-seg-group" id="maps-floorgroup" hidden>
+              <span class="maps-seg-label">FLOOR</span>
+              <div class="maps-seg" id="maps-floors" role="group" aria-label="Floor"></div>
+            </div>
+            <div id="maps-keywrap">
+              <span class="maps-seg-label">KEY</span>
+              <div id="maps-key" role="list" aria-label="Map key"></div>
+              <p id="maps-credit"></p>
+            </div>
+          </div>
+
+          <div id="maps-pane">
+          <div id="maps-stage">
+            <div id="maps-fsbar">
+              <h3 id="maps-fsname"></h3>
+              <span id="maps-fsvar" hidden></span>
+              <div id="maps-fsfloors" role="group" aria-label="Floor"></div>
+            </div>
+            <div id="maps-viewport">
+              <img id="maps-plan" alt="" draggable="false" hidden>
+              <div id="maps-markers"></div>
+              <p id="maps-noplan" hidden>Not added yet</p>
+            </div>
+            <div id="maps-tools" hidden>
+              <div id="maps-zoomer">
+                <button id="maps-zoomout" type="button" aria-label="Zoom out">&#8722;</button>
+                <span id="maps-zoom">100%</span>
+                <button id="maps-zoomin" type="button" aria-label="Zoom in">+</button>
+              </div>
+              <button id="maps-full" type="button">FULL SCREEN</button>
+            </div>
+            <div id="maps-shot" hidden>
+              <div role="dialog" aria-modal="true" aria-labelledby="maps-shot-title">
+                <img id="maps-shot-img" alt="" hidden>
+                <h4 id="maps-shot-title"></h4>
+                <p id="maps-shot-room" hidden></p>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+
+      </div>
     </section>
   </div>
 
@@ -1332,6 +1747,7 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
     <button type="button" data-screen="evidence" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z"/><path d="M6 15.8L7.14286 17L10 14"/><path d="M6 8.8L7.14286 10L10 7"/><path d="M13 9L18 9"/><path d="M13 16L18 16"/></svg>Evidence</button>
     <button type="button" data-screen="ghosts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 10H9.009M15 10H15.009M5 10C5 6.13401 8.13401 3 12 3C15.866 3 19 6.13401 19 10V21L18.1828 20.4552C17.4052 19.9368 17.0165 19.6777 16.605 19.6045C16.2421 19.54 15.8685 19.577 15.5253 19.7114C15.1362 19.8638 14.8058 20.1942 14.145 20.855C14.0649 20.9351 13.9351 20.935 13.8549 20.855C13.4039 20.4052 13.1548 20.1686 12.888 20.0364C12.3285 19.7591 11.6715 19.7591 11.112 20.0364C10.8452 20.1686 10.5961 20.4052 10.1451 20.855C10.0649 20.935 9.93508 20.9351 9.855 20.855C9.19423 20.1942 8.86384 19.8638 8.47469 19.7114C8.13152 19.577 7.75788 19.54 7.39501 19.6045C6.98352 19.6777 6.59475 19.9368 5.81722 20.4552L5 21V10Z"/></svg>Ghosts<span id="m-nav-count">30</span></button>
     <button type="button" data-screen="timers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.51555 7C3.55827 8.4301 3 10.1499 3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3V6M12 12L8 8"/></svg>Timers</button>
+    <button type="button" id="m-maps" data-screen="maps"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5 3.5 5.7v14.8L9 18.3l6 2.2 5.5-2.2V3.5L15 5.7 9 3.5Z"/><path d="M9 3.5v14.8M15 5.7v14.8"/></svg>Maps</button>
   </nav>
 
   <!-- ============ ABOUT: the phasoverlay.xyz landing page, in-app ============ -->
@@ -1538,6 +1954,13 @@ const WEEKLY_STORAGE_KEY = 'phasoverlay-weekly-v1';
 const GHOSTS_STORAGE_KEY = 'phasoverlay-ghosts-v1';
 const LINK_STORAGE_KEY = 'phasoverlay-link-room-v1';
 const LINK_PROFILE_STORAGE_KEY = 'phasoverlay-link-profile-v1';
+/* The CSS breakpoints, named once so the script cannot drift from the stylesheet. REFLOW is width
+   only: WCAG 1.4.10 is tested by zooming a desktop to 400%. STACKED is either tier, meaning the
+   cases where the document scrolls rather than a pane. */
+const MQ_REFLOW = '(max-width:768px)';
+const MQ_TOUCH_SHELL = '(pointer:coarse) and (max-width:1180px)';
+const MQ_STACKED = MQ_REFLOW + ', ' + MQ_TOUCH_SHELL;
+
 const DIFF_WEEKLY = 5, DIFF_CUSTOM = 6;
 const SPEED_MULTS = [0.5, 0.75, 1.0, 1.25, 1.5];
 
@@ -1571,6 +1994,7 @@ let dataUnavailable = ghosts.length === 0;   // no cache and no successful fetch
 let weeklyData = loadCachedWeekly();
 let match = { difficulty:1, map:0, customTier:1, speedIndex:2, huntTier:1 };
 let linkState = null;       // initialized after the existing tracker controls are built
+let mapsPanelOpen = false;  // declared up here because setScreen() reads it during init
 let focusReturn = null;
 
 EV.forEach(e => state[e] = 0);
@@ -1908,7 +2332,8 @@ function draw(visible, avail, lineLimit, confirmed, ruledOut) {
     card.innerHTML =
       '<div class="ghead"><button type="button" class="gname" aria-label="' +
       esc(g.name) + ': ' + CARD_STATE_WORD[cs] + '. Activate to cycle.">' + esc(g.name) + '</button>' +
-      '<button class="expand" title="Expand ' + esc(g.name) + ' information">[+]</button></div>' +
+      '<button class="expand" aria-label="Expand ' + esc(g.name) + ' information"' +
+      ' title="Expand ' + esc(g.name) + ' information"><span aria-hidden="true">[+]</span></button></div>' +
       '<div class="tags">' + tags + '</div>' +
       '<div class="statline"><span class="lbl">Speed: </span><span class="spd">' + speedHTML(g) + '</span>' +
       '<span class="lbl">Sanity: </span><span class="san">' + esc(g.sanity) + '</span>' +
@@ -1939,7 +2364,8 @@ function speedHTML(g) {
   const parts = sep ? g.speed.split(sep) : [g.speed];
   return parts
     .map(p => '<button class="spdplay" data-s="' + parseFloat(p) +
-              '" title="Play footsteps at this speed">' + esc(p) + '</button>')
+              '" aria-label="Play footsteps at ' + esc(p) + ' metres per second"' +
+              ' title="Play footsteps at this speed">' + esc(p) + '</button>')
     .join(sep ? '<span class="spdsep">' + esc(sep) + '</span>' : '');
 }
 
@@ -2054,6 +2480,13 @@ document.addEventListener('keydown', e => {
   if (lb.classList.contains('open')) { lb.classList.remove('open'); return; }
   const ab = document.getElementById('about');
   if (ab.classList.contains('show')) { document.getElementById('about-close').click(); return; }
+  // Maps is a panel rather than a layer, so Escape unwinds only what it owns: the photo,
+  // then the map. Closing the panel is the toggle's job.
+  if (mapsOpen()) {
+    if (!document.getElementById('maps-shot').hidden) { closeShot(); return; }
+
+    if (curMap) { backToPicker(); return; }
+  }
   closeModal();
 });
 
@@ -2349,7 +2782,6 @@ function initAudio() {
       .catch(() => makeAudioElement(key, url));
   }
 }
-
 
 function makeAudioElement(key, url) {
   try {
@@ -2856,8 +3288,10 @@ el('reset-timers').onclick = () => {
 
 function setScreen(name) {
   document.documentElement.dataset.screen = name;
-  document.querySelectorAll('#m-nav button').forEach(b =>
+  document.querySelectorAll('#m-nav button[data-screen]').forEach(b =>
     b.classList.toggle('on', b.dataset.screen === name));
+  if (name === 'maps') { if (!mapsPanelOpen) setMapsOpen(true); }
+  else if (mapsPanelOpen) setMapsOpen(false);
   // Evidence / Timers map onto the existing desktop tabs.
   if (name === 'evidence' || name === 'timers') {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === name));
@@ -2867,7 +3301,7 @@ function setScreen(name) {
   window.scrollTo(0, 0);
 }
 
-document.querySelectorAll('#m-nav button').forEach(b => {
+document.querySelectorAll('#m-nav button[data-screen]').forEach(b => {
   b.onclick = () => setScreen(b.dataset.screen);
 });
 el('m-cta').onclick = () => setScreen('ghosts');
@@ -3234,7 +3668,7 @@ function toggleLinkPeople(target, anchor = null) {
     el('match-toggle').classList.remove('on');
     el('match-toggle').setAttribute('aria-expanded', 'false');
   }
-  if (!closing && anchor && !matchMedia('(max-width:768px)').matches) {
+  if (!closing && anchor && !matchMedia(MQ_STACKED).matches) {
     const stripRect = el('linkstrip').getBoundingClientRect();
     const anchorRect = anchor.getBoundingClientRect();
     linkState.peopleLeft = Math.max(12, Math.min(anchorRect.left - stripRect.left, stripRect.width - 272));
@@ -3371,7 +3805,7 @@ function renderLink() {
   el('link-code').textContent = linkState.code || '------';
   strip.querySelector('.lbl').textContent = connected ? (linkState.isHost ? 'HOST' : 'LINKED')
     : linkState.status === 'reconnecting' ? 'RECONNECTING' : 'CONNECTING';
-  const compactStrip = matchMedia('(max-width:768px)').matches;
+  const compactStrip = matchMedia(MQ_STACKED).matches;
   const count = el('link-count');
   count.hidden = connected && !linkState.notice && !compactStrip && hiddenPlayers === 0;
   count.textContent = connected
@@ -3403,7 +3837,7 @@ function renderLink() {
 }
 
 function isMobileLinkSheet() {
-  return matchMedia('(max-width:768px) and (pointer:coarse)').matches;
+  return matchMedia(MQ_TOUCH_SHELL).matches;
 }
 
 function openLinkPanel(message = '', kind = '') {
@@ -4137,7 +4571,7 @@ el('link-copy').onclick = async () => {
 el('link-leave').onclick = leaveRoom;
 el('link-count').onclick = () => {
   if (linkState.status !== 'connected') return;
-  const target = matchMedia('(max-width:768px)').matches ? 'all' : 'overflow';
+  const target = matchMedia(MQ_STACKED).matches ? 'all' : 'overflow';
   toggleLinkPeople(target, el('link-count'));
 };
 el('link-rename').onclick = () => {
@@ -4363,6 +4797,854 @@ about.addEventListener('click', e => {
   lightbox.classList.add('open');
 });
 lightbox.onclick = () => lightbox.classList.remove('open');
+
+/* ---------------- maps ----------------
+   maps.json and manifest.json are read from PhasOverlay-data at runtime, so a correction reaches
+   this site and the app without either being rebuilt. Fails silently throughout. See MAPS.md. */
+
+const MAPS_BASE = 'https://raw.githubusercontent.com/ErrorzMade/PhasOverlay-data/main/maps/';
+const MAPS_URL = MAPS_BASE + 'maps.json';
+const MAPS_MANIFEST_URL = MAPS_BASE + 'manifest.json';
+const MAPS_MIRROR = 'assets/maps/';   // generated from the data repo, never edited by hand
+const MAPS_BUNDLED_URL = MAPS_MIRROR + 'maps.json';
+const MAX_MAPS_SCHEMA = 1;            // MapDataService.MaxSupportedSchema
+const MAPS_STORAGE_KEY = 'phasoverlay-maps-v1';
+const MAPS_MANIFEST_STORAGE_KEY = 'phasoverlay-maps-manifest-v1';
+const MAPS_SELECTION_KEY = 'phasoverlay-map-selection-v1';
+
+const MAP_MAX_ZOOM = 8, MAP_ZOOM_STEP = 1.25;
+
+/* One glyph per possession, keyed by the marker's `item`. Flaticon free icons, credited in the
+   rail as their licence requires. A new item in the data with no entry here still draws, as a
+   badge with a plain dot, rather than vanishing. */
+const POSSESSION_DIR = 'assets/cursed/';
+const POSSESSIONS = [
+  { item: 'Ouija Board',      file: 'ouija-board',      author: 'Magnific',       authorUrl: 'https://www.flaticon.com/authors/magnific' },
+  { item: 'Tarot Cards',      file: 'tarot-cards',      author: 'smashingstocks', authorUrl: 'https://www.flaticon.com/authors/smashingstocks' },
+  { item: 'Voodoo Doll',      file: 'voodoo-doll',      author: 'Mayor Icons',    authorUrl: 'https://www.flaticon.com/authors/mayor-icons' },
+  { item: 'Music Box',        file: 'music-box',        author: 'asol_studio',    authorUrl: 'https://www.flaticon.com/authors/asol-studio' },
+  { item: 'Haunted Mirror',   file: 'haunted-mirror',   author: 'Awicon',         authorUrl: 'https://www.flaticon.com/authors/awicon' },
+  { item: 'Monkey Paw',       file: 'monkey-paw',       author: 'POD Gladiator',  authorUrl: 'https://www.flaticon.com/authors/pod-gladiator' },
+  { item: 'Summoning Circle', file: 'summoning-circle', author: 'Fantasyou',      authorUrl: 'https://www.flaticon.com/authors/fantasyou' },
+];
+const POSSESSION_BY_ITEM = new Map(POSSESSIONS.map(p => [p.item.toLowerCase(), p]));
+const POWER_BOX_SVG = '<svg viewBox="0 0 9 14" aria-hidden="true"><path d="M6 0 0 7.6h3.6L2.4 14 9 6.2H5Z"/></svg>';
+const MAP_DRAG_SLOP = 6;   // a pan that ends on a marker must not open its photo
+
+let mapList = [];
+let mapHashes = null;    // published path -> sha256, null when the live manifest is unreadable
+let mapMirror = null;    // the same for what this deploy bundled
+let mapsFetched = false;
+let mapDataRank = 0;     // 0 nothing, 1 bundled, 2 cache, 3 remote. Remote always wins.
+
+let curMap = null, curVersion = null, curFloor = null;
+let planW = 0, planH = 0, fitScale = 0, mapScale = 0, panX = 0, panY = 0;
+let markerGroupsNow = [];
+const mapPointers = new Map();
+let mapPanFrom = null, mapPinchFrom = null, mapDragged = false;
+
+function stripBom(text) { return text.charAt(0) === '﻿' ? text.slice(1) : text; }
+
+// Mirrors MapDataService.LoadFile: a newer schema is refused whole rather than half read.
+function parseMaps(raw) {
+  try {
+    const file = typeof raw === 'string' ? JSON.parse(stripBom(raw)) : raw;
+    if (!file || !Array.isArray(file.maps)) return null;
+    if (Number(file.schemaVersion || 1) > MAX_MAPS_SCHEMA) return null;
+    return file;
+  } catch (_) { return null; }
+}
+
+function parseMapManifest(raw) {
+  try {
+    const file = typeof raw === 'string' ? JSON.parse(stripBom(raw)) : raw;
+    if (!file || !Array.isArray(file.files)) return null;
+    if (Number(file.schemaVersion || 1) > MAX_MAPS_SCHEMA) return null;
+    const out = {};
+    for (const f of file.files) {
+      if (f && typeof f.path === 'string' && typeof f.sha256 === 'string') out[f.path] = f.sha256;
+    }
+    return out;
+  } catch (_) { return null; }
+}
+
+/* Two manifests, unioned per file: the live one is what the data repo serves, the bundled one what
+   this deploy shipped. A file only the bundle knows is served from here, not written off. The hash
+   prefix changes only when the bytes do, so a redrawn plan appears without a hard refresh. */
+function mapAssetUrl(path) {
+  if (typeof path !== 'string' || !path) return null;
+  const tail = encodeURI(path);
+  const live = mapHashes ? mapHashes[path] : null;
+  const bundled = mapMirror ? mapMirror[path] : null;
+
+  if (live) return (bundled === live ? MAPS_MIRROR : MAPS_BASE) + tail + '?v=' + live.slice(0, 8);
+  if (bundled) return MAPS_MIRROR + tail + '?v=' + bundled.slice(0, 8);
+  // No live manifest is no knowledge rather than an empty repo: ask and let HTTP decide.
+  if (!mapHashes) return MAPS_BASE + tail;
+  return null;
+}
+
+function mapVersions(m) { return m && Array.isArray(m.versions) ? m.versions : []; }
+function floorsOf(m, v) {
+  const list = v ? v.floors : (m ? m.floors : null);
+  return Array.isArray(list) ? list : [];
+}
+// A restricted map keeps its floors inside its versions, so both lists count.
+function everyFloorOf(m) {
+  return floorsOf(m, null).concat(mapVersions(m).flatMap(v => floorsOf(m, v)));
+}
+function floorHasPlan(f) { return !!(f && f.plan) && !!mapAssetUrl(f.plan); }
+function mapHasPlan(m) { return everyFloorOf(m).some(floorHasPlan); }
+
+// Every map opens on its entrance floor, whatever order the floors are listed in.
+function defaultFloor(floors) {
+  return floors.find(f => String(f.name || '').trim().toLowerCase() === 'ground') || floors[0] || null;
+}
+
+/* Identical coordinates are one spawn point carrying several possessions, which the Map
+   Designer writes as one marker each. Left alone they stack on a single pixel. */
+function markerGroupsFor(floor) {
+  const out = [], byKey = new Map();
+  const markers = floor && Array.isArray(floor.markers) ? floor.markers : [];
+  for (const m of markers) {
+    const x = Number(m.x), y = Number(m.y);
+    if (!isFinite(x) || !isFinite(y)) continue;
+    // An unknown kind draws as a possession rather than vanishing, so a new kind can ship
+    // in data alone.
+    const powerbox = String(m.kind || '').toLowerCase() === 'powerbox';
+    const key = (powerbox ? 'p' : 'c') + x.toFixed(4) + ',' + y.toFixed(4);
+    let g = byKey.get(key);
+    if (!g) { g = { x, y, powerbox, items: [], photo: null, room: '', node: null }; byKey.set(key, g); out.push(g); }
+    g.items.push(m);
+    if (!g.photo) g.photo = mapAssetUrl(m.image);
+    if (!g.room && m.room) g.room = String(m.room);
+  }
+  return out;
+}
+
+/* ---- data ---- */
+
+/* The roster has three sources and they are not equal. The remote copy is the only current one
+   and wins whenever it lands, even over itself; the others exist so a cold first visit or a dead
+   network still has maps to show. */
+function applyMapFile(file, rank) {
+  if (!file || rank < mapDataRank) return false;
+  mapDataRank = rank;
+  mapList = file.maps;
+  return true;
+}
+
+function loadCachedMaps() {
+  try {
+    applyMapFile(parseMaps(localStorage.getItem(MAPS_STORAGE_KEY) || ''), 2);
+    mapHashes = parseMapManifest(localStorage.getItem(MAPS_MANIFEST_STORAGE_KEY) || '');
+  } catch (_) { /* private mode */ }
+}
+
+// The snapshot this deploy shipped, read only when nothing better is already in hand.
+function loadBundledMaps() {
+  if (mapDataRank >= 2) return Promise.resolve();
+  return fetch(MAPS_BUNDLED_URL)
+    .then(r => r.ok ? r.text() : Promise.reject(r.status))
+    .then(raw => { applyMapFile(parseMaps(raw), 1); })
+    .catch(() => { });
+}
+
+function refreshMapData() {
+  const manifest = fetch(MAPS_MANIFEST_URL, { cache: 'no-cache' })
+    .then(r => r.ok ? r.text() : Promise.reject(r.status))
+    .then(raw => {
+      const parsed = parseMapManifest(raw);
+      if (!parsed) return;   // refused before it is cached, so it cannot poison the cache
+      try { localStorage.setItem(MAPS_MANIFEST_STORAGE_KEY, raw); } catch (_) { }
+      mapHashes = parsed;
+    })
+    .catch(() => { /* keep whatever was working */ });
+
+  const roster = fetch(MAPS_URL, { cache: 'no-cache' })
+    .then(r => r.ok ? r.text() : Promise.reject(r.status))
+    .then(raw => {
+      const file = parseMaps(raw);
+      if (!file) return;
+      try { localStorage.setItem(MAPS_STORAGE_KEY, raw); } catch (_) { }
+      applyMapFile(file, 3);
+    })
+    .catch(() => { });
+
+  return Promise.all([manifest, roster]).then(renderMapsAfterData);
+}
+
+/* The bundle's own manifest, absent until the sync script has run against a deploy. Revalidated
+   rather than read from cache: a stale copy makes a freshly synced bundle look old, and every
+   image it lists then comes from the data repo instead of from here. */
+function loadMapMirror() {
+  return fetch(MAPS_MIRROR + 'manifest.json', { cache: 'no-cache' })
+    .then(r => r.ok ? r.text() : Promise.reject(r.status))
+    .then(raw => { mapMirror = parseMapManifest(raw); })
+    .catch(() => { mapMirror = null; });
+}
+
+/* Nothing is drawn until the bundled manifest lands: a picker painted before it asks the data repo
+   for overviews this deploy already has. It is a local file, so the wait is milliseconds. */
+function ensureMapData() {
+  if (mapsFetched) { renderMapsAfterData(); return; }
+  mapsFetched = true;
+  Promise.all([loadMapMirror(), loadBundledMaps()])
+    .then(renderMapsAfterData)
+    .then(refreshMapData);
+}
+
+// A saved map that has gone, or lost its plans, falls back to the picker rather than a dead view.
+function renderMapsAfterData() {
+  renderMapPicker();
+  syncMapsToggle();
+  if (!curMap) { restoreMapSelection(); return; }
+  const fresh = mapList.find(m => m.name === curMap.name);
+  if (fresh && mapHasPlan(fresh)) openMap(fresh, curVersion && curVersion.name, curFloor && curFloor.name);
+  else backToPicker();
+}
+
+/* ---- selection ---- The map and its variation persist; the floor deliberately does not. */
+
+function saveMapSelection() {
+  try {
+    localStorage.setItem(MAPS_SELECTION_KEY, JSON.stringify({
+      map: curMap ? curMap.name : '',
+      version: curVersion ? curVersion.name : ''
+    }));
+  } catch (_) { }
+}
+
+function clearMapSelection() {
+  try { localStorage.removeItem(MAPS_SELECTION_KEY); } catch (_) { }
+}
+
+function restoreMapSelection() {
+  if (curMap) return;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(MAPS_SELECTION_KEY) || '{}'); } catch (_) { return; }
+  if (!saved || typeof saved.map !== 'string' || !saved.map) return;
+  const map = mapList.find(m => m.name.toLowerCase() === saved.map.toLowerCase());
+  if (map && mapHasPlan(map)) openMap(map, saved.version);
+}
+
+/* ---- picker ---- */
+
+const MAP_SIZES = [['small', 'SMALL'], ['medium', 'MEDIUM'], ['large', 'LARGE']];
+
+function renderMapPicker() {
+  const host = el('maps-picker');
+  host.textContent = '';
+  for (const [size, label] of MAP_SIZES) {
+    const inGroup = mapList.filter(m => String(m.size || '').toLowerCase() === size);
+    if (!inGroup.length) continue;
+
+    const head = document.createElement('div');
+    head.className = 'maps-group-head';
+    head.innerHTML = '<b></b><i></i>';
+    head.firstChild.textContent = label;
+    host.appendChild(head);
+
+    const grid = document.createElement('div');
+    grid.className = 'maps-grid';
+    for (const m of inGroup) grid.appendChild(mapCard(m));
+    host.appendChild(grid);
+  }
+}
+
+function mapCard(m) {
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'maps-card';
+
+  const shot = document.createElement('div');
+  shot.className = 'maps-shotwrap';
+  const src = mapAssetUrl(m.overview);
+  if (src) {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = '';
+    img.width = 800; img.height = 450;
+    img.loading = 'lazy'; img.decoding = 'async';
+    img.addEventListener('error', () => img.remove());
+    shot.appendChild(img);
+  }
+  card.appendChild(shot);
+
+  const name = document.createElement('b');
+  name.textContent = m.name;
+  card.appendChild(name);
+
+  // A greyed card carries no label, badge or tooltip of its own. It just says nothing.
+  if (mapHasPlan(m)) card.onclick = () => openMap(m);
+  else card.setAttribute('aria-disabled', 'true');
+  return card;
+}
+
+/* ---- map view ---- */
+
+function openMap(map, versionName, floorName) {
+  curMap = map;
+  el('maps-title').textContent = map.name;
+  el('maps-fsname').textContent = map.name;
+  const size = el('maps-size');
+  size.textContent = String(map.size || '').toUpperCase();
+  size.hidden = !size.textContent;
+  el('maps-mhead').hidden = true;
+  el('maps-picker').hidden = true;
+  el('maps-view').hidden = false;
+
+  const versions = mapVersions(map);
+  buildVersionBar(versions);
+  if (versions.length) {
+    const wanted = versionName
+      ? versions.find(v => String(v.name || '').toLowerCase() === String(versionName).toLowerCase())
+      : null;
+    showVersion(wanted || versions[0], floorName);
+  } else {
+    curVersion = null;
+    el('maps-fsvar').hidden = true;
+    showFloors(floorsOf(map, null), floorName);
+  }
+  saveMapSelection();
+  syncMapsToggle();
+}
+
+function backToPicker() {
+  closeShot();
+  exitMapFullscreen();
+  curMap = curVersion = curFloor = null;
+  planW = planH = fitScale = mapScale = 0;
+  el('maps-vargroup').hidden = true;
+  el('maps-floorgroup').hidden = true;
+  el('maps-view').hidden = true;
+  el('maps-picker').hidden = false;
+  el('maps-mhead').hidden = false;
+  el('maps-plan').removeAttribute('src');
+  el('maps-markers').textContent = '';
+  markerGroupsNow = [];
+  clearMapSelection();
+  syncMapsToggle();
+}
+
+function buildVersionBar(versions) {
+  const group = el('maps-vargroup'), host = el('maps-variations');
+  host.textContent = '';
+  group.hidden = versions.length < 2;
+  if (group.hidden) return;
+  for (const v of versions) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = v.name || 'Variation';
+    b.onclick = () => { showVersion(v); saveMapSelection(); };
+    host.appendChild(b);
+  }
+}
+
+function showVersion(version, floorName) {
+  curVersion = version;
+  const versions = mapVersions(curMap);
+  markCurrent(el('maps-variations'), versions.indexOf(version));
+  const tag = el('maps-fsvar');
+  tag.textContent = versions.length > 1 ? (version.name || '') : '';
+  tag.hidden = !tag.textContent;
+  showFloors(floorsOf(curMap, version), floorName);
+}
+
+function showFloors(floors, floorName) {
+  const group = el('maps-floorgroup'), host = el('maps-floors'), fs = el('maps-fsfloors');
+  host.textContent = '';
+  fs.textContent = '';
+  // The desktop hides these labels unless both switchers are on screen, because there they sit
+  // side by side in a title bar. Here each heads its own list in the rail, so both always show.
+  group.hidden = floors.length < 2;
+
+  // Data order is the order the author meant, and the order the arrow keys step through.
+  for (const f of floors) {
+    for (const rail of [host, fs]) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = f.name || 'Floor';
+      b.onclick = () => showFloor(f);
+      rail.appendChild(b);
+    }
+  }
+  const wanted = floorName
+    ? floors.find(f => String(f.name || '').toLowerCase() === String(floorName).toLowerCase())
+    : null;
+  showFloor(wanted || defaultFloor(floors));
+}
+
+function currentFloors() { return curMap ? floorsOf(curMap, curVersion) : []; }
+
+// Point Hope's ten floors overflow their rail, so the lit one is scrolled back into sight.
+function markCurrent(rail, index) {
+  [...rail.children].forEach((b, i) => {
+    b.classList.toggle('on', i === index);
+    b.setAttribute('aria-pressed', i === index ? 'true' : 'false');
+    if (i === index) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  });
+}
+
+function showFloor(floor) {
+  curFloor = floor;
+  closeShot();
+
+  const index = currentFloors().indexOf(floor);
+  markCurrent(el('maps-floors'), index);
+  markCurrent(el('maps-fsfloors'), index);
+
+  const plan = el('maps-plan');
+  const src = floor ? mapAssetUrl(floor.plan) : null;
+  el('maps-markers').textContent = '';
+  markerGroupsNow = [];
+
+  if (!src) { showNoPlan(); return; }
+
+  el('maps-noplan').hidden = true;
+  plan.hidden = false;
+  el('maps-tools').hidden = false;
+  el('maps-full').hidden = !mapFullscreenAvailable();
+  plan.alt = 'Floor plan of ' + curMap.name + (floor.name ? ', ' + floor.name : '');
+  plan.src = src;
+  if (plan.complete && plan.naturalWidth) planReady();
+}
+
+// Those three words are the whole of the message.
+function showNoPlan() {
+  planW = planH = fitScale = mapScale = 0;
+  const plan = el('maps-plan');
+  plan.removeAttribute('src');
+  plan.hidden = true;
+  el('maps-markers').textContent = '';
+  markerGroupsNow = [];
+  el('maps-noplan').hidden = false;
+  el('maps-tools').hidden = true;
+  updateZoomControls();
+}
+
+// The plan's real pixel size, never a hardcoded one: the export size is going to change.
+function planReady() {
+  const plan = el('maps-plan');
+  planW = plan.naturalWidth;
+  planH = plan.naturalHeight;
+  plan.style.width = planW + 'px';
+  plan.style.height = planH + 'px';
+  buildMarkers();
+  sizeStageForFlow();
+  fitPlan();
+}
+
+/* Scrolling with the document, the stage has no flexed height to inherit and a fixed one
+   letterboxes the plan. Never called from the ResizeObserver, which this would re-enter. */
+function sizeStageForFlow() {
+  const stage = el('maps-stage');
+  if (!matchMedia(MQ_STACKED).matches || !planW) { stage.style.height = ''; return; }
+  const width = stage.clientWidth;
+  if (width <= 0) return;
+  const tools = el('maps-tools');
+  const extra = tools && !tools.hidden ? tools.offsetHeight : 0;
+  const ideal = width * planH / planW;
+  stage.style.height = Math.round(Math.max(240, Math.min(ideal, innerHeight * 0.68)) + extra) + 'px';
+}
+
+window.addEventListener('resize', () => { sizeStageForFlow(); });
+
+function buildMarkers() {
+  const host = el('maps-markers');
+  host.textContent = '';
+  markerGroupsNow = markerGroupsFor(curFloor);
+
+  for (const g of markerGroupsNow) {
+    // A marker with no photo stays on the plan and opens nothing.
+    const node = document.createElement(g.photo ? 'button' : 'span');
+    node.className = 'maps-mk' + (g.photo ? ' hit' : '');
+    if (g.photo) {
+      node.type = 'button';
+      node.onclick = () => { if (!mapDragged) openShot(g); };
+    }
+
+    const names = g.items.map(m => m.item).filter(Boolean);
+    node.setAttribute('aria-label', (names.join(', ') || 'Marker') + (g.room ? ', ' + g.room : ''));
+
+    const kinds = new Set(g.items.map(m => String(m.item || '').trim().toLowerCase()));
+    if (g.powerbox) node.innerHTML = '<span class="maps-box">' + POWER_BOX_SVG + '</span>';
+    else node.appendChild(possessionBadge(g.items, kinds));
+
+    // A mixed stack already shows its count inside the badge; this is for one item repeated.
+    if (g.items.length > 1 && (g.powerbox || kinds.size === 1)) {
+      const many = document.createElement('span');
+      many.className = 'many';
+      many.textContent = g.items.length;
+      node.appendChild(many);
+    }
+    g.node = node;
+    host.appendChild(node);
+  }
+  positionMarkers();
+}
+
+/* Several different possessions on one point (Sunny Meadows puts all seven there) cannot share
+   one glyph honestly, so that badge shows how many instead and the popup names them. */
+function possessionBadge(items, kinds) {
+  const badge = document.createElement('span');
+  badge.className = 'maps-pos';
+  if (kinds.size > 1) {
+    const count = document.createElement('b');
+    count.textContent = items.length;
+    badge.appendChild(count);
+    return badge;
+  }
+  badge.appendChild(possessionGlyph(items[0] && items[0].item));
+  return badge;
+}
+
+function possessionGlyph(item) {
+  const glyph = document.createElement('i');
+  glyph.className = 'maps-glyph';
+  glyph.setAttribute('aria-hidden', 'true');
+  const known = POSSESSION_BY_ITEM.get(String(item || '').trim().toLowerCase());
+  if (known) {
+    const url = 'url("' + POSSESSION_DIR + known.file + '.png")';
+    glyph.style.webkitMaskImage = url;
+    glyph.style.maskImage = url;
+  } else {
+    glyph.classList.add('none');
+  }
+  return glyph;
+}
+
+function renderMapsKey() {
+  const key = el('maps-key');
+  key.textContent = '';
+  const row = (visual, label) => {
+    const r = document.createElement('span');
+    r.className = 'maps-key-row';
+    r.setAttribute('role', 'listitem');
+    r.appendChild(visual);
+    r.appendChild(document.createTextNode(label));
+    key.appendChild(r);
+  };
+  for (const p of POSSESSIONS) {
+    const badge = document.createElement('span');
+    badge.className = 'maps-pos';
+    badge.appendChild(possessionGlyph(p.item));
+    row(badge, p.item);
+  }
+  const sep = document.createElement('span');
+  sep.className = 'maps-key-sep';
+  key.appendChild(sep);
+  const box = document.createElement('span');
+  box.className = 'maps-box';
+  box.innerHTML = POWER_BOX_SVG;
+  row(box, 'Power Box');
+
+  const credit = el('maps-credit');
+  credit.textContent = 'Possession icons by ';
+  POSSESSIONS.forEach((p, i) => {
+    const a = document.createElement('a');
+    a.href = p.authorUrl; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = p.author;
+    credit.appendChild(a);
+    credit.appendChild(document.createTextNode(i < POSSESSIONS.length - 2 ? ', ' : i === POSSESSIONS.length - 2 ? ' and ' : ''));
+  });
+  credit.appendChild(document.createTextNode(' from '));
+  const fl = document.createElement('a');
+  fl.href = 'https://www.flaticon.com/'; fl.target = '_blank'; fl.rel = 'noopener';
+  fl.textContent = 'Flaticon';
+  credit.appendChild(fl);
+}
+
+/* Markers live outside the plan's transform so they stay one size at every zoom, which means
+   their positions have to be recomputed by hand after any zoom, pan or resize. */
+function positionMarkers() {
+  for (const g of markerGroupsNow) {
+    if (!g.node) continue;
+    g.node.style.left = (g.x * planW * mapScale + panX) + 'px';
+    g.node.style.top = (g.y * planH * mapScale + panY) + 'px';
+  }
+}
+
+function applyMapTransform() {
+  el('maps-plan').style.transform =
+    'translate(' + panX + 'px,' + panY + 'px) scale(' + mapScale + ')';
+  positionMarkers();
+  updateZoomControls();
+}
+
+/* Centres the plan on any axis where it is no bigger than the viewport, and otherwise stops a
+   drag pulling its edge inside. At the fitted zoom that leaves it centred and immovable, which
+   is why zooming out ends at the fit and there is no fit button. */
+function clampMapPan() {
+  const vp = el('maps-viewport');
+  const vw = vp.clientWidth, vh = vp.clientHeight;
+  const sw = planW * mapScale, sh = planH * mapScale;
+  panX = sw <= vw + 0.5 ? (vw - sw) / 2 : Math.min(0, Math.max(vw - sw, panX));
+  panY = sh <= vh + 0.5 ? (vh - sh) / 2 : Math.min(0, Math.max(vh - sh, panY));
+}
+
+function fitPlan() {
+  const vp = el('maps-viewport');
+  const vw = vp.clientWidth, vh = vp.clientHeight;
+  if (!planW || vw <= 0 || vh <= 0) return;
+  fitScale = Math.min(vw / planW, vh / planH);
+  mapScale = fitScale;
+  clampMapPan();
+  applyMapTransform();
+}
+
+function setMapZoom(scale, ax, ay) {
+  if (fitScale <= 0) return;
+  scale = Math.min(fitScale * MAP_MAX_ZOOM, Math.max(fitScale, scale));
+  const old = mapScale > 0 ? mapScale : scale;
+  const px = (ax - panX) / old, py = (ay - panY) / old;
+  mapScale = scale;
+  panX = ax - px * scale;
+  panY = ay - py * scale;
+  clampMapPan();
+  applyMapTransform();
+}
+
+function zoomFromCentre(factor) {
+  const vp = el('maps-viewport');
+  setMapZoom(mapScale * factor, vp.clientWidth / 2, vp.clientHeight / 2);
+}
+
+function updateZoomControls() {
+  const relative = fitScale > 0 ? mapScale / fitScale : 1;
+  el('maps-zoom').textContent = Math.round(relative * 100) + '%';
+  el('maps-zoomout').disabled = !(relative > 1.0005);
+  el('maps-zoomin').disabled = !(relative < MAP_MAX_ZOOM - 0.0005);
+}
+
+/* ---- pan and pinch ---- */
+
+function mapPointAt(e) {
+  const r = el('maps-viewport').getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+function pinchState() {
+  const [a, b] = [...mapPointers.values()];
+  return { dist: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
+}
+
+/* No setPointerCapture here on purpose. A captured pointer retargets the click that follows to
+   the capturing element, which put every marker's click on the viewport instead. */
+function onMapPointerDown(e) {
+  if (!planW) return;
+  mapPointers.set(e.pointerId, mapPointAt(e));
+  mapDragged = false;
+  if (mapPointers.size === 1) {
+    const p = mapPointers.get(e.pointerId);
+    mapPanFrom = { x: p.x, y: p.y, panX, panY };
+    mapPinchFrom = null;
+    el('maps-viewport').classList.add('drag');
+  } else if (mapPointers.size === 2) {
+    mapPanFrom = null;
+    mapPinchFrom = { dist: pinchState().dist, scale: mapScale };
+  }
+}
+
+function onMapPointerMove(e) {
+  if (!mapPointers.has(e.pointerId)) return;
+  mapPointers.set(e.pointerId, mapPointAt(e));
+
+  if (mapPointers.size >= 2 && mapPinchFrom) {
+    const s = pinchState();
+    if (s.dist > 0 && mapPinchFrom.dist > 0) {
+      mapDragged = true;
+      setMapZoom(mapPinchFrom.scale * (s.dist / mapPinchFrom.dist), s.cx, s.cy);
+    }
+    return;
+  }
+  if (!mapPanFrom) return;
+  const p = mapPointers.get(e.pointerId);
+  if (Math.hypot(p.x - mapPanFrom.x, p.y - mapPanFrom.y) > MAP_DRAG_SLOP) mapDragged = true;
+  panX = mapPanFrom.panX + (p.x - mapPanFrom.x);
+  panY = mapPanFrom.panY + (p.y - mapPanFrom.y);
+  clampMapPan();
+  applyMapTransform();
+}
+
+function onMapPointerUp(e) {
+  if (!mapPointers.delete(e.pointerId)) return;
+  if (mapPointers.size < 2) mapPinchFrom = null;
+  if (mapPointers.size === 1) {
+    const p = mapPointers.get([...mapPointers.keys()][0]);
+    mapPanFrom = { x: p.x, y: p.y, panX, panY };
+  } else if (mapPointers.size === 0) {
+    mapPanFrom = null;
+    el('maps-viewport').classList.remove('drag');
+    // Cleared only after the click ending this drag has been swallowed.
+    setTimeout(() => { mapDragged = false; }, 0);
+  }
+}
+
+/* ---- possession photo ---- */
+
+function openShot(group) {
+  const img = el('maps-shot-img');
+  const names = group.items.map(m => m.item).filter(Boolean);
+  el('maps-shot-title').textContent = names.join(', ');
+  const room = el('maps-shot-room');
+  room.textContent = group.room;
+  room.hidden = !group.room;
+  img.hidden = true;
+  img.alt = names.join(', ') + (group.room ? ' in the ' + group.room : '');
+  img.onload = () => { img.hidden = false; };
+  img.onerror = () => { img.hidden = true; };
+  img.src = group.photo;
+  el('maps-shot').hidden = false;
+}
+
+function closeShot() {
+  const shot = el('maps-shot');
+  if (shot.hidden) return;
+  shot.hidden = true;
+  el('maps-shot-img').removeAttribute('src');
+}
+
+/* ---- full screen ---- */
+
+function mapFullscreenAvailable() {
+  const stage = el('maps-stage');
+  return !!(stage.requestFullscreen || stage.webkitRequestFullscreen);
+}
+
+function mapIsFullscreen() {
+  return (document.fullscreenElement || document.webkitFullscreenElement) === el('maps-stage');
+}
+
+function toggleMapFullscreen() {
+  if (mapIsFullscreen()) { exitMapFullscreen(); return; }
+  const stage = el('maps-stage');
+  const request = stage.requestFullscreen || stage.webkitRequestFullscreen;
+  if (request) Promise.resolve(request.call(stage)).catch(() => { });
+}
+
+function exitMapFullscreen() {
+  if (!mapIsFullscreen()) return;
+  const exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if (exit) Promise.resolve(exit.call(document)).catch(() => { });
+}
+
+function stepFloor(delta) {
+  const floors = currentFloors();
+  if (floors.length < 2) return;
+  const i = floors.indexOf(curFloor);
+  showFloor(floors[((i + delta) % floors.length + floors.length) % floors.length]);
+}
+
+// Lands on the new variation's Ground, matching the overlay's Up and Down.
+function stepVersion(delta) {
+  const versions = mapVersions(curMap);
+  if (versions.length < 2) return;
+  const i = versions.indexOf(curVersion);
+  showVersion(versions[((i + delta) % versions.length + versions.length) % versions.length]);
+  saveMapSelection();
+}
+
+/* ---- wiring ---- */
+
+function mapsOpen() { return mapsPanelOpen; }
+
+/* The toggle carries the selection, so the panel itself does not need a title bar repeating it.
+   Before the first open there is no curMap, so the saved name is resolved against the cache. */
+function selectedMapForLabel() {
+  if (curMap) return curMap;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(MAPS_SELECTION_KEY) || '{}'); } catch (_) { return null; }
+  if (!saved || typeof saved.map !== 'string' || !saved.map) return null;
+  return mapList.find(m => m.name.toLowerCase() === saved.map.toLowerCase())
+      || { name: saved.map, size: '' };
+}
+
+function syncMapsToggle() {
+  const btn = el('maps-toggle');
+  const label = btn.querySelector('.lbl'), size = btn.querySelector('.sz');
+  btn.classList.toggle('on', mapsPanelOpen);
+  btn.setAttribute('aria-expanded', mapsPanelOpen ? 'true' : 'false');
+  el('m-maps').classList.toggle('on', mapsPanelOpen);
+
+  if (mapsPanelOpen) {
+    label.textContent = 'Click to close';
+    size.hidden = true;
+    return;
+  }
+  const picked = selectedMapForLabel();
+  label.textContent = picked ? picked.name : 'Maps';
+  size.textContent = picked ? String(picked.size || '').toUpperCase() : '';
+  size.hidden = !size.textContent;
+}
+
+function setMapsOpen(open) {
+  mapsPanelOpen = open;
+  el('maps').hidden = !open;
+  el('scroll').hidden = open;
+  // The header names what the pane is showing, and a ghost count is meaningless over a map.
+  document.querySelector('#tb-right .title').textContent = open ? 'Maps' : 'Ghosts';
+  el('count').hidden = open;
+  if (open) ensureMapData(); else exitMapFullscreen();
+  if (!open) closeShot();
+  syncMapsToggle();
+}
+
+el('maps-toggle').onclick = () => setMapsOpen(!mapsPanelOpen);
+el('maps-back').onclick = backToPicker;
+el('maps-full').onclick = toggleMapFullscreen;
+for (const event of ['fullscreenchange', 'webkitfullscreenchange']) {
+  document.addEventListener(event, () => {
+    el('maps-full').textContent = mapIsFullscreen() ? 'EXIT FULL SCREEN' : 'FULL SCREEN';
+  });
+}
+el('maps-zoomin').onclick = () => zoomFromCentre(MAP_ZOOM_STEP);
+el('maps-zoomout').onclick = () => zoomFromCentre(1 / MAP_ZOOM_STEP);
+el('maps-plan').onload = planReady;
+el('maps-plan').onerror = showNoPlan;
+
+el('maps-shot').addEventListener('click', closeShot);
+
+const mapsViewport = el('maps-viewport');
+mapsViewport.addEventListener('pointerdown', onMapPointerDown);
+window.addEventListener('pointermove', onMapPointerMove);
+window.addEventListener('pointerup', onMapPointerUp);
+window.addEventListener('pointercancel', onMapPointerUp);
+mapsViewport.addEventListener('wheel', e => {
+  if (!planW) return;
+  e.preventDefault();
+  const p = mapPointAt(e);
+  setMapZoom(mapScale * (e.deltaY < 0 ? MAP_ZOOM_STEP : 1 / MAP_ZOOM_STEP), p.x, p.y);
+}, { passive: false });
+
+/* Unlike the desktop's fixed window this viewport resizes constantly, so the fit is recomputed
+   rather than left stale. Sitting at the fit stays at the fit; a zoomed view keeps its zoom. */
+new ResizeObserver(() => {
+  if (!planW) return;
+  const vp = el('maps-viewport');
+  if (vp.clientWidth <= 0 || vp.clientHeight <= 0) return;
+  const wasFitted = fitScale > 0 && mapScale <= fitScale * 1.0005;
+  fitScale = Math.min(vp.clientWidth / planW, vp.clientHeight / planH);
+  if (wasFitted) { fitPlan(); return; }
+  mapScale = Math.min(fitScale * MAP_MAX_ZOOM, Math.max(fitScale, mapScale));
+  clampMapPan();
+  applyMapTransform();
+}).observe(mapsViewport);
+
+// The arrow keys belong to the full screen view, where there is no switcher to tab to.
+document.addEventListener('keydown', e => {
+  if (!mapIsFullscreen() || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.key === 'ArrowLeft') stepFloor(-1);
+  else if (e.key === 'ArrowRight') stepFloor(1);
+  else if (e.key === 'ArrowUp') stepVersion(-1);
+  else if (e.key === 'ArrowDown') stepVersion(1);
+  else return;
+  e.preventDefault();
+});
+
+loadCachedMaps();
+syncMapsToggle();
+renderMapsKey();
 
 /* ---------------- data layer ---------------- */
 // The cached copy renders instantly, then the remote is fetched and swapped in if valid.

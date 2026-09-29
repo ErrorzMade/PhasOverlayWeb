@@ -44,3 +44,12 @@ Behaviour, palette and layout are ported from the desktop application,
 - Screenshots under `assets/screenshots/` are captures of the desktop application
   running over Phasmophobia. Game imagery within them remains the property of
   Kinetic Games.
+- Cursed possession icons under `assets/cursed/` are Flaticon free icons, used under the
+  Flaticon free licence with attribution. The same credit is shown beneath the map key.
+  - Ouija Board: [Ouija](https://www.flaticon.com/free-icon/ouija_10490571) by [Magnific](https://www.flaticon.com/authors/magnific)
+  - Tarot Cards: [Tarot](https://www.flaticon.com/free-icon/tarot_4822139) by [smashingstocks](https://www.flaticon.com/authors/smashingstocks)
+  - Voodoo Doll: [Voodoo doll](https://www.flaticon.com/free-icon/voodoo-doll_12435850) by [Mayor Icons](https://www.flaticon.com/authors/mayor-icons)
+  - Music Box: [Music box](https://www.flaticon.com/free-icon/music-box_11828468) by [asol_studio](https://www.flaticon.com/authors/asol-studio)
+  - Haunted Mirror: [Hand mirror](https://www.flaticon.com/free-icon/hand-mirror_13327369) by [Awicon](https://www.flaticon.com/authors/awicon)
+  - Monkey Paw: [Zombie hand](https://www.flaticon.com/free-icon/zombie-hand_18930717) by [POD Gladiator](https://www.flaticon.com/authors/pod-gladiator)
+  - Summoning Circle: [Pentagram](https://www.flaticon.com/free-icon/pentagram_18022107) by [Fantasyou](https://www.flaticon.com/authors/fantasyou)

@@ -1,0 +1,847 @@
+{
+    "schemaVersion":  1,
+    "dataVersion":  3,
+    "generated":  "2026-09-28T02:15:41Z",
+    "files":  [
+                  {
+                      "path":  "maps.json",
+                      "size":  79044,
+                      "sha256":  "46a34aacbc3e60d20d4dee8c3e38d1fb27e35dbb27571ba05d685fa10ba87edb"
+                  },
+                  {
+                      "path":  "Images/Cursed/Bleasdale/bleasdaleboard.jpg",
+                      "size":  129528,
+                      "sha256":  "726c3a664f5dd984b06cd0cb901f39d2486cf47c7fbe30c0dd201a3c48ac5143"
+                  },
+                  {
+                      "path":  "Images/Cursed/Bleasdale/bleasdalemirror.jpg",
+                      "size":  109826,
+                      "sha256":  "a15e114bfcbf859a6c700162e785ed7f87d9b86b16649e735bf844fdf465fc55"
+                  },
+                  {
+                      "path":  "Images/Cursed/Bleasdale/bleasdalemonkeypaw.jpg",
+                      "size":  98767,
+                      "sha256":  "96abbc25cd30419bfca50425a4f86ec452fd2c1001c01c444f046def1c4ac6ce"
+                  },
+                  {
+                      "path":  "Images/Cursed/Bleasdale/bleasdalemusicbox.jpg",
+                      "size":  107940,
+                      "sha256":  "b9146e5ea164e352e2952fb32d6b0e7bd8955f39406c6ccbbad758d0c1b0860e"
+                  },
+                  {
+                      "path":  "Images/Cursed/Bleasdale/bleasdalesummoningcircle.jpg",
+                      "size":  109019,
+                      "sha256":  "b5230269eaac0896f457a4a1130fd0248588a5316b60e8ba79f97317a38d3de6"
+                  },
+                  {
+                      "path":  "Images/Cursed/Bleasdale/bleasdaletarot.jpg",
+                      "size":  121485,
+                      "sha256":  "1b63d846b2a1fcfb80b498c04d8156332c38a71f90bcce03fb999130e593efd0"
+                  },
+                  {
+                      "path":  "Images/Cursed/Bleasdale/bleasdalevoodoo.jpg",
+                      "size":  159546,
+                      "sha256":  "95957a4561202934b59bd73655a460a4b204feac7c93bb5607f84c8c250bde80"
+                  },
+                  {
+                      "path":  "Images/Cursed/Brownstone/schoolboard.jpg",
+                      "size":  97868,
+                      "sha256":  "96b8c007ba56d9d3e5a2d9b517b035c60bc11671b8597b73ac7b76c91318eea5"
+                  },
+                  {
+                      "path":  "Images/Cursed/Brownstone/schoolmirror.jpg",
+                      "size":  82755,
+                      "sha256":  "47310e6f9c2c80d7ee9a9e39836249fe2b651dd0cc19616f8435cce7a08c8001"
+                  },
+                  {
+                      "path":  "Images/Cursed/Brownstone/schoolmonkeypaw.jpg",
+                      "size":  60578,
+                      "sha256":  "f3ac1f1bb61c2cbf821912a1fc49d0e014634ced9450ba7f995ecb28e64211d0"
+                  },
+                  {
+                      "path":  "Images/Cursed/Brownstone/schoolmusicbox.jpg",
+                      "size":  48726,
+                      "sha256":  "5b72adf2a8ef1e8cf0cc8717a9da814bada3bbd26991e125f35910d14306af4d"
+                  },
+                  {
+                      "path":  "Images/Cursed/Brownstone/schoolsummoningcircle.jpg",
+                      "size":  98616,
+                      "sha256":  "db3888c840d4ead6f887dd22e139748ebbe7aa06244638c1273ccd3230ed9f57"
+                  },
+                  {
+                      "path":  "Images/Cursed/Brownstone/schooltarot.jpg",
+                      "size":  46354,
+                      "sha256":  "188d5c1bf49bcd71ff6a587aecb7a3c9247757a1f9169e8c293dd0ed334a3c18"
+                  },
+                  {
+                      "path":  "Images/Cursed/Brownstone/schoolvoodoo.jpg",
+                      "size":  88366,
+                      "sha256":  "6cdfe4012fd4d0d7da6036ef54595b4a2951f70680cb5a3fd93b4e9307a32f67"
+                  },
+                  {
+                      "path":  "Images/Cursed/BrownstoneRestricted/2FLeft/schoolrestrictedbench.jpg",
+                      "size":  79970,
+                      "sha256":  "7a41d9f8464928f58d7d376d2ce1ba80a7083e9c675b617a758645bec2a886f1"
+                  },
+                  {
+                      "path":  "Images/Cursed/BrownstoneRestricted/2FLeft/schoolrestrictedsummoningcircle.jpg",
+                      "size":  55508,
+                      "sha256":  "c2d6fb7f7c92e63f06055844d677bc7d3208f1feff3ac8b890a9390e37fcc396"
+                  },
+                  {
+                      "path":  "Images/Cursed/BrownstoneRestricted/2FRight/schoolrestrictedbench.jpg",
+                      "size":  84579,
+                      "sha256":  "16e3a89239c54ac8f3a8e77a1773dd0cfa29d120bac8145152a6cfcb569affa3"
+                  },
+                  {
+                      "path":  "Images/Cursed/BrownstoneRestricted/2FRight/schoolrestrictedsummoningcircle.jpg",
+                      "size":  53972,
+                      "sha256":  "c3db803f05cb4eedf3f0d76337a586666686b1e5bb131e1fa3f6cfc6703dbce7"
+                  },
+                  {
+                      "path":  "Images/Cursed/Edgefield/edgefieldboard.jpg",
+                      "size":  70590,
+                      "sha256":  "42bdb1628099212ec30f0fde93e856bf3b4f2d0254d47e87b67c9986ecb0509a"
+                  },
+                  {
+                      "path":  "Images/Cursed/Edgefield/edgefieldmirror.jpg",
+                      "size":  31364,
+                      "sha256":  "acdbf70a35ee4773665db6e9f080cd6d0ec143019c0f2769d54d0ba5b0b0b605"
+                  },
+                  {
+                      "path":  "Images/Cursed/Edgefield/edgefieldmonkeypaw.jpg",
+                      "size":  124581,
+                      "sha256":  "314960e660425e3a85aae789982b4c49dc44e47d21d23d90732e54a7b34c2e58"
+                  },
+                  {
+                      "path":  "Images/Cursed/Edgefield/edgefieldmusicbox.jpg",
+                      "size":  75805,
+                      "sha256":  "9f35f0213125eec1d13a0e4601dfbf863329ff086ec15a20344d78bab3c7e1c4"
+                  },
+                  {
+                      "path":  "Images/Cursed/Edgefield/edgefieldsummoningcircle.jpg",
+                      "size":  130059,
+                      "sha256":  "21875ece31f2d7d6856b8c6e23380f14c22b7e9f0e750b1f6f71bd83f0975706"
+                  },
+                  {
+                      "path":  "Images/Cursed/Edgefield/edgefieldtarot.jpg",
+                      "size":  42413,
+                      "sha256":  "12a546f7bbbef8cd6fe20a16b63051b2f9809f7040ff55077a74c0262adcb922"
+                  },
+                  {
+                      "path":  "Images/Cursed/Edgefield/edgefieldvoodoo.jpg",
+                      "size":  113944,
+                      "sha256":  "54cd65262d3bcacad32b9d0218b159f4d868aaca62de1a7df8f49760d3a64f52"
+                  },
+                  {
+                      "path":  "Images/Cursed/Grafton/graftonboard.jpg",
+                      "size":  45962,
+                      "sha256":  "310e0cefd5b78d2ec1c90fda07447cd3ec0a784534f53af607d4d3ab284d9324"
+                  },
+                  {
+                      "path":  "Images/Cursed/Grafton/graftonmirror.jpg",
+                      "size":  64178,
+                      "sha256":  "c62764a7a2d6d878a3057b6c14dc5a19f52a8a90cefd3e4e948f905f10076ec3"
+                  },
+                  {
+                      "path":  "Images/Cursed/Grafton/graftonmonkeypaw.jpg",
+                      "size":  101883,
+                      "sha256":  "3b4845febca0bea9ccb7d2a9679cbf463ea148d2bbec4be7e5bf02b882d10699"
+                  },
+                  {
+                      "path":  "Images/Cursed/Grafton/graftonmusicbox.jpg",
+                      "size":  129208,
+                      "sha256":  "287f72a7a2f09770d91ce123e382c4e03f9b82fed7f153da568cdb6724225a5e"
+                  },
+                  {
+                      "path":  "Images/Cursed/Grafton/graftonsummoningcircle.jpg",
+                      "size":  116606,
+                      "sha256":  "001d00a8691110b237b5a2966e7d766f206bbee5ec03b666436e517237421acb"
+                  },
+                  {
+                      "path":  "Images/Cursed/Grafton/graftontarot.jpg",
+                      "size":  53065,
+                      "sha256":  "7ecf6740d8d4f1f0c34506d101f4db3c835b3c73231f502e49a92a8206374837"
+                  },
+                  {
+                      "path":  "Images/Cursed/Grafton/graftonvoodoo.jpg",
+                      "size":  98245,
+                      "sha256":  "481eaa1943011c65bf05336c1c4acc117e989ce4d8e2bc03d38e7bb7afb42453"
+                  },
+                  {
+                      "path":  "Images/Cursed/MapleLodge/maplelodgeboard.jpg",
+                      "size":  92225,
+                      "sha256":  "a0f8ddbf72bcf2eeb43883b2f5736cd2e62bcd9682b551377273b146f8cf0de0"
+                  },
+                  {
+                      "path":  "Images/Cursed/MapleLodge/maplelodgemirror.jpg",
+                      "size":  132735,
+                      "sha256":  "df0a006da885b9191bc0526c594c79db89c9f65e2d2cff0f8d7b1acb48e69261"
+                  },
+                  {
+                      "path":  "Images/Cursed/MapleLodge/maplelodgemonkeypaw.jpg",
+                      "size":  144412,
+                      "sha256":  "a77490f33aed53631c2bffb755e0d803caa8155bc5cfdfc0f33e1e72df2d0379"
+                  },
+                  {
+                      "path":  "Images/Cursed/MapleLodge/maplelodgemusicbox.jpg",
+                      "size":  136984,
+                      "sha256":  "9e0d88ee9df08181fd5ec3c5e3d75154e4410fe4c7987bae613f99c036285c30"
+                  },
+                  {
+                      "path":  "Images/Cursed/MapleLodge/maplelodgesummoningcircle.jpg",
+                      "size":  127564,
+                      "sha256":  "a9d333f94553ac9b578cfa90781f55c2f8a208ceef8cc15e4a1c3b6f21a22a6d"
+                  },
+                  {
+                      "path":  "Images/Cursed/MapleLodge/maplelodgetarot.jpg",
+                      "size":  119957,
+                      "sha256":  "78612562a8f82d0f90924b831a50bb4c3edfaf402d3811d1bc3f942e8e86e2d9"
+                  },
+                  {
+                      "path":  "Images/Cursed/MapleLodge/maplelodgevoodoo.jpg",
+                      "size":  92494,
+                      "sha256":  "b6a0701353eedf017344144af997cb89ea7fb85c25d43bbb3730a8836755ddd4"
+                  },
+                  {
+                      "path":  "Images/Cursed/Nells/nellsboard.jpg",
+                      "size":  77972,
+                      "sha256":  "7cfcfdec5b61cb6af6e9fba44cb1e8e6b972e88bfe6fc64275319f298098b907"
+                  },
+                  {
+                      "path":  "Images/Cursed/Nells/nellsmirror.jpg",
+                      "size":  80777,
+                      "sha256":  "268a1698c6a84bd32a93ea9cdf255c23c1db5e28e219ec1d4385d8248bcf023b"
+                  },
+                  {
+                      "path":  "Images/Cursed/Nells/nellsmonkeypaw.jpg",
+                      "size":  128309,
+                      "sha256":  "5b74388d6a0b093b17c2e1cc2e797e7ad2ece8c70dd65145988ee637d2a990e4"
+                  },
+                  {
+                      "path":  "Images/Cursed/Nells/nellsmusicbox.jpg",
+                      "size":  116634,
+                      "sha256":  "d3fabf8e9cfd2f6b691a53d2131ff6dddba4e4556d6db1e1f9da4ab83b441a44"
+                  },
+                  {
+                      "path":  "Images/Cursed/Nells/nellssummoningcircle.jpg",
+                      "size":  75505,
+                      "sha256":  "3f81450a78d245671c3f74c47529a66c7f5b0a9cdbaef6d9bd8c69227bd83140"
+                  },
+                  {
+                      "path":  "Images/Cursed/Nells/nellstarot.jpg",
+                      "size":  105749,
+                      "sha256":  "2e6b7449a6e191d2b163507eae8b7a76b772b1d8c8b49a236eb19f06477177b1"
+                  },
+                  {
+                      "path":  "Images/Cursed/Nells/nellsvoodoo.jpg",
+                      "size":  112061,
+                      "sha256":  "0841cc674f4fe7eebd932d89e1f8d99954b051def5c6bf857e18a27adefe2a65"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHope/pointhopeboard.jpg",
+                      "size":  147109,
+                      "sha256":  "3862ff98a0bd83f123176c7c24c2b20f693d74ddd318c0349519ee0af37a9a2a"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHope/pointhopemirror.jpg",
+                      "size":  111701,
+                      "sha256":  "bf130bf11a57b4f5e2983e9e8f6840a94c45e301d120a3d5432bbd9f8651d0d2"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHope/pointhopemonkeypaw.jpg",
+                      "size":  138298,
+                      "sha256":  "0ee6ded9339c2abe673ec14d9b8546796361b24fbfc39110c1895e61c8ed7cd5"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHope/pointhopemusicbox.jpg",
+                      "size":  124413,
+                      "sha256":  "dfae42d14a8df1318eb170f172023d3a364480d288cf49b74f981c6a4d919277"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHope/pointhopesummoningcircle.jpg",
+                      "size":  118537,
+                      "sha256":  "21e10e557366f6c90d677fd98f29ee1c523c6321b017d83d5e974aa89e7361b8"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHope/pointhopetarot.jpg",
+                      "size":  126517,
+                      "sha256":  "13a2269ac37b1fc7be0a403ac2cbe5772a59598c50ce9ae026d5c50dff257c85"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHope/pointhopevoodoo.jpg",
+                      "size":  128586,
+                      "sha256":  "80d0aab2c6f5a7ea220f4bb88d4f493d5b89fcf2dffbc081a2bc51825a59aa2f"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHopeRestricted/hoperestrictedboard.jpg",
+                      "size":  191880,
+                      "sha256":  "9823d6a645bac5d2276497cf2d7d9c2729399703cd19fd323a628837f7f03898"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHopeRestricted/hoperestrictedmirror.jpg",
+                      "size":  150104,
+                      "sha256":  "7a9b39899b3d0bfc4e066be8b190c79ac1e537a333db750e829c1f970b116c54"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHopeRestricted/hoperestrictedmonkeypaw.jpg",
+                      "size":  138447,
+                      "sha256":  "47950519c9066adc6d1d07a44f5c115bb0c3a1e34a292f4533edf7b767f904f7"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHopeRestricted/hoperestrictedmusicbox.jpg",
+                      "size":  189725,
+                      "sha256":  "e52130202e953d602b8356ad3b5462df23a2d2980eb3b37806e9525de6ccb6a4"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHopeRestricted/hoperestrictedsummoningcircle.jpg",
+                      "size":  151550,
+                      "sha256":  "d3ff2b617e4200f0edbb5c7f0d2bfe3055a8de5fe622f8fdf85e481d61bc8fae"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHopeRestricted/hoperestrictedtarot.jpg",
+                      "size":  136370,
+                      "sha256":  "02f582e321d94bfb85e641ed205cf771515fe7da38bf4216a9c643021d0277c4"
+                  },
+                  {
+                      "path":  "Images/Cursed/PointHopeRestricted/hoperestrictedvoodoo.jpg",
+                      "size":  217885,
+                      "sha256":  "cbdd03f04d569010e316eee0f4044e4de56a46402dea3ac2d3aed0bee9b6ad99"
+                  },
+                  {
+                      "path":  "Images/Cursed/Prison/prisonboard.jpg",
+                      "size":  74132,
+                      "sha256":  "4065f37c4a6c083035ffd187b73b5447460fce36b5fbbe4e210dfb0843030ac2"
+                  },
+                  {
+                      "path":  "Images/Cursed/Prison/prisonmirror.jpg",
+                      "size":  118580,
+                      "sha256":  "73dec420282d8caedf7a8b11d132d6fc0730a4ee09bd3a123ff5bba35729a519"
+                  },
+                  {
+                      "path":  "Images/Cursed/Prison/prisonmonkeypaw.jpg",
+                      "size":  96239,
+                      "sha256":  "21d42ca787312218a04e90fa5c91bab5ff8ad56a2bee029c58d5ec895915f78c"
+                  },
+                  {
+                      "path":  "Images/Cursed/Prison/prisonmusicbox.jpg",
+                      "size":  84147,
+                      "sha256":  "ea5e92cba8d0af5b326fc0468c307515d3e2ef5832a5db685a7e8d3eadf50235"
+                  },
+                  {
+                      "path":  "Images/Cursed/Prison/prisonsummoningcircle.jpg",
+                      "size":  83004,
+                      "sha256":  "9d0950a575cff15f0cb25e96138c745712a85399ccb2a535190daba0a52c7695"
+                  },
+                  {
+                      "path":  "Images/Cursed/Prison/prisontarot.jpg",
+                      "size":  71892,
+                      "sha256":  "f75d392a42bc5a74f6799e6bead39a68c8f273e98778453619a270ca70ef981f"
+                  },
+                  {
+                      "path":  "Images/Cursed/Prison/prisonvoodoo.jpg",
+                      "size":  79740,
+                      "sha256":  "7a756458866482a03f76900eae7a02bdb47fadea5783648f2c1183b478797005"
+                  },
+                  {
+                      "path":  "Images/Cursed/Ridgeview/ridgeviewboard.jpg",
+                      "size":  58331,
+                      "sha256":  "0aae1e785b1600685dcf7e0a050ba922390cd67c572101905fe57c873e5b0c7a"
+                  },
+                  {
+                      "path":  "Images/Cursed/Ridgeview/ridgeviewmirror.jpg",
+                      "size":  26780,
+                      "sha256":  "9f487bb1b6b8f73772a88eecedca3e2f3e29efc9bc95faba02074e79e52572fd"
+                  },
+                  {
+                      "path":  "Images/Cursed/Ridgeview/ridgeviewmonkeypaw.jpg",
+                      "size":  103522,
+                      "sha256":  "60fe74a53b1f19013601be1add6b5ad6ba3416172f05308ac6348040adcad35a"
+                  },
+                  {
+                      "path":  "Images/Cursed/Ridgeview/ridgeviewmusicbox.jpg",
+                      "size":  122454,
+                      "sha256":  "7c8c5f0384a59bbe3535a6573509726d0a668235327617d1539736258ac55c14"
+                  },
+                  {
+                      "path":  "Images/Cursed/Ridgeview/ridgeviewsummoningcircle.jpg",
+                      "size":  73062,
+                      "sha256":  "71bac3f0065c86f67fb405249df1285a0e0f9febb7fbb3aae67ca9d5c8725b6e"
+                  },
+                  {
+                      "path":  "Images/Cursed/Ridgeview/ridgeviewtarot.jpg",
+                      "size":  94652,
+                      "sha256":  "15b500e8d0eac8eb0425c7d8446bb592c8b508a685edd85867aef7cc4f2f23a1"
+                  },
+                  {
+                      "path":  "Images/Cursed/Ridgeview/ridgeviewvoodoo.jpg",
+                      "size":  116938,
+                      "sha256":  "b2172a66a0314b898ff49b2a6f65bc3721fcffe20184cf521f3b9bde82e51d77"
+                  },
+                  {
+                      "path":  "Images/Cursed/SunnyMeadows/SunnyMeadowsAll.jpg",
+                      "size":  47543,
+                      "sha256":  "80b427e228078d04d16d04d93bb8aa3347c7f5927c823e4337fad9ea99046249"
+                  },
+                  {
+                      "path":  "Images/Cursed/Tanglewood/tanglewoodboard.jpg",
+                      "size":  137765,
+                      "sha256":  "488ad770003911dc71bd2b21c184c538a4212c98788aa4258d27ad40bec0f722"
+                  },
+                  {
+                      "path":  "Images/Cursed/Tanglewood/tanglewoodmirror.jpg",
+                      "size":  84567,
+                      "sha256":  "0f72bda8591b12fdeddd5fdc4aec548ba1d630f58c54e170856fc4f137a321aa"
+                  },
+                  {
+                      "path":  "Images/Cursed/Tanglewood/tanglewoodmonkeypaw.jpg",
+                      "size":  108358,
+                      "sha256":  "4b9eda52427fb1e6b33f72c9e5079e8a5ee8177733355e73efda2f26617bd815"
+                  },
+                  {
+                      "path":  "Images/Cursed/Tanglewood/tanglewoodmusicbox.jpg",
+                      "size":  92940,
+                      "sha256":  "2c178a797c1b499cd0b61de749c166666135f299e3ef2f4c2d0902baeb3e0faf"
+                  },
+                  {
+                      "path":  "Images/Cursed/Tanglewood/tanglewoodsummoningcircle.jpg",
+                      "size":  132715,
+                      "sha256":  "5a265588756726712b2987bd7091262e54325164c0069c2b92a3e5d8c5285662"
+                  },
+                  {
+                      "path":  "Images/Cursed/Tanglewood/tanglewoodtarot.jpg",
+                      "size":  77799,
+                      "sha256":  "400518f04e6b58b25e6411aca58595f6472ae278dec348aca849527708cd3abd"
+                  },
+                  {
+                      "path":  "Images/Cursed/Tanglewood/tanglewoodvoodoo.jpg",
+                      "size":  91990,
+                      "sha256":  "0e182cbf074506080a3aa415353d952886ee2d1e066849e4518393b082251664"
+                  },
+                  {
+                      "path":  "Images/Cursed/Willow/willowboard.jpg",
+                      "size":  116736,
+                      "sha256":  "c71019baf3ab302be0098625c617eeab3e67e6a14d9ee1f429ae62569bedca14"
+                  },
+                  {
+                      "path":  "Images/Cursed/Willow/willowmirror.jpg",
+                      "size":  126303,
+                      "sha256":  "967a081e4bb4d34f5beb1f6c6772182496bd84991a555a75b7d8b005c530fd46"
+                  },
+                  {
+                      "path":  "Images/Cursed/Willow/willowmonkeypaw.jpg",
+                      "size":  131650,
+                      "sha256":  "3161e04b164129fbb862b733ad4b9873309144327423da9b087d56d8a4191ad1"
+                  },
+                  {
+                      "path":  "Images/Cursed/Willow/willowmusicbox.jpg",
+                      "size":  139601,
+                      "sha256":  "6e254845f507e873e65e32873b9b2094e2ef54fc8175c744aac608645985a05c"
+                  },
+                  {
+                      "path":  "Images/Cursed/Willow/willowsummoningcircle.jpg",
+                      "size":  126410,
+                      "sha256":  "3c54638ed935c2cb144b930fb71472e258c187c704fe88262d4c2caa8cef17fe"
+                  },
+                  {
+                      "path":  "Images/Cursed/Willow/willowtarot.jpg",
+                      "size":  117504,
+                      "sha256":  "28856ca3d00eb30a2c470883fe1fd74bfb4861754cc9b7c89bac932f8f8fa078"
+                  },
+                  {
+                      "path":  "Images/Cursed/Willow/willowvoodoo.jpg",
+                      "size":  127331,
+                      "sha256":  "17b30c19175ae5eee4bcbaff2ba739af292a3beb3c7fd5b05d6cccce24ea16c4"
+                  },
+                  {
+                      "path":  "Images/Cursed/Woodwind/woodwindboard.jpg",
+                      "size":  75020,
+                      "sha256":  "0588f26b1be6cff307f198b8746d68b3f9d1e1ad494b6c5e0be664002f0a813e"
+                  },
+                  {
+                      "path":  "Images/Cursed/Woodwind/woodwindmirror.jpg",
+                      "size":  146796,
+                      "sha256":  "6c280fe7456d84c924c1ef68dbd366f6d22734f13f49c616557cff56788a2b9f"
+                  },
+                  {
+                      "path":  "Images/Cursed/Woodwind/woodwindmonkeypaw.jpg",
+                      "size":  126211,
+                      "sha256":  "840e5a8cf1f410f5609efc5a9f542b037149490803c4525d2dfc3d9db840c50e"
+                  },
+                  {
+                      "path":  "Images/Cursed/Woodwind/woodwindmusicbox.jpg",
+                      "size":  89532,
+                      "sha256":  "29deaba9b52df9106a47e58a216f7594b77003ece74a61056c65d63696e7f460"
+                  },
+                  {
+                      "path":  "Images/Cursed/Woodwind/woodwindsummoningcircle.jpg",
+                      "size":  71891,
+                      "sha256":  "65f11681203848d827036685fae2ab4dad917ba4619b33e18c52bb1bf8032f9b"
+                  },
+                  {
+                      "path":  "Images/Cursed/Woodwind/woodwindtarot.jpg",
+                      "size":  90466,
+                      "sha256":  "1cb59e1d003086c1f68c19c106c92502f4c40aaa5cd4e3da83b914f2a82899f1"
+                  },
+                  {
+                      "path":  "Images/Cursed/Woodwind/woodwindvoodoo.jpg",
+                      "size":  49534,
+                      "sha256":  "7d1f465d04d25150773cee67a305ba793ebb5fb9def61c70f48a235ae7ce1804"
+                  },
+                  {
+                      "path":  "Images/MapOverview/bleasdaleoverview.jpg",
+                      "size":  62357,
+                      "sha256":  "f6bebab656e4001066670fed5d4ffbb4a334dc029e0b086afd67c7493ffd9b21"
+                  },
+                  {
+                      "path":  "Images/MapOverview/edgefieldoverview.jpg",
+                      "size":  40603,
+                      "sha256":  "512fbe4b1d6865ad684f604a0880c1adc27ed8b1fcd8855850f07f78df9aa5cd"
+                  },
+                  {
+                      "path":  "Images/MapOverview/graftonoverview.jpg",
+                      "size":  44736,
+                      "sha256":  "d165c3367dfd6fb5b0022039176ad378a0322d25c83939c64e16cc8ad495f2c0"
+                  },
+                  {
+                      "path":  "Images/MapOverview/hopeoverview.jpg",
+                      "size":  41258,
+                      "sha256":  "6d8d7457214f748ef8b6771d3c33c8b6838a2f1053b3b193e23a6fd7e6bafa8c"
+                  },
+                  {
+                      "path":  "Images/MapOverview/hoperestrictedoverview.jpg",
+                      "size":  75704,
+                      "sha256":  "e16d513330fcea32334da76dde4a60951748694a26ffe31107333b3680c2f05d"
+                  },
+                  {
+                      "path":  "Images/MapOverview/mapleoverview.jpg",
+                      "size":  88230,
+                      "sha256":  "4f48f6d2d6195d30515e66456a04d9b6864501705553ce894d54dc0529e6264d"
+                  },
+                  {
+                      "path":  "Images/MapOverview/meadowsoverview.jpg",
+                      "size":  61978,
+                      "sha256":  "2edca03dfb4653ab638cc51099abd93bfb16bd7e2530155a3f3395af999fe8b8"
+                  },
+                  {
+                      "path":  "Images/MapOverview/nellsoverview.jpg",
+                      "size":  39592,
+                      "sha256":  "4e5f08cf770c824c51edf387eb8e6730166c28e9b4b099e8d3587f6cea455abf"
+                  },
+                  {
+                      "path":  "Images/MapOverview/prisonoverview.jpg",
+                      "size":  43071,
+                      "sha256":  "0a22242069cbaf4c15e12e8ec8a2019c9b453d62c1f37313ba23b948fc4b9430"
+                  },
+                  {
+                      "path":  "Images/MapOverview/prisonrestrictedoverview.jpg",
+                      "size":  53444,
+                      "sha256":  "21cdd059c385da11e9b48997df52a70b03f511a5eae8414fb571aea417050e11"
+                  },
+                  {
+                      "path":  "Images/MapOverview/ridgeviewoverview.jpg",
+                      "size":  42055,
+                      "sha256":  "7cf1bc922b0d13256292d001bab7a6d88c5e4ba659f04d95f8007af72e79f5e8"
+                  },
+                  {
+                      "path":  "Images/MapOverview/schooloverview.jpg",
+                      "size":  51561,
+                      "sha256":  "4ec6ed1e8d7030867377a372c7900348ba5efcd842c1387a705bd9e04a37acab"
+                  },
+                  {
+                      "path":  "Images/MapOverview/schoolrestrictedoverview.jpg",
+                      "size":  25536,
+                      "sha256":  "c8f5f2578347539f02cc4ab39c207af23e4967443431927799e1c18e73333f72"
+                  },
+                  {
+                      "path":  "Images/MapOverview/tanglewoodoverview.jpg",
+                      "size":  65454,
+                      "sha256":  "9e0d554e0c3ace47ab38de909efff84e2925fe55126c4065205bcf45bccdc465"
+                  },
+                  {
+                      "path":  "Images/MapOverview/willowoverview.jpg",
+                      "size":  33531,
+                      "sha256":  "6f93511f6e35cc6cd262a23eac9a0e47a44ae98de55ce975a75d4f87fe5789f6"
+                  },
+                  {
+                      "path":  "Images/MapOverview/woodwindoverview.jpg",
+                      "size":  73081,
+                      "sha256":  "d24e451d896895d93536bda6a7c13eb41ac6f396710dee01e6f816d7a76e32c6"
+                  },
+                  {
+                      "path":  "Images/Plans/bleasdale-attic.png",
+                      "size":  36489,
+                      "sha256":  "4124ad4e82885edb3a3ba866acf49ccdebf7b1dee08daa0deeb61ba86ac06353"
+                  },
+                  {
+                      "path":  "Images/Plans/bleasdale-firstfloor.png",
+                      "size":  86569,
+                      "sha256":  "df98c76dca6c94b70bb759064f1639d2369811f376e6289899ac197ae8a72d92"
+                  },
+                  {
+                      "path":  "Images/Plans/bleasdale-ground.png",
+                      "size":  96679,
+                      "sha256":  "b725fd57997080e8ca06e89b4f4f9b7f2c1692a3f48ff33dec5dd1205ee46cd7"
+                  },
+                  {
+                      "path":  "Images/Plans/edgefield-basement.png",
+                      "size":  31012,
+                      "sha256":  "f606ce071559a66ecb3fbf86724b9ecf5d3d251e10590ff28a25baa16d740743"
+                  },
+                  {
+                      "path":  "Images/Plans/edgefield-firstfloor.png",
+                      "size":  91006,
+                      "sha256":  "dba980943640b7418c2cdebbb9345e02a933d441b2ddbdc4b2f89ebd87237710"
+                  },
+                  {
+                      "path":  "Images/Plans/edgefield-ground.png",
+                      "size":  59570,
+                      "sha256":  "41481ca6bc460db4a0ad37e21ffe60e884765675d78781efebef0833659697b8"
+                  },
+                  {
+                      "path":  "Images/Plans/grafton-attic.png",
+                      "size":  28115,
+                      "sha256":  "dfe2c3b09aec58303a7270c39be01d248240090e9b6d50694237a056c36d6477"
+                  },
+                  {
+                      "path":  "Images/Plans/grafton-firstfloor.png",
+                      "size":  77962,
+                      "sha256":  "fe3d44c409b166e78e111508655e165b3d8d4c3e886585284d77c10aa3b0bb20"
+                  },
+                  {
+                      "path":  "Images/Plans/grafton-ground.png",
+                      "size":  76466,
+                      "sha256":  "8ce0773a2fe3c55f56ade2c57fad038eb27a09e0c6d2dd42512414f36440a4d2"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-1stfloor.png",
+                      "size":  131075,
+                      "sha256":  "9834d3661985296238644571fba425b90e7c2e5c705e16452e7380d5c8cd8706"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-2ndfloor.png",
+                      "size":  125543,
+                      "sha256":  "b8d7b37fa528259e6b8e5a0a667933b0e10e1af82b484efd1af366f9245381db"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-3rdfloor.png",
+                      "size":  112774,
+                      "sha256":  "e340a5b84afbbb0e8aeba9548e82c25eb8e42a0ed7c108761d168ea142c63ced"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-4thfloor.png",
+                      "size":  125255,
+                      "sha256":  "f6a735083dd48245902330c0e95dbbc2d83bdbf00b65aa4805cf852eb938f181"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-5thfloor.png",
+                      "size":  134666,
+                      "sha256":  "f6884bc3360d63e82174c1f0318d2029751d560859eaf565037be9500f077d30"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-6thfloor.png",
+                      "size":  122783,
+                      "sha256":  "5bacdea79da7ad7601fe54648ecf5e4f2e5f5b79b343efe1a72c15ee2777954e"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-7thfloor.png",
+                      "size":  102903,
+                      "sha256":  "6221995fd95c6ad3dab6003cc4add4811619e731ac8d19967651a79b7c72ff9f"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-8thfloor.png",
+                      "size":  111697,
+                      "sha256":  "5d9f4a43cd77b44a5e0c00ca3887f2641eac2b6b7d2a762e738bb363bc6038fb"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-9thfloor.png",
+                      "size":  118264,
+                      "sha256":  "10b224cd2dce9a3f0e6589f64f076fbe9db93805286ff383b9cacf03f5362140"
+                  },
+                  {
+                      "path":  "Images/Plans/hope-ground.png",
+                      "size":  117550,
+                      "sha256":  "a9f553be1f753e7685e92dfbd420acbb93dcc2585d89a38aadc99a3755707c93"
+                  },
+                  {
+                      "path":  "Images/Plans/hoperestricted-pointhoperestricted-1stfloor.png",
+                      "size":  131075,
+                      "sha256":  "9834d3661985296238644571fba425b90e7c2e5c705e16452e7380d5c8cd8706"
+                  },
+                  {
+                      "path":  "Images/Plans/hoperestricted-pointhoperestricted-2ndfloor.png",
+                      "size":  100688,
+                      "sha256":  "116af34e3c1e8a303643b394a5ee036a655d1bcd087df0595c340f3794618007"
+                  },
+                  {
+                      "path":  "Images/Plans/hoperestricted-pointhoperestricted-ground.png",
+                      "size":  117550,
+                      "sha256":  "a9f553be1f753e7685e92dfbd420acbb93dcc2585d89a38aadc99a3755707c93"
+                  },
+                  {
+                      "path":  "Images/Plans/maple-firstfloor.png",
+                      "size":  31572,
+                      "sha256":  "a12286f40107fbafab0e3a481e17bd21c6d19f8200270292777772d926196928"
+                  },
+                  {
+                      "path":  "Images/Plans/maple-ground.png",
+                      "size":  197830,
+                      "sha256":  "68fbf8b7bd974448a1943548f9ea966ac795aea682b2f8c1160e6df3a7aa1b96"
+                  },
+                  {
+                      "path":  "Images/Plans/meadows-basement.png",
+                      "size":  78715,
+                      "sha256":  "b3879885bf54aa0a87a96b1a16b3c186f3efd13251c01b5e8b6b5b7c39920a2e"
+                  },
+                  {
+                      "path":  "Images/Plans/meadows-ground.png",
+                      "size":  165068,
+                      "sha256":  "9797a6c491f7c952ba5aff23542346ad6c053a4c301e261431e4ba84ca1521b1"
+                  },
+                  {
+                      "path":  "Images/Plans/meadowsrestricted-courtyard-ground.png",
+                      "size":  117278,
+                      "sha256":  "62e1c2995703e444ea52b6a35040fdf03c9e5e83630eb48a8b25b2c60b2d0756"
+                  },
+                  {
+                      "path":  "Images/Plans/meadowsrestricted-femalewing-ground.png",
+                      "size":  93300,
+                      "sha256":  "829a3513717362501c9ecbb50f2303be76f5f9af97eaa05687325e21b162af4c"
+                  },
+                  {
+                      "path":  "Images/Plans/meadowsrestricted-hospital-basement.png",
+                      "size":  57924,
+                      "sha256":  "cf53f5657db2d69029c389f9ae5d01a9f988e86fd552f35a1cdae9804d7fdf13"
+                  },
+                  {
+                      "path":  "Images/Plans/meadowsrestricted-hospital-ground.png",
+                      "size":  51707,
+                      "sha256":  "83d7b4c4b941af81330294a52f6db48d6fc7e2a22cf906363081346d7a8663fa"
+                  },
+                  {
+                      "path":  "Images/Plans/meadowsrestricted-malewing-ground.png",
+                      "size":  98057,
+                      "sha256":  "69cde8d3dc8ad8ee19ae3bd01386d475060b966ed1bdb3f47ca4f885cd459291"
+                  },
+                  {
+                      "path":  "Images/Plans/meadowsrestricted-restricted-basement.png",
+                      "size":  59531,
+                      "sha256":  "8d9a8f6587c501b4315716a2d9b8521a08d7e7008141d493caf11e703451ea86"
+                  },
+                  {
+                      "path":  "Images/Plans/meadowsrestricted-restricted-ground.png",
+                      "size":  52415,
+                      "sha256":  "d0aebeb29c9e2bc06c1773a7771949afd2e900910005b015e25f113fb716c2ac"
+                  },
+                  {
+                      "path":  "Images/Plans/nells-ground.png",
+                      "size":  105436,
+                      "sha256":  "931ab83c5602d041c617fd1a3233b3b74c4ed36461fe158ebbf0bc111c9a293e"
+                  },
+                  {
+                      "path":  "Images/Plans/prison-firstfloor.png",
+                      "size":  122656,
+                      "sha256":  "7825d75429b1702d6735bc1d700493d0e98a47eabf087bf2987059a06a462e95"
+                  },
+                  {
+                      "path":  "Images/Plans/prison-ground.png",
+                      "size":  146808,
+                      "sha256":  "4bdedb1d6e697f48ff6191d394bfe6423936f34b38a614471fab065668fa028c"
+                  },
+                  {
+                      "path":  "Images/Plans/prisonrestricted-1f-ground.png",
+                      "size":  79802,
+                      "sha256":  "c6bab9302e0fea10f747c24a62d0c43390f4fe668b4ac098beeef4ce9a45c181"
+                  },
+                  {
+                      "path":  "Images/Plans/prisonrestricted-2f-firstfloor.png",
+                      "size":  69583,
+                      "sha256":  "e10d831f8a55d67c73bdd601b28d5e461fde04c85cdbb4cf17c2ece21525fa54"
+                  },
+                  {
+                      "path":  "Images/Plans/prisonrestricted-2f-ground.png",
+                      "size":  42749,
+                      "sha256":  "a9207b594e2f292da89fbec6ff1e7205079c67c144909bd55c1514b5eb02ac33"
+                  },
+                  {
+                      "path":  "Images/Plans/ridgeview-basement.png",
+                      "size":  27689,
+                      "sha256":  "4514a8816fd66328b423d36ce46c218db10cb7b81614eaa12d422f78d99e6872"
+                  },
+                  {
+                      "path":  "Images/Plans/ridgeview-firstfloor.png",
+                      "size":  67468,
+                      "sha256":  "e7557493f11ee7228eab74577e8bfebc89c57e96d3b14aadf2cb0444ff843dcd"
+                  },
+                  {
+                      "path":  "Images/Plans/ridgeview-ground.png",
+                      "size":  68520,
+                      "sha256":  "ce2da20b9fa841a35373daa1b2ba8d0bf932d28701dd4ad2153eb3e55de2d4fe"
+                  },
+                  {
+                      "path":  "Images/Plans/school-firstfloor.png",
+                      "size":  202856,
+                      "sha256":  "a0f30ff6c3fab0a5aa982bd657fc35f186563e5a345b4a04ba7c407c86fb4400"
+                  },
+                  {
+                      "path":  "Images/Plans/school-ground.png",
+                      "size":  240109,
+                      "sha256":  "17e727a0f4364d6f88832c4f8384f7680d15695b01f1df9637c5a835ac687b3e"
+                  },
+                  {
+                      "path":  "Images/Plans/schoolrestricted-1fleft-ground.png",
+                      "size":  116496,
+                      "sha256":  "afb5576a33b605d1d82f0c0a915b98456ab53718c49e88e2a0f4bdf73d3d2185"
+                  },
+                  {
+                      "path":  "Images/Plans/schoolrestricted-1fright-ground.png",
+                      "size":  110309,
+                      "sha256":  "422e7100397116ca11b726b6218518b214b1cd8198cbbd9f2057400c2a471fdf"
+                  },
+                  {
+                      "path":  "Images/Plans/schoolrestricted-2fleft-firstfloor.png",
+                      "size":  113317,
+                      "sha256":  "f12aea88f270edfb59b3769b1a2577125cfd452a74ae643c4c56aeb11afa4dba"
+                  },
+                  {
+                      "path":  "Images/Plans/schoolrestricted-2fleft-ground.png",
+                      "size":  46927,
+                      "sha256":  "d3c87e3cef349a79d6becf1693bc0257709bf13d516bb6156cfa4254043304ee"
+                  },
+                  {
+                      "path":  "Images/Plans/schoolrestricted-2fright-firstfloor.png",
+                      "size":  120056,
+                      "sha256":  "0a07c6f0bb19529541f4ca992d757ff6a3beb0de594f294e6835bc1fd45e373c"
+                  },
+                  {
+                      "path":  "Images/Plans/schoolrestricted-2fright-ground.png",
+                      "size":  44733,
+                      "sha256":  "d6046346a249ac7d76381d10849f862ec34b726f1338897607594ca01be2404e"
+                  },
+                  {
+                      "path":  "Images/Plans/tanglewood-basement.png",
+                      "size":  27330,
+                      "sha256":  "49b31de002a1cc8aed34723aacc1b4f2f798b7f208fab88c3e78cc93d87c8c63"
+                  },
+                  {
+                      "path":  "Images/Plans/tanglewood-ground.png",
+                      "size":  95631,
+                      "sha256":  "bf480c920763897204854645a7748c0775bd6efcaf351a67bb07a2c4b5336e92"
+                  },
+                  {
+                      "path":  "Images/Plans/willow-basement.png",
+                      "size":  44491,
+                      "sha256":  "4fee25e205bea929b97205248dc1e5b3b53ba400b9083a8f23d2d0be0032e6dd"
+                  },
+                  {
+                      "path":  "Images/Plans/willow-ground.png",
+                      "size":  63019,
+                      "sha256":  "cd81c9ebb3f5e149794d3d43e7cb3c8b386417e94aadd59d2892c2809194ea4f"
+                  },
+                  {
+                      "path":  "Images/Plans/woodwind-ground.png",
+                      "size":  168258,
+                      "sha256":  "499d8a01ffb30562915b660a78b4cf211c790cdf47cc67f0a3d60a145b3b5ce8"
+                  }
+              ]
+}

@@ -1,12 +1,12 @@
 {
     "schemaVersion":  1,
-    "dataVersion":  3,
-    "generated":  "2026-09-28T02:15:41Z",
+    "dataVersion":  6,
+    "generated":  "2026-09-29T22:59:25Z",
     "files":  [
                   {
                       "path":  "maps.json",
-                      "size":  79044,
-                      "sha256":  "46a34aacbc3e60d20d4dee8c3e38d1fb27e35dbb27571ba05d685fa10ba87edb"
+                      "size":  79047,
+                      "sha256":  "159a4df1903089152783efc8d72be93e5390293b27d89ecef72029ec0111380a"
                   },
                   {
                       "path":  "Images/Cursed/Bleasdale/bleasdaleboard.jpg",
@@ -570,18 +570,18 @@
                   },
                   {
                       "path":  "Images/Plans/bleasdale-attic.png",
-                      "size":  36489,
-                      "sha256":  "4124ad4e82885edb3a3ba866acf49ccdebf7b1dee08daa0deeb61ba86ac06353"
+                      "size":  36471,
+                      "sha256":  "ce88ea71787e89c36739b812837643efbcb9402c4d8cf59fae3745e597da7928"
                   },
                   {
                       "path":  "Images/Plans/bleasdale-firstfloor.png",
-                      "size":  86569,
-                      "sha256":  "df98c76dca6c94b70bb759064f1639d2369811f376e6289899ac197ae8a72d92"
+                      "size":  86688,
+                      "sha256":  "f7cd02443108db37ce67731fb00ab422f9d1ed1ef2f04d0fd9c3520e6d7d96e7"
                   },
                   {
                       "path":  "Images/Plans/bleasdale-ground.png",
-                      "size":  96679,
-                      "sha256":  "b725fd57997080e8ca06e89b4f4f9b7f2c1692a3f48ff33dec5dd1205ee46cd7"
+                      "size":  96229,
+                      "sha256":  "f999d842abb7811ba73178cf862d9b6b56fd5a21c9076e537e3d06fe2d559872"
                   },
                   {
                       "path":  "Images/Plans/edgefield-basement.png",

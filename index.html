@@ -1519,8 +1519,8 @@ html.layer-open, html.layer-open body { overflow:hidden !important; touch-action
         <div class="m-rule"></div>
         <div id="evlist"></div>
 
-        <div class="sec">Hunt</div>
-        <div class="pills c4" id="hunt"></div>
+        <div class="sec">Hunted At</div>
+        <div class="pills c3" id="hunt"></div>
 
         <div class="sec">Speed</div>
         <div class="pills c3" id="speed"></div>
@@ -2634,8 +2634,10 @@ EV.forEach(ev => {
   evlist.appendChild(row);
 });
 
-const HUNT = [['veryearly','Very Early','&gt;70%'],['early','Early','&gt;50%'],
-              ['normal','Normal','50%'],['late','Late','&lt;50%']];
+// No Late pill: every ghost can hunt below 50%, so it rules nothing out. The `late` key stays
+// in the hunt state (Link validates all four keys); it is just never rendered, as on desktop.
+const HUNT = [['veryearly','Above 70%','Very Early'],['early','50 to 70%','Early'],
+              ['normal','Around 50%','Normal']];
 const SPD  = [['slow','Slow','&lt;1.7m/s'],['normal','Normal','1.7m/s'],['fast','Fast','&gt;1.7m/s']];
 
 // single: only one option can be active at a time; clicking the active one clears the fil.
